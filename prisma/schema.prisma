@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  role      String   @default("user")
+  
+  questions Question[]
+  responses Response[]
+  srsData   SRSData[]
+  readinessProfile ReadinessProfile?
+}
+
+model Question {
+  id          String   @id @default(uuid())
+  content     String
+  category    String
+  difficulty  String
+  source      String?
+  createdAt   DateTime @default(now())
+  userId      String
+  
+  user       User      @relation(fields: [userId], references: [id])
+  responses  Response[]
+  srsData    SRSData[]
+}
+
+model Response {
+  id          String   @id @default(uuid())
+  userId      String
+  questionId  String
+  content     String
+  isCorrect   Boolean?
+  analysis    Json?
+  createdAt   DateTime @default(now())
+  
+  user     User     @relation(fields: [userId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+}
+
+model SRSData {
+  id           String   @id @default(uuid())
+  userId       String
+  questionId   String
+  interval     Int      @default(1)
+  repetitions  Int      @default(0)
+  easeFactor   Float    @default(2.5)
+  nextReview   DateTime
+  stage        String   @default("learning")
+  
+  user     User     @relation(fields: [userId], references: [id])
+  question Question @relation(fields: [questionId], references: [id])
+}
+
+model ReadinessProfile {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  overallScore Float    @default(0.0)
+  strengths    Json
+  weaknesses  Json
+  lastUpdated DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id])
+}
