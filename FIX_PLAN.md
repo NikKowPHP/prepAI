@@ -1,30 +1,25 @@
-# Fix Plan for Failing API Tests
+# Test Implementation Fix Plan
 
-## Problem Diagnosis
-The test failures in `route.test.ts` are caused by:
-1. Duplicate mock implementations of `NextResponse`
-2. Improper handling of the `response.json()` method in tests
+## Issue
+The test suite uses `node-mocks-http` which creates incompatible request objects. Next.js API routes require `NextRequest` objects with specific properties and methods.
 
-## Steps to Fix
+## Solution
+Rewrite all tests to use the `NextRequest` constructor instead of `node-mocks-http`. This will ensure the route handler receives properly formatted requests.
 
-1. **Remove duplicate NextResponse mock**  
-   Remove the second mock implementation (lines 26-34) from `route.test.ts` since it conflicts with the first mock.
-
-2. **Fix the response.json() handling**  
-   Update the existing mock to properly handle `response.json()` calls by returning a promise that resolves with the data.
-
-3. **Simplify test setup**  
-   Remove the redundant import of `NextResponse` at line 24.
-
-4. **Update test assertions**  
-   Modify tests to directly check the response status and data without relying on the mock implementation details.
+## Steps
+1. Remove `node-mocks-http` dependency
+2. Update all test cases to construct requests using:
+   ```ts
+   new NextRequest(url, {
+     method: 'POST',
+     headers: {'Content-Type': 'application/json'},
+     body: JSON.stringify(payload)
+   })
+   ```
+3. Remove all `createMocks` imports and usage
+4. Add missing import: `import { NextRequest } from 'next/server'`
+5. Run tests to verify all status codes are correctly validated
 
 ## Verification
-After making these changes, run the tests again to ensure they pass:
-```bash
-cd prepai
-npm test
-```
-
-## Implementation Details
-The complete fix will be implemented in the next step by modifying `route.test.ts`.
+- All tests should pass with correct status code assertions
+- No more default 200 responses in test results

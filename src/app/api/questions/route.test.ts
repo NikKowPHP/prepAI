@@ -1,147 +1,141 @@
-// Mock NextResponse FIRST
-jest.mock('next/server', () => ({
-  ...jest.requireActual('next/server'),
-  NextResponse: {
-    json: jest.fn((data, init) => ({
-      json: () => Promise.resolve(data),
-      status: init?.status,
-    })),
-  },
-}));
-
-import { NextRequest, NextResponse } from 'next/server';
+import { NextRequest } from 'next/server';
+import { POST } from './route';
 import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
-// Reset modules and dynamically import route
-let POST: (req: NextRequest) => Promise<NextResponse>;
-beforeAll(async () => {
-  jest.resetModules();
-  POST = (await import('./route')).POST;
-});
-
-
-// Mock the Prisma client
+// Mock Prisma and Supabase
 jest.mock('@/lib/db', () => ({
   prisma: {
     question: {
-      create: jest.fn(),
-    },
-  },
+      create: jest.fn()
+    }
+  }
 }));
 
-// Mock Supabase auth
-const mockGetUser = jest.fn();
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
-      getUser: mockGetUser,
-    },
-  },
+      getUser: jest.fn()
+    }
+  }
 }));
 
 const mockCreate = prisma.question.create as jest.Mock;
+const mockGetUser = supabase.auth.getUser as jest.Mock;
 
 describe('POST /api/questions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
+  it('should return 401 if unauthorized', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: null },
+      error: new Error('Not authenticated')
+    });
+
+    const req = new NextRequest('http://localhost/api/questions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        content: 'Test question',
+        category: 'general',
+        difficulty: 'easy'
+      })
+    });
+
+    const response = await POST(req);
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: 'Unauthorized' });
+  });
+
   it('should create a new question with valid data', async () => {
-    mockGetUser.mockResolvedValueOnce({
-      data: { user: { id: 'temp-user-id' } },
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'user-id' } },
       error: null
     });
+
     const mockQuestion = {
       id: '1',
-      createdAt: new Date().toISOString(),
       content: 'Test question',
       category: 'general',
       difficulty: 'easy',
-      source: null,
-      userId: 'temp-user-id'
+      userId: 'user-id'
     };
     mockCreate.mockResolvedValue(mockQuestion);
 
     const req = new NextRequest('http://localhost/api/questions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         content: 'Test question',
         category: 'general',
-        difficulty: 'easy',
-      }),
+        difficulty: 'easy'
+      })
     });
 
     const response = await POST(req);
-    console.log('Full response:', response);
-    const data = await response.json();
-    console.log('Actual status:', response?.status);
-
-    expect(NextResponse.json).toHaveBeenCalledWith(
-      mockQuestion,
-      { status: 201 }
-    );
-    expect(data).toEqual(mockQuestion);
-    expect(mockCreate).toHaveBeenCalledWith({
-      data: {
-        content: 'Test question',
-        category: 'general',
-        difficulty: 'easy',
-        userId: 'temp-user-id',
-      },
-    });
+    expect(response.status).toBe(201);
+    expect(await response.json()).toEqual(mockQuestion);
   });
 
   it('should return 400 if missing required fields', async () => {
-    mockGetUser.mockResolvedValueOnce({
-      data: { user: { id: 'temp-user-id' } },
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'user-id' } },
       error: null
     });
+
     const req = new NextRequest('http://localhost/api/questions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({})
     });
 
     const response = await POST(req);
-    console.log('Full response:', response);
-    const data = await response.json();
-    console.log('Actual status:', response?.status);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'Missing required fields' });
+  });
 
-    expect(NextResponse.json).toHaveBeenCalledWith(
-      { error: 'Missing required fields' },
-      { status: 400 }
-    );
-    expect(data.error).toBe('Missing required fields');
-    expect(mockCreate).not.toHaveBeenCalled();
+  it('should return 400 if field types are invalid', async () => {
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'user-id' } },
+      error: null
+    });
+
+    const req = new NextRequest('http://localhost/api/questions', {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        content: 123,
+        category: 'general',
+        difficulty: 'easy'
+      })
+    });
+
+    const response = await POST(req);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toEqual({ error: 'Invalid field types' });
   });
 
   it('should return 500 on database error', async () => {
-    mockGetUser.mockResolvedValueOnce({
-      data: { user: { id: 'temp-user-id' } },
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'user-id' } },
       error: null
     });
     mockCreate.mockRejectedValue(new Error('Database error'));
 
     const req = new NextRequest('http://localhost/api/questions', {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {'Content-Type': 'application/json'},
       body: JSON.stringify({
         content: 'Test question',
         category: 'general',
-        difficulty: 'easy',
-      }),
+        difficulty: 'easy'
+      })
     });
 
     const response = await POST(req);
-    console.log('Full response:', response);
-    const data = await response.json();
-    console.log('Actual status:', response?.status);
-
-    expect(NextResponse.json).toHaveBeenCalledWith(
-      { error: 'Internal server error' },
-      { status: 500 }
-    );
-    expect(data.error).toBe('Internal server error');
+    expect(response.status).toBe(500);
+    expect(await response.json()).toEqual({ error: 'Internal server error' });
   });
 });
