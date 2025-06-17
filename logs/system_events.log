@@ -2,3 +2,11 @@
 {"timestamp": "2025-06-17T06:49:46Z", "agent": "Architect", "event": "action_complete", "details": "Project scaffolding complete. Master manifest created."}
 {"timestamp": "2025-06-17T06:51:19Z", "agent": "Orchestrator", "event": "idle", "details": "No active tasks or signals detected. System is idle."}
 {"timestamp": "6/17/2025, 10:06:15 AM", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "Active fix plan detected for auth-context.ts syntax errors."}
+{"timestamp": "6/17/2025, 10:14:00 AM", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "Refactor signal detected for test failures in questions/route.test.ts"}
+{"timestamp": "6/17/2025, 10:27:20 AM", "agent": "Emergency", "event": "intervention_complete", "details": "Created FIX_PLAN.md for test failures in questions/route.test.ts"}
+{"timestamp": "6/17/2025, 10:27:44 AM", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "Active fix plan detected for test failures in questions/route.test.ts"}
+{"timestamp": "6/17/2025, 10:49:59 AM", "agent": "Emergency", "event": "fix_plan_created", "details": "Created FIX_PLAN.md to resolve test logging and response handling issues"}
+{"timestamp": "2025-06-17T09:01:06Z", "agent": "Emergency", "event": "intervention", "details": "Handled missing NEEDS_ASSISTANCE.md signal by creating FIX_PLAN.md and clearing signal."}
+{"timestamp": "2025-06-17T09:02:22Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "NEEDS_REFACTOR.md signal detected. Handing off for refactoring."}
+{"timestamp": "2025-06-17T09:48:50Z", "agent": "Emergency", "event": "resolved_assistance", "details": "Created FIX_PLAN.md for failing API tests"}
+{"timestamp": "2025-06-17T09:49:28Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "NEEDS_REFACTOR.md signal detected"}

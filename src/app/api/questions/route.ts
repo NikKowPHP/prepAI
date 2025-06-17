@@ -4,43 +4,53 @@ import { supabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
+    const body = await req.json();
+    console.log('Request body:', body);
+
     const { data: { user }, error } = await supabase.auth.getUser();
+    console.log('Auth status - user:', user, 'error:', error);
 
     if (error || !user) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Unauthorized' },
         { status: 401 }
       );
+      console.log('Returning response with status:', response.status);
+      return response;
     }
-
-    const body = await req.json();
     
     // Validate request body
     if (!body || typeof body !== 'object') {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Invalid request body' },
         { status: 400 }
       );
+      console.log('Returning response with status:', response.status);
+      return response;
     }
 
     const { content, category, difficulty } = body;
 
     // Check for presence of all required fields
     if (!content?.trim() || !category?.trim() || !difficulty?.trim()) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
       );
+      console.log('Returning response with status:', response.status);
+      return response;
     }
 
     // Validate field types
     if (typeof content !== 'string' ||
         typeof category !== 'string' ||
         typeof difficulty !== 'string') {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Invalid field types' },
         { status: 400 }
       );
+      console.log('Returning response with status:', response.status);
+      return response;
     }
 
     // Create question in database
@@ -53,16 +63,20 @@ export async function POST(req: NextRequest) {
       },
     });
 
-    return NextResponse.json(question, { status: 201 });
+    const response = NextResponse.json(question, { status: 201 });
+    console.log('Returning response with status:', response.status);
+    return response;
     
   } catch (error) {
     console.error('API Error:', error);
     
     if (error instanceof SyntaxError) {
-      return NextResponse.json(
+      const response = NextResponse.json(
         { error: 'Invalid JSON body' },
         { status: 400 }
       );
+      console.log('Returning response with status:', response.status);
+      return response;
     }
     
     return NextResponse.json(

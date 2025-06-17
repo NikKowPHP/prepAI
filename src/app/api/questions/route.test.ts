@@ -1,12 +1,40 @@
-import { POST } from './route';
-import { NextRequest } from 'next/server';
+// Mock NextResponse FIRST
+jest.mock('next/server', () => ({
+  ...jest.requireActual('next/server'),
+  NextResponse: {
+    json: jest.fn((data, init) => ({
+      json: () => Promise.resolve(data),
+      status: init?.status,
+    })),
+  },
+}));
+
+import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+
+// Reset modules and dynamically import route
+let POST: (req: NextRequest) => Promise<NextResponse>;
+beforeAll(async () => {
+  jest.resetModules();
+  POST = (await import('./route')).POST;
+});
+
 
 // Mock the Prisma client
 jest.mock('@/lib/db', () => ({
   prisma: {
     question: {
       create: jest.fn(),
+    },
+  },
+}));
+
+// Mock Supabase auth
+const mockGetUser = jest.fn();
+jest.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getUser: mockGetUser,
     },
   },
 }));
@@ -19,6 +47,10 @@ describe('POST /api/questions', () => {
   });
 
   it('should create a new question with valid data', async () => {
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: { id: 'temp-user-id' } },
+      error: null
+    });
     const mockQuestion = {
       id: '1',
       createdAt: new Date().toISOString(),
@@ -41,9 +73,14 @@ describe('POST /api/questions', () => {
     });
 
     const response = await POST(req);
+    console.log('Full response:', response);
     const data = await response.json();
+    console.log('Actual status:', response?.status);
 
-    expect(response.status).toBe(201);
+    expect(NextResponse.json).toHaveBeenCalledWith(
+      mockQuestion,
+      { status: 201 }
+    );
     expect(data).toEqual(mockQuestion);
     expect(mockCreate).toHaveBeenCalledWith({
       data: {
@@ -56,6 +93,10 @@ describe('POST /api/questions', () => {
   });
 
   it('should return 400 if missing required fields', async () => {
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: { id: 'temp-user-id' } },
+      error: null
+    });
     const req = new NextRequest('http://localhost/api/questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -63,14 +104,23 @@ describe('POST /api/questions', () => {
     });
 
     const response = await POST(req);
+    console.log('Full response:', response);
     const data = await response.json();
+    console.log('Actual status:', response?.status);
 
-    expect(response.status).toBe(400);
+    expect(NextResponse.json).toHaveBeenCalledWith(
+      { error: 'Missing required fields' },
+      { status: 400 }
+    );
     expect(data.error).toBe('Missing required fields');
     expect(mockCreate).not.toHaveBeenCalled();
   });
 
   it('should return 500 on database error', async () => {
+    mockGetUser.mockResolvedValueOnce({
+      data: { user: { id: 'temp-user-id' } },
+      error: null
+    });
     mockCreate.mockRejectedValue(new Error('Database error'));
 
     const req = new NextRequest('http://localhost/api/questions', {
@@ -84,9 +134,14 @@ describe('POST /api/questions', () => {
     });
 
     const response = await POST(req);
+    console.log('Full response:', response);
     const data = await response.json();
+    console.log('Actual status:', response?.status);
 
-    expect(response.status).toBe(500);
+    expect(NextResponse.json).toHaveBeenCalledWith(
+      { error: 'Internal server error' },
+      { status: 500 }
+    );
     expect(data.error).toBe('Internal server error');
   });
 });
