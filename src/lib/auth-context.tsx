@@ -9,16 +9,27 @@ import { User } from '@supabase/supabase-js';
 interface AuthContextType {
   user: User | null;
   loading: boolean;
-  signIn: (email: string, password: string) => Promise<void>;
-  signUp: (email: string, password: string) => Promise<void>;
+  error: string | null;
+  signIn: (email: string, password: string) => Promise<{ error: string | null }>;
+  signUp: (email: string, password: string) => Promise<{ error: string | null }>;
   signOut: () => Promise<void>;
+  clearError: () => void;
 }
 
-const AuthContext = createContext<AuthContextType | null>(null);
+const AuthContext = createContext<AuthContextType>({
+  user: null,
+  loading: true,
+  error: null,
+  signIn: async () => ({ error: null }),
+  signUp: async () => ({ error: null }),
+  signOut: async () => {},
+  clearError: () => {},
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }): React.JSX.Element => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -34,27 +45,52 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     };
   }, []);
 
+  const handleAuthOperation = async (
+    operation: () => Promise<{ error: { message: string } | null }>
+  ): Promise<{ error: string | null }> => {
+    setLoading(true);
+    setError(null);
+    try {
+      const { error } = await operation();
+      if (error) {
+        setError(error.message);
+        return { error: error.message };
+      }
+      return { error: null };
+    } catch (err: unknown) {
+      const error = err as Error;
+      setError(error.message);
+      return { error: error.message };
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const value: AuthContextType = {
     user,
     loading,
-    signIn: async (email: string, password: string) => {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-      if (error) throw error;
-    },
-    signUp: async (email: string, password: string) => {
-      const { error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-      if (error) throw error;
-    },
+    error,
+    signIn: (email, password) =>
+      handleAuthOperation(() =>
+        supabase.auth.signInWithPassword({ email, password })
+      ),
+    signUp: (email, password) =>
+      handleAuthOperation(() =>
+        supabase.auth.signUp({ email, password })
+      ),
     signOut: async () => {
-      await supabase.auth.signOut();
-      router.push('/login');
+      setLoading(true);
+      try {
+        await supabase.auth.signOut();
+        router.push('/login');
+      } catch (err: unknown) {
+        const error = err as Error;
+        setError(error.message);
+      } finally {
+        setLoading(false);
+      }
     },
+    clearError: () => setError(null),
   };
 
   return (

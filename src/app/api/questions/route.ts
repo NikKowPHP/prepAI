@@ -1,8 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(req: NextRequest) {
   try {
+    const { data: { user }, error } = await supabase.auth.getUser();
+
+    if (error || !user) {
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401 }
+      );
+    }
+
     const body = await req.json();
     
     // Validate request body
@@ -39,7 +49,7 @@ export async function POST(req: NextRequest) {
         content: content.trim(),
         category: category.trim(),
         difficulty: difficulty.trim(),
-        userId: 'temp-user-id',
+        userId: user.id,
       },
     });
 
