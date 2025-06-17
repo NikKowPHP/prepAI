@@ -1,7 +1,8 @@
-import { prisma } from '@/lib/db';
 import { POST } from './route';
-import { jest } from '@jest/globals';
+import { NextRequest } from 'next/server';
+import { prisma } from '@/lib/db';
 
+// Mock the Prisma client
 jest.mock('@/lib/db', () => ({
   prisma: {
     question: {
@@ -10,8 +11,7 @@ jest.mock('@/lib/db', () => ({
   },
 }));
 
-const mockCreate = jest.fn<typeof prisma.question.create>();
-(prisma.question.create as jest.MockedFunction<typeof prisma.question.create>) = mockCreate;
+const mockCreate = prisma.question.create as jest.Mock;
 
 describe('POST /api/questions', () => {
   beforeEach(() => {
@@ -21,16 +21,16 @@ describe('POST /api/questions', () => {
   it('should create a new question with valid data', async () => {
     const mockQuestion = {
       id: '1',
-      createdAt: new Date(),
+      createdAt: new Date().toISOString(),
       content: 'Test question',
       category: 'general',
       difficulty: 'easy',
       source: null,
       userId: 'temp-user-id'
     };
-    mockCreate.mockResolvedValue(mockQuestion as any);
+    mockCreate.mockResolvedValue(mockQuestion);
 
-    const req = new Request('http://localhost/api/questions', {
+    const req = new NextRequest('http://localhost/api/questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -43,7 +43,7 @@ describe('POST /api/questions', () => {
     const response = await POST(req);
     const data = await response.json();
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(201);
     expect(data).toEqual(mockQuestion);
     expect(mockCreate).toHaveBeenCalledWith({
       data: {
@@ -56,7 +56,7 @@ describe('POST /api/questions', () => {
   });
 
   it('should return 400 if missing required fields', async () => {
-    const req = new Request('http://localhost/api/questions', {
+    const req = new NextRequest('http://localhost/api/questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
@@ -67,12 +67,13 @@ describe('POST /api/questions', () => {
 
     expect(response.status).toBe(400);
     expect(data.error).toBe('Missing required fields');
+    expect(mockCreate).not.toHaveBeenCalled();
   });
 
   it('should return 500 on database error', async () => {
     mockCreate.mockRejectedValue(new Error('Database error'));
 
-    const req = new Request('http://localhost/api/questions', {
+    const req = new NextRequest('http://localhost/api/questions', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
