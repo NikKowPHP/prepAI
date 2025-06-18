@@ -1,6 +1,7 @@
 export interface AssessmentService {
   calculateScore: (answers: Record<string, string>) => number;
   getRecommendations: (score: number) => string[];
+  generateRecommendationEngine: (score: number) => string[];
 }
 
 export const createAssessmentService = (): AssessmentService => {
@@ -25,9 +26,39 @@ export const createAssessmentService = (): AssessmentService => {
     }
   };
 
+  const generateRecommendationEngine = (score: number): string[] => {
+    // More advanced recommendation engine
+    // This could be based on machine learning models or complex algorithms
+    // For now, we'll use a simple rule-based approach
+
+    const recommendations: string[] = [];
+
+    if (score >= 90) {
+      recommendations.push('Excellent job! You are ready for advanced topics.');
+      recommendations.push('Consider taking practice exams under timed conditions.');
+    } else if (score >= 70) {
+      recommendations.push('Good performance! Focus on areas where you made mistakes.');
+      recommendations.push('Review key concepts and practice regularly.');
+    } else if (score >= 50) {
+      recommendations.push('You need more practice. Focus on understanding basic concepts.');
+      recommendations.push('Consider joining a study group or getting a tutor.');
+    } else {
+      recommendations.push('You need significant improvement. Start with the basics.');
+      recommendations.push('Create a structured study plan and stick to it.');
+    }
+
+    // Add specific recommendations based on question performance
+    // This is a placeholder for more advanced logic
+    recommendations.push('Review your notes and textbooks.');
+    recommendations.push('Practice with sample questions and past exams.');
+
+    return recommendations;
+  };
+
   return {
     calculateScore,
     getRecommendations,
+    generateRecommendationEngine,
   };
 };
 
