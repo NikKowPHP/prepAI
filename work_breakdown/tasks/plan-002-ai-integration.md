@@ -24,4 +24,4 @@
 - [x] (UI) Create dashboard layout with summary cards
 - [x] (LOGIC) Aggregate user performance data
 - [x] (UI) Implement charts for accuracy over time
-- [ ] (UI) Add filter controls for date ranges and question types
+- [x] (UI) Add filter controls for date ranges and question types
