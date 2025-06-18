@@ -20,8 +20,8 @@
 - [x] (LOGIC) Implement backend API endpoints for mode-specific queries in src/app/api/questions/route.ts
 - [x] (UI) Add visual indicators for each mode in study interface
 - [x] (UI) Implement navigation between modes
-- [ ] (LOGIC) Write tests for each mode
-- [ ] (LOGIC) Update documentation to explain different modes
+- [x] (LOGIC) Write tests for each mode
+- [x] (LOGIC) Update documentation to explain different modes
 
 ### Voice transcription service
 - [x] (LOGIC) Integrate speech-to-text API

@@ -1,1 +1,0 @@
-Planning for the new SRS study modes has been completed. The updated plan has been added to Phase 3 of the work breakdown structure.

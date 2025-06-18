@@ -17,10 +17,11 @@ AI-driven interview preparation system with:
 
 ### Phase 1: Core System Setup
 1. Initialize Next.js project with app router
-2. Configure Supabase authentication
-3. Setup Prisma ORM with initial schema
-4. Implement basic question management
-5. Create voice recording component
+2. Configure environment management (env files, CI/CD variables)
+3. Configure Supabase authentication
+4. Setup Prisma ORM with initial schema
+5. Implement basic question management
+6. Create voice recording component
 
 ### Phase 2: AI Integration
 1. Implement question generation service
