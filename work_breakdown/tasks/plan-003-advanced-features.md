@@ -21,7 +21,7 @@
 - [x] (UI) Display transcriptions with sync highlighting
 
 ### Readiness assessment algorithm
-- [ ] (LOGIC) Develop assessment scoring model
+- [x] (LOGIC) Develop assessment scoring model
 - [ ] (UI) Create assessment interface
 - [ ] (LOGIC) Implement recommendation engine
 - [ ] (UI) Display assessment results with actionable insights
