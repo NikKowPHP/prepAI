@@ -4,12 +4,12 @@
 
 ### PDF report generation
 - [x] (LOGIC) Implement PDF generation service
-- [ ] (LOGIC) Design report template structure
+- [x] (LOGIC) Design report template structure
 - [x] (UI) Create report customization interface
 - [x] (LOGIC) Generate performance analytics in PDF format
 
 ### Anki-like study modes
-- [ ] (UI) Create flashcard study interface
+- [x] (UI) Create flashcard study interface
 - [ ] (LOGIC) Implement card flipping and rating system
 - [ ] (UI) Design deck management system
 - [ ] (LOGIC) Integrate study modes with SRS scheduler
