@@ -9,8 +9,8 @@
 - [x] (LOGIC) Implement prompt engineering for diverse question types
 
 ### Add SRS scheduling logic
-- [ ] (LOGIC) Implement spaced repetition algorithm (Anki-like)
-- [ ] (LOGIC) Create scheduler service to manage question reviews
+- [x] (LOGIC) Implement spaced repetition algorithm (Anki-like)
+- [x] (LOGIC) Create scheduler service to manage question reviews
 - [ ] (UI) Add SRS controls to question interface
 - [ ] (LOGIC) Integrate SRS with user progress tracking
 
