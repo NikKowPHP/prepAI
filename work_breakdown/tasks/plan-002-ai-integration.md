@@ -4,8 +4,8 @@
 
 ### Implement question generation service
 - [x] (LOGIC) Create API endpoint for generating questions
-- [ ] (LOGIC) Integrate with OpenAI API for question generation
-- [ ] (UI) Create question generation form in frontend
+- [x] (LOGIC) Integrate with OpenAI API for question generation
+- [x] (UI) Create question generation form in frontend
 - [ ] (LOGIC) Implement prompt engineering for diverse question types
 
 ### Add SRS scheduling logic
