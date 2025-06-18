@@ -5,6 +5,8 @@ import { useAuth } from '@/lib/auth-context';
 import { schedulerService } from '@/lib/scheduler';
 import { progressService } from '@/lib/progress';
 
+type StudyMode = 'repeat' | 'study' | 'discover';
+
 interface SRSControlsProps {
   questionId: string;
   onReviewComplete: (remembered: boolean) => void;
@@ -16,6 +18,7 @@ const SRSControls: React.FC<SRSControlsProps> = ({ questionId, onReviewComplete 
   const [nextReviewDate, setNextReviewDate] = useState<Date | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [studyMode, setStudyMode] = useState<StudyMode>('study'); // Default to study mode
 
   useEffect(() => {
     if (!user || !questionId) return;
@@ -72,7 +75,20 @@ const SRSControls: React.FC<SRSControlsProps> = ({ questionId, onReviewComplete 
   return (
     <div className="mt-4 p-4 bg-gray-100 rounded-md">
       <h3 className="font-semibold mb-2">Spaced Repetition System</h3>
+      <div className="mb-2 flex space-x-2">
+        <label className="font-medium mr-2">Mode:</label>
+        <select
+          className="border rounded px-2 py-1"
+          value={studyMode}
+          onChange={(e) => setStudyMode(e.target.value as StudyMode)}
+        >
+          <option value="repeat">Repeat</option>
+          <option value="study">Study</option>
+          <option value="discover">Discover</option>
+        </select>
+      </div>
       <p className="mb-2">Next review date: {nextReviewDate ? nextReviewDate.toLocaleDateString() : 'Calculating...'}</p>
+      <p className="mb-4 font-medium">Current Mode: {studyMode.charAt(0).toUpperCase() + studyMode.slice(1)}</p>
       <div className="flex space-x-4">
         <button
           className={`px-4 py-2 rounded ${remembered === true ? 'bg-green-500 text-white' : 'bg-gray-300'}`}
