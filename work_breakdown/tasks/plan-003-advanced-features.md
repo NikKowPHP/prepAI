@@ -15,7 +15,7 @@
 - [x] (LOGIC) Integrate study modes with SRS scheduler
 
 ### Voice transcription service
-- [ ] (LOGIC) Integrate speech-to-text API
+- [x] (LOGIC) Integrate speech-to-text API
 - [ ] (UI) Create voice recording component
 - [ ] (LOGIC) Implement transcription processing pipeline
 - [ ] (UI) Display transcriptions with sync highlighting
