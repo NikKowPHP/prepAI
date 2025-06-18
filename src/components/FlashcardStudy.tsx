@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth-context';
+import { schedulerService } from '../lib/scheduler';
 
 interface Flashcard {
   id: string;
@@ -8,6 +9,9 @@ interface Flashcard {
   answer: string;
   rating: 'easy' | 'normal' | 'hard';
   user_id: string;
+  last_reviewed?: string | null;
+  review_interval?: number;
+  review_ease?: number;
 }
 
 const FlashcardStudy: React.FC = () => {
@@ -17,6 +21,7 @@ const FlashcardStudy: React.FC = () => {
   const [isFlipped, setIsFlipped] = useState(false);
   const [rating, setRating] = useState<'easy' | 'normal' | 'hard'>('normal');
   const [isLoading, setIsLoading] = useState(true);
+  const [nextReviewDate, setNextReviewDate] = useState<Date | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -61,11 +66,16 @@ const FlashcardStudy: React.FC = () => {
 
     // Update rating in database
     try {
+      await schedulerService.markQuestionAsReviewed('flashcards', currentFlashcard.id, newRating === 'easy');
       await supabase
         .from('flashcards')
         .update({ rating: newRating })
         .eq('id', currentFlashcard.id)
         .eq('user_id', user.id);
+
+      // Update next review date
+      const nextReviewDates = await schedulerService.getNextReviewDates('flashcards', [currentFlashcard.id]);
+      setNextReviewDate(nextReviewDates[currentFlashcard.id]);
     } catch (error) {
       console.error('Error updating flashcard rating:', error);
     }
@@ -76,6 +86,23 @@ const FlashcardStudy: React.FC = () => {
     }
     setIsFlipped(false);
   };
+
+  useEffect(() => {
+    if (currentFlashcard) {
+      const fetchNextReview = async () => {
+        if (!user) return;
+
+        try {
+          const nextReviewDates = await schedulerService.getNextReviewDates('flashcards', [currentFlashcard.id]);
+          setNextReviewDate(nextReviewDates[currentFlashcard.id]);
+        } catch (err) {
+          console.error('Error fetching next review date:', err);
+        }
+      };
+
+      fetchNextReview();
+    }
+  }, [currentFlashcard, user]);
 
   if (isLoading) {
     return <div>Loading flashcards...</div>;
@@ -88,6 +115,11 @@ const FlashcardStudy: React.FC = () => {
   return (
     <div className="p-4 border rounded shadow">
       <h2 className="text-xl font-bold mb-4">Flashcard Study</h2>
+      {nextReviewDate && (
+        <p className="mb-4">
+          Next review: {nextReviewDate.toLocaleDateString()}
+        </p>
+      )}
       <div className="flashcard bg-white border rounded shadow p-4 mb-4">
         <div className="question text-lg font-semibold mb-2">
           {isFlipped ? currentFlashcard.answer : currentFlashcard.question}

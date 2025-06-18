@@ -12,7 +12,7 @@
 - [x] (UI) Create flashcard study interface
 - [x] (LOGIC) Implement card flipping and rating system
 - [x] (UI) Design deck management system
-- [ ] (LOGIC) Integrate study modes with SRS scheduler
+- [x] (LOGIC) Integrate study modes with SRS scheduler
 
 ### Voice transcription service
 - [ ] (LOGIC) Integrate speech-to-text API

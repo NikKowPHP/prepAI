@@ -22,7 +22,7 @@ const SRSControls: React.FC<SRSControlsProps> = ({ questionId, onReviewComplete 
 
     const fetchNextReview = async () => {
       try {
-        const nextReviewDates = await schedulerService.getNextReviewDates([questionId]);
+        const nextReviewDates = await schedulerService.getNextReviewDates('questions', [questionId]);
         const date = nextReviewDates[questionId];
         setNextReviewDate(date);
       } catch (err) {
@@ -37,25 +37,25 @@ const SRSControls: React.FC<SRSControlsProps> = ({ questionId, onReviewComplete 
   }, [user, questionId]);
 
   const handleReview = async () => {
-      if (remembered === null || !user) return;
-  
-      setLoading(true);
-      try {
-        await schedulerService.markQuestionAsReviewed(questionId, remembered);
-        await progressService.updateProgressAfterReview(user.id, questionId, remembered);
-        onReviewComplete(remembered);
-  
-        // Update next review date
-        const nextReviewDates = await schedulerService.getNextReviewDates([questionId]);
-        const date = nextReviewDates[questionId];
-        setNextReviewDate(date);
-      } catch (err) {
-        setError('Failed to record review');
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
+    if (remembered === null || !user) return;
+
+    setLoading(true);
+    try {
+      await schedulerService.markQuestionAsReviewed('questions', questionId, remembered);
+      await progressService.updateProgressAfterReview(user.id, questionId, remembered);
+      onReviewComplete(remembered);
+
+      // Update next review date
+      const nextReviewDates = await schedulerService.getNextReviewDates('questions', [questionId]);
+      const date = nextReviewDates[questionId];
+      setNextReviewDate(date);
+    } catch (err) {
+      setError('Failed to record review');
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   if (!user) {
     return <div>Please log in to use SRS controls.</div>;

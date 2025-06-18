@@ -49,7 +49,7 @@ export const createProgressService = (): ProgressService => {
 
   const updateProgressAfterReview = async (userId: string, questionId: string, remembered: boolean) => {
     // Update the question review status
-    await schedulerService.markQuestionAsReviewed(questionId, remembered);
+    await schedulerService.markQuestionAsReviewed('questions', questionId, remembered);
 
     // Get current progress metrics
     const { data: metricsData, error: metricsError } = await supabase
@@ -85,7 +85,7 @@ export const createProgressService = (): ProgressService => {
 
   const getUserMetrics = async (userId: string) => {
     const progress = await getUserProgress(userId);
-    const nextReviewDates = await schedulerService.getNextReviewDates([userId]);
+    const nextReviewDates = await schedulerService.getNextReviewDates('questions', [userId]);
 
     return {
       ...progress,
