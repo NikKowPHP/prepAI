@@ -3,7 +3,7 @@
 ## Tasks
 
 ### UI/UX refinements
-- [ ] (UI) Conduct usability testing session
+- [x] (UI) Conduct usability testing session
 - [ ] (UI) Implement design system improvements
 - [ ] (UI) Optimize responsive behavior across devices
 - [ ] (UI) Enhance accessibility (a11y) compliance
