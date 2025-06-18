@@ -18,15 +18,26 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    const { prompt, maxTokens = 150, temperature = 0.7 } = body;
+    const { prompt, maxTokens = 150, temperature = 0.7, questionType = 'general' } = body;
 
     if (!prompt || typeof prompt !== 'string') {
       return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
     }
 
+    let systemPrompt = `Generate a question based on this prompt: ${prompt}`;
+
+    // Implement prompt engineering based on question type
+    if (questionType === 'multiple_choice') {
+      systemPrompt = `Generate a multiple choice question with 4 options (A, B, C, D) based on this prompt: ${prompt}`;
+    } else if (questionType === 'true_false') {
+      systemPrompt = `Generate a true or false question based on this prompt: ${prompt}`;
+    } else if (questionType === 'short_answer') {
+      systemPrompt = `Generate a short answer question based on this prompt: ${prompt}`;
+    }
+
     const completion = await openai.completions.create({
       model: 'text-davinci-003',
-      prompt: `Generate a question based on this prompt: ${prompt}`,
+      prompt: systemPrompt,
       max_tokens: maxTokens,
       temperature: temperature,
     });
@@ -37,7 +48,7 @@ export async function POST(req: NextRequest) {
 
     const generatedQuestion = completion.choices[0].text.trim();
 
-    return NextResponse.json({ question: generatedQuestion });
+    return NextResponse.json({ question: generatedQuestion, type: questionType });
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('Error generating question:', error.message);

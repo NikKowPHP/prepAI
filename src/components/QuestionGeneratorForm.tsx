@@ -8,46 +8,47 @@ const QuestionGeneratorForm: React.FC = () => {
   const [prompt, setPrompt] = useState('');
   const [maxTokens, setMaxTokens] = useState(150);
   const [temperature, setTemperature] = useState(0.7);
+  const [questionType, setQuestionType] = useState('general');
   const [generatedQuestion, setGeneratedQuestion] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleGenerate = async (e: React.FormEvent) => {
-e.preventDefault();
-if (!prompt) {
-  setError('Prompt is required');
-  return;
-}
+    e.preventDefault();
+    if (!prompt) {
+      setError('Prompt is required');
+      return;
+    }
 
-setLoading(true);
-setError('');
-setGeneratedQuestion('');
+    setLoading(true);
+    setError('');
+    setGeneratedQuestion('');
 
-try {
-  const res = await fetch('/api/generate-question', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ prompt, maxTokens, temperature }),
-  });
+    try {
+      const res = await fetch('/api/generate-question', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ prompt, maxTokens, temperature, questionType }),
+      });
 
-  if (!res.ok) {
-    const result = await res.json();
-    throw new Error(result.error || 'Failed to generate question');
-  }
+      if (!res.ok) {
+        const result = await res.json();
+        throw new Error(result.error || 'Failed to generate question');
+      }
 
-  const data = await res.json();
-  setGeneratedQuestion(data.question);
-} catch (err) {
-  if (err instanceof Error) {
-    setError(err.message);
-  } else {
-    setError('An unknown error occurred');
-  }
-} finally {
-  setLoading(false);
-}
+      const data = await res.json();
+      setGeneratedQuestion(data.question);
+    } catch (err) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError('An unknown error occurred');
+      }
+    } finally {
+      setLoading(false);
+    }
   };
 
   if (!user) {
@@ -71,6 +72,22 @@ try {
             onChange={(e) => setPrompt(e.target.value)}
             required
           />
+        </div>
+        <div className="mb-4">
+          <label htmlFor="questionType" className="block text-sm font-medium text-gray-700">
+            Question Type
+          </label>
+          <select
+            id="questionType"
+            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+            value={questionType}
+            onChange={(e) => setQuestionType(e.target.value)}
+          >
+            <option value="general">General Question</option>
+            <option value="multiple_choice">Multiple Choice</option>
+            <option value="true_false">True/False</option>
+            <option value="short_answer">Short Answer</option>
+          </select>
         </div>
         <div className="mb-4">
           <label htmlFor="maxTokens" className="block text-sm font-medium text-gray-700">

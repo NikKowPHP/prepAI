@@ -6,7 +6,7 @@
 - [x] (LOGIC) Create API endpoint for generating questions
 - [x] (LOGIC) Integrate with OpenAI API for question generation
 - [x] (UI) Create question generation form in frontend
-- [ ] (LOGIC) Implement prompt engineering for diverse question types
+- [x] (LOGIC) Implement prompt engineering for diverse question types
 
 ### Add SRS scheduling logic
 - [ ] (LOGIC) Implement spaced repetition algorithm (Anki-like)
