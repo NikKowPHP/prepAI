@@ -21,7 +21,7 @@
 - [ ] (UI) Visualize learning curves and progress trends
 
 ### Develop basic analytics dashboard
-- [ ] (UI) Create dashboard layout with summary cards
-- [ ] (LOGIC) Aggregate user performance data
-- [ ] (UI) Implement charts for accuracy over time
+- [x] (UI) Create dashboard layout with summary cards
+- [x] (LOGIC) Aggregate user performance data
+- [x] (UI) Implement charts for accuracy over time
 - [ ] (UI) Add filter controls for date ranges and question types
