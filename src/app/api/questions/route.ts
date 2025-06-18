@@ -44,6 +44,60 @@ export async function GET(req: NextRequest) {
   }
 }
 
+/**
+ * GET /api/questions/mode
+ * Returns questions filtered by SRS mode
+ */
+export async function GET_MODE(req: NextRequest) {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const url = new URL(req.url);
+    const mode = url.searchParams.get('mode');
+    const userQuestions = url.searchParams.get('userQuestions') ? JSON.parse(url.searchParams.get('userQuestions')!) : [];
+
+    if (!mode) {
+      return NextResponse.json({ error: 'Mode parameter is required' }, { status: 400 });
+    }
+
+    const questions = await prisma.question.findMany({
+      where: { userId: user.id },
+    });
+
+    let filteredQuestions;
+    switch (mode) {
+      case 'repeat':
+        filteredQuestions = questions.filter(q => q.reviewEase <= 2.0 || q.lastReviewed === null);
+        break;
+      case 'study':
+        filteredQuestions = questions.filter(q => {
+          if (!q.lastReviewed) return true;
+          const daysSinceCreated = (new Date().getTime() - q.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+          const approxReviews = daysSinceCreated / q.reviewInterval;
+          return approxReviews <= 3;
+        });
+        break;
+      case 'discover':
+        filteredQuestions = questions.filter(q => !userQuestions.includes(q.id));
+        break;
+      default:
+        return NextResponse.json({ error: 'Invalid mode' }, { status: 400 });
+    }
+
+    return NextResponse.json(filteredQuestions);
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Database Error:', error.message);
+    } else {
+      console.error('Unknown Error:', error);
+    }
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
