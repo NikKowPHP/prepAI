@@ -61,6 +61,20 @@ export const getQuestionsDueForReview = (questions: Question[]): Question[] => {
   });
 };
 
+/**
+ * Get questions for Repeat mode (low ease factor or overdue)
+ * @param questions - Array of questions to filter
+ * @param easeThreshold - Maximum ease factor to consider for repeat (default: 2.0)
+ * @returns Filtered list of questions needing reinforcement
+ */
+export const getRepeatModeQuestions = (questions: Question[], easeThreshold = 2.0): Question[] => {
+  return questions.filter(question => {
+    const { daysUntilReview } = calculateNextReview(question);
+    // Include questions that are overdue OR have low ease factor
+    return daysUntilReview === 0 || question.reviewEase <= easeThreshold;
+  });
+};
+
 export const updateQuestionAfterReview = (question: Question, remembered: boolean): Question => {
   const { newInterval, newEase } = calculateNextReview(question);
 
