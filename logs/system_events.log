@@ -19,3 +19,5 @@
 {"timestamp": "2025-06-17T13:10:55+02:00", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "Active fix plan requires execution"}
 {"timestamp": "2025-06-17T13:10:55+02:00", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "Active fix plan requires execution"}
 {"timestamp": "2025-06-17T13:12:37+02:00", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "FIX_PLAN.md verification steps need execution"}
+{"timestamp": "2025-06-18T06:19:32Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Tech Lead", "details": "Commit complete signal detected. Handing off for technical review."}
+{"timestamp": "2025-06-18T06:24:26Z", "agent": "Tech Lead", "event": "rejection", "details": "Tests failed. Created NEEDS_REFACTOR.md with detailed feedback."}
