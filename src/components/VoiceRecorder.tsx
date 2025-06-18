@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
 import { transcriptionService } from '@/lib/transcription';
@@ -9,8 +9,10 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
   const [isTranscribing, setIsTranscribing] = useState(false);
   const [error, setError] = useState('');
   const [transcription, setTranscription] = useState('');
+  const [highlightedText, setHighlightedText] = useState('');
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const startRecording = async () => {
     if (!user) return;
@@ -65,6 +67,7 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
     try {
       const transcription = await transcriptionService.processTranscription(filePath);
       setTranscription(transcription);
+      setHighlightedText('');
       onRecordingComplete(filePath, transcription);
     } catch (err) {
       setError('Failed to transcribe audio');
@@ -72,6 +75,27 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
     } finally {
       setIsTranscribing(false);
     }
+  };
+
+  const handlePlay = () => {
+    if (audioRef.current) {
+      audioRef.current.play();
+    }
+  };
+
+  const handlePause = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
+  };
+
+  const syncHighlighting = (event: React.SyntheticEvent<HTMLAudioElement>) => {
+    const audio = event.target as HTMLAudioElement;
+    const currentTime = audio.currentTime;
+    const words = transcription.split(' ');
+    const wordIndex = Math.floor((currentTime / audio.duration) * words.length);
+    const highlighted = words.slice(0, wordIndex).join(' ') + ' <span class="highlight">|</span> ' + words.slice(wordIndex).join(' ');
+    setHighlightedText(highlighted);
   };
 
   return (
@@ -89,7 +113,14 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
       {transcription && (
         <div className="mt-4 p-4 border rounded bg-gray-100">
           <h3 className="font-semibold mb-2">Transcription:</h3>
-          <p>{transcription}</p>
+          <div className="transcription-text" dangerouslySetInnerHTML={{ __html: highlightedText || transcription }} />
+          <audio
+            ref={audioRef}
+            src={`/api/get-recording?path=${user?.id}/${Date.now()}.wav`}
+            onTimeUpdate={syncHighlighting}
+            controls
+            className="mt-2"
+          />
         </div>
       )}
     </div>

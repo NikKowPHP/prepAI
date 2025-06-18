@@ -18,7 +18,7 @@
 - [x] (LOGIC) Integrate speech-to-text API
 - [x] (UI) Create voice recording component
 - [x] (LOGIC) Implement transcription processing pipeline
-- [ ] (UI) Display transcriptions with sync highlighting
+- [x] (UI) Display transcriptions with sync highlighting
 
 ### Readiness assessment algorithm
 - [ ] (LOGIC) Develop assessment scoring model
