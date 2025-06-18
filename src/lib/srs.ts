@@ -94,6 +94,22 @@ export const getStudyModeQuestions = (questions: Question[], reviewThreshold = 3
   });
 };
 
+/**
+ * Get questions for Discover mode (potential new questions)
+ * @param questions - Array of questions to filter
+ * @param userQuestions - IDs of questions already in user's queue
+ * @returns Filtered list of questions for discovery
+ */
+export const getDiscoverModeQuestions = (questions: Question[], userQuestions: string[]): Question[] => {
+  return questions.filter(question => {
+    // Exclude questions already in user's queue
+    if (userQuestions.includes(question.id)) return false;
+
+    // For now, include all other questions as potential discoveries
+    return true;
+  });
+};
+
 export const updateQuestionAfterReview = (question: Question, remembered: boolean): Question => {
   const { newInterval, newEase } = calculateNextReview(question);
 
