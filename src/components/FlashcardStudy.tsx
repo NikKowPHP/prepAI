@@ -1,21 +1,49 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
+import { useAuth } from '../lib/auth-context';
 
 interface Flashcard {
+  id: string;
   question: string;
   answer: string;
   rating: 'easy' | 'normal' | 'hard';
+  user_id: string;
 }
 
 const FlashcardStudy: React.FC = () => {
-  const [flashcards, setFlashcards] = useState<Flashcard[]>([
-    { question: 'What is the capital of France?', answer: 'Paris', rating: 'normal' },
-    { question: 'What is 2 + 2?', answer: '4', rating: 'normal' },
-    { question: 'What is the boiling point of water?', answer: '100°C', rating: 'normal' },
-  ]);
-
+  const { user } = useAuth();
+  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isFlipped, setIsFlipped] = useState(false);
   const [rating, setRating] = useState<'easy' | 'normal' | 'hard'>('normal');
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (user) {
+      fetchFlashcards(user.id);
+    }
+  }, [user]);
+
+  const fetchFlashcards = async (userId: string) => {
+    setIsLoading(true);
+    try {
+      const { data, error } = await supabase
+        .from('flashcards')
+        .select('*')
+        .eq('user_id', userId);
+
+      if (error) {
+        console.error('Error fetching flashcards:', error);
+        return;
+      }
+
+      setFlashcards(data || []);
+    } catch (err) {
+      console.error('Error fetching flashcards:', err);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const currentFlashcard = flashcards[currentIndex];
 
@@ -23,11 +51,24 @@ const FlashcardStudy: React.FC = () => {
     setIsFlipped(!isFlipped);
   };
 
-  const handleRate = (newRating: 'easy' | 'normal' | 'hard') => {
+  const handleRate = async (newRating: 'easy' | 'normal' | 'hard') => {
+    if (!user || !currentFlashcard) return;
+
     setRating(newRating);
     const updatedFlashcards = [...flashcards];
     updatedFlashcards[currentIndex].rating = newRating;
     setFlashcards(updatedFlashcards);
+
+    // Update rating in database
+    try {
+      await supabase
+        .from('flashcards')
+        .update({ rating: newRating })
+        .eq('id', currentFlashcard.id)
+        .eq('user_id', user.id);
+    } catch (error) {
+      console.error('Error updating flashcard rating:', error);
+    }
 
     // Move to next flashcard
     if (currentIndex < flashcards.length - 1) {
@@ -35,6 +76,14 @@ const FlashcardStudy: React.FC = () => {
     }
     setIsFlipped(false);
   };
+
+  if (isLoading) {
+    return <div>Loading flashcards...</div>;
+  }
+
+  if (flashcards.length === 0) {
+    return <div>No flashcards available. Please add some flashcards.</div>;
+  }
 
   return (
     <div className="p-4 border rounded shadow">

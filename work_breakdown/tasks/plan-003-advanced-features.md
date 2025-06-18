@@ -10,7 +10,7 @@
 
 ### Anki-like study modes
 - [x] (UI) Create flashcard study interface
-- [ ] (LOGIC) Implement card flipping and rating system
+- [x] (LOGIC) Implement card flipping and rating system
 - [ ] (UI) Design deck management system
 - [ ] (LOGIC) Integrate study modes with SRS scheduler
 
