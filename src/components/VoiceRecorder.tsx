@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
+import { transcriptionService } from '@/lib/transcription';
 
 const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcription: string) => void }> = ({ onRecordingComplete }) => {
   const { user } = useAuth();
@@ -62,15 +63,9 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
 
   const transcribeAudio = async (filePath: string) => {
     try {
-      // Simulate API call to Google Cloud Speech-to-Text
-      // In a real implementation, you would send the audio file to the API
-      // and get the transcription text in response
-
-      // For demonstration, we'll use a placeholder transcription
-      const simulatedTranscription = `This is a simulated transcription of the audio recording. The actual implementation would use a speech-to-text API like Google Cloud Speech-to-Text.`;
-
-      setTranscription(simulatedTranscription);
-      onRecordingComplete(filePath, simulatedTranscription);
+      const transcription = await transcriptionService.processTranscription(filePath);
+      setTranscription(transcription);
+      onRecordingComplete(filePath, transcription);
     } catch (err) {
       setError('Failed to transcribe audio');
       console.error('Transcription error:', err);
