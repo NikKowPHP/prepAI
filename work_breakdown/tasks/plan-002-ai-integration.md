@@ -12,7 +12,7 @@
 - [x] (LOGIC) Implement spaced repetition algorithm (Anki-like)
 - [x] (LOGIC) Create scheduler service to manage question reviews
 - [x] (UI) Add SRS controls to question interface
-- [ ] (LOGIC) Integrate SRS with user progress tracking
+- [x] (LOGIC) Integrate SRS with user progress tracking
 
 ### Create progress tracking system
 - [x] (LOGIC) Design progress metrics schema
