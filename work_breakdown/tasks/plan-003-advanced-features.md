@@ -8,11 +8,20 @@
 - [x] (UI) Create report customization interface
 - [x] (LOGIC) Generate performance analytics in PDF format
 
-### Anki-like study modes
+### SRS Study Modes Implementation
 - [x] (UI) Create flashcard study interface
 - [x] (LOGIC) Implement card flipping and rating system
 - [x] (UI) Design deck management system
 - [x] (LOGIC) Integrate study modes with SRS scheduler
+- [x] (UI) Implement mode selection UI in src/components/SRSControls.tsx
+- [x] (LOGIC) Implement Repeat mode: filter questions needing reinforcement (low ease/overdue)
+- [x] (LOGIC) Implement Study mode: focus on new/recent questions
+- [x] (UI) Implement Discover mode: browse and add new questions (integrating with AI)
+- [x] (LOGIC) Implement backend API endpoints for mode-specific queries in src/app/api/questions/route.ts
+- [x] (UI) Add visual indicators for each mode in study interface
+- [x] (UI) Implement navigation between modes
+- [ ] (LOGIC) Write tests for each mode
+- [ ] (LOGIC) Update documentation to explain different modes
 
 ### Voice transcription service
 - [x] (LOGIC) Integrate speech-to-text API
