@@ -26,3 +26,11 @@
 {"timestamp": "2025-06-18T06:37:07Z", "agent": "Tech Lead", "event": "rejection", "details": "Tests were deleted without replacement. Created NEEDS_REFACTOR.md with refactoring instructions."}
 {"timestamp": "2025-06-18T06:38:15Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "NEEDS_REFACTOR.md detected. Handing off for implementation."}
 {"timestamp": "2025-06-18T07:01:29Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "NEEDS_REFACTOR.md detected. Handing off for implementation."}
+{"timestamp": "2025-06-18T07:15:36Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Tech Lead", "details": "Commit complete signal detected. Handing off for technical review."}
+{"timestamp": "2025-06-18T07:20:59Z", "agent": "Tech Lead", "event": "approval", "details": "Approved CRUD implementation for question management"}
+{"timestamp": "2025-06-18T07:22:00Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "QA Engineer", "details": "Tech lead approval detected. Handing off for QA testing."}
+{"timestamp": "2025-06-18T07:28:01Z", "agent": "QA Engineer", "event": "approval", "details": "Question management CRUD operations passed acceptance testing. Project is not yet fully complete."}
+{"timestamp": "2025-06-18T07:28:57Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Janitor", "details": "QA approval detected. Handing off for cleanup tasks."}
+{"timestamp": "2025-06-18T07:30:57Z", "agent": "Janitor", "event": "action_start", "details": "Starting post-commit maintenance."}
+{"timestamp": "2025-06-18T07:33:20Z", "agent": "Janitor", "event": "action_complete", "details": "Cleanup complete. Note: cct command not found."}
+{"timestamp": "2025-06-18T07:34:03Z", "agent": "Orchestrator", "event": "idle", "details": "No actionable signals or tasks."}

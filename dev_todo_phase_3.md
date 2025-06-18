@@ -1,0 +1,27 @@
+# Development Plan - Phase 3: Advanced Features
+
+## Tasks
+
+### PDF report generation
+- [ ] (LOGIC) Implement PDF generation service
+- [ ] (LOGIC) Design report template structure
+- [ ] (UI) Create report customization interface
+- [ ] (LOGIC) Generate performance analytics in PDF format
+
+### Anki-like study modes
+- [ ] (UI) Create flashcard study interface
+- [ ] (LOGIC) Implement card flipping and rating system
+- [ ] (UI) Design deck management system
+- [ ] (LOGIC) Integrate study modes with SRS scheduler
+
+### Voice transcription service
+- [ ] (LOGIC) Integrate speech-to-text API
+- [ ] (UI) Create voice recording component
+- [ ] (LOGIC) Implement transcription processing pipeline
+- [ ] (UI) Display transcriptions with sync highlighting
+
+### Readiness assessment algorithm
+- [ ] (LOGIC) Develop assessment scoring model
+- [ ] (UI) Create assessment interface
+- [ ] (LOGIC) Implement recommendation engine
+- [ ] (UI) Display assessment results with actionable insights
