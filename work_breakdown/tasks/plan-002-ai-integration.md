@@ -15,9 +15,9 @@
 - [ ] (LOGIC) Integrate SRS with user progress tracking
 
 ### Create progress tracking system
-- [ ] (LOGIC) Design progress metrics schema
-- [ ] (UI) Implement progress dashboard components
-- [ ] (LOGIC) Calculate mastery scores based on performance
+- [x] (LOGIC) Design progress metrics schema
+- [x] (UI) Implement progress dashboard components
+- [x] (LOGIC) Calculate mastery scores based on performance
 - [ ] (UI) Visualize learning curves and progress trends
 
 ### Develop basic analytics dashboard
