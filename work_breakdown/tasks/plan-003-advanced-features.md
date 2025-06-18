@@ -22,6 +22,6 @@
 
 ### Readiness assessment algorithm
 - [x] (LOGIC) Develop assessment scoring model
-- [ ] (UI) Create assessment interface
+- [x] (UI) Create assessment interface
 - [ ] (LOGIC) Implement recommendation engine
 - [ ] (UI) Display assessment results with actionable insights
