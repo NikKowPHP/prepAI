@@ -1,1 +1,0 @@
-complete phases documentation and atomic steps for phases starting from phase 2 are not implemented and not written.
