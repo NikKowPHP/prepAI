@@ -18,7 +18,7 @@
 - [x] (LOGIC) Design progress metrics schema
 - [x] (UI) Implement progress dashboard components
 - [x] (LOGIC) Calculate mastery scores based on performance
-- [ ] (UI) Visualize learning curves and progress trends
+- [x] (UI) Visualize learning curves and progress trends
 
 ### Develop basic analytics dashboard
 - [x] (UI) Create dashboard layout with summary cards

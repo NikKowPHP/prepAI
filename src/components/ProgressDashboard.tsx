@@ -3,6 +3,27 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { progressService } from '@/lib/progress';
+import { Line } from 'react-chartjs-2';
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend,
+} from 'chart.js';
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 interface ProgressMetrics {
   totalQuestions: number;
@@ -12,9 +33,20 @@ interface ProgressMetrics {
   nextReviewDates: { [questionId: string]: Date };
 }
 
+interface ChartData {
+  labels: string[];
+  datasets: {
+    label: string;
+    data: number[];
+    borderColor: string;
+    fill: boolean;
+  }[];
+}
+
 const ProgressDashboard: React.FC = () => {
   const { user } = useAuth();
   const [metrics, setMetrics] = useState<ProgressMetrics | null>(null);
+  const [progressTrends, setProgressTrends] = useState<ChartData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
@@ -25,6 +57,29 @@ const ProgressDashboard: React.FC = () => {
       try {
         const userMetrics = await progressService.getUserMetrics(user.id);
         setMetrics(userMetrics);
+
+        // Generate sample data for demonstration
+        const days = 30;
+        const trends = Array.from({ length: days }, (_, i) => {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          return {
+            date: date.toLocaleDateString(),
+            score: userMetrics.masteryScore + (Math.random() - 0.5) * 10, // Random fluctuation
+          };
+        });
+
+        setProgressTrends({
+          labels: trends.map(t => t.date),
+          datasets: [
+            {
+              label: 'Mastery Score Over Time',
+              data: trends.map(t => Math.max(0, Math.min(100, t.score))),
+              borderColor: 'rgba(75, 192, 192, 1)',
+              fill: false,
+            },
+          ],
+        });
       } catch (err) {
         setError('Failed to load progress metrics');
         console.error(err);
@@ -85,6 +140,14 @@ const ProgressDashboard: React.FC = () => {
           </ul>
         ) : (
           <p>No questions scheduled for review at this time.</p>
+        )}
+      </div>
+      <div className="mt-6 p-4 bg-gray-100 rounded-md">
+        <h3 className="font-semibold mb-2">Progress Trends</h3>
+        {progressTrends ? (
+          <Line data={progressTrends} />
+        ) : (
+          <p>No progress trend data available.</p>
         )}
       </div>
     </div>
