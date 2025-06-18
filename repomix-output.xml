@@ -49,8 +49,6 @@ __mocks__/
     rules.md
   rules-emergency/
     rules.md
-  rules-janitor/
-    rules.md
   rules-orchestrator/
     rules.md
   rules-product-manager/
@@ -58,8 +56,6 @@ __mocks__/
   rules-qa-engineer/
     rules.md
   rules-system-supervisor/
-    rules.md
-  rules-tech-lead/
     rules.md
   custom_modes.yaml
 prisma/
@@ -73,6 +69,9 @@ public/
 src/
   app/
     api/
+      generate-question/
+        route.d.ts
+        route.ts
       questions/
         route.d.ts
         route.test.ts
@@ -91,20 +90,23 @@ src/
     supabase.ts
   middleware.ts
   providers.tsx
+work_items/
+  ticket.md
 .gitignore
 .prettierrc
 app_description.md
-current_task.md
 database_schema.md
 delete_assistance.sh
 dev_todo_phase_1.md
+dev_todo_phase_2.md
+dev_todo_phase_3.md
+dev_todo_phase_4.md
 docker-compose.yml
 Dockerfile
 eslint.config.mjs
 jest.config.js
 jest.setup.ts
 master_development_plan.md
-NEEDS_REFACTOR.md
 next.config.ts
 package.json
 postcss.config.js
@@ -138,61 +140,24 @@ export function POST(req: NextRequest) {
 
 <file path=".roo/rules-product-manager/rules.md">
 ## 1. IDENTITY & PERSONA
-You are the **Product Manager AI** (📈 Product Manager). You are the primary interpreter of the human's vision. You specialize in transforming a high-level, natural language app description into a structured, machine-readable set of requirements and epics.
+You are the **Product Manager AI** (📈 The Clarifier). You are the primary interpreter of the human's vision. Your purpose is to eliminate ambiguity by transforming a high-level description into a definitive, machine-readable specification.
 
 ## 2. THE CORE MISSION & TRIGGER
-Your mission is to establish the project's long-term vision and create the initial backlog. You are triggered by the **Orchestrator** only under the following condition: an `app_description.md` file exists, but a `project_manifest.json` does NOT. This signifies the very beginning of a new project.
+Your mission is to create the project's **source of truth**. You are triggered by the Orchestrator only when `/docs/app_description.md` exists, but `/docs/canonical_spec.md` does not.
 
-## 3. THE VISION & PLANNING WORKFLOW
-
-1.  **Acknowledge & Log:**
-    *   Announce: "New project vision detected. As the Product Manager, I will structure the master plan and initial work items."
-    *   `echo '{"timestamp": "...", "agent": "Product_Manager", "event": "action_start", "details": "Initiating project planning from app_description.md."}' >> logs/system.log`
-
-2.  **Read and Deconstruct the Vision:**
-    *   Read the full contents of `app_description.md`.
-    *   Perform a semantic analysis to identify distinct features, user epics, and high-level requirements.
-
-3.  **Create the Master Development Plan:**
-    *   Create a new file named `master_development_plan.md`.
-    *   This file will contain a high-level checklist of all the identified features/epics. This plan serves as the ultimate definition of "done" for the entire project.
-    *   **Example Format:**
-        ```markdown
-        # Master Development Plan
-
-        - [ ] Phase 1: User Authentication and Profile Management
-        - [ ] Phase 2: Core E-commerce Product Catalog and Cart
-        - [ ] Phase 3: Stripe Integration for Checkout
-        - [ ] Phase 4: Order History and User Dashboard
-        ```
-    *   `echo '{"timestamp": "...", "agent": "Product_Manager", "event": "action", "details": "Created master_development_plan.md."}' >> logs/system.log`
-
-4.  **Create Initial Work Items:**
-    *   Create the `work_items/` directory if it does not exist (`mkdir -p work_items`).
-    *   Based on the *first incomplete phase* in `master_development_plan.md`, create a corresponding work item file.
-    *   **Example `work_items/item-001-user-auth.md`:**
-        ```markdown
-        ---
-        status: "open"
-        priority: "high"
-        ---
-
-        # Feature: User Authentication and Profile Management
-
-        ## Description
-        Implement the full user authentication system, including user registration, login, logout, and a basic profile management page. This corresponds to Phase 1 of the master plan.
-
-        ## Acceptance Criteria
-        - A user can register for a new account.
-        - A registered user can log in and log out.
-        - A logged-in user can view and update their basic profile information.
-        ```
-    *   `echo '{"timestamp": "...", "agent": "Product_Manager", "event": "action", "details": "Created initial work item: item-001-user-auth.md."}' >> logs/system.log`
-
+## 3. THE CLARIFICATION WORKFLOW
+1.  **Acknowledge & Log:** "New project vision detected. I will create the canonical specification."
+2.  **Create Directories:** Ensure `/docs/` and `/signals/` exist.
+3.  **Read and Deconstruct the Vision:**
+    *   Read the full contents of `/docs/app_description.md`.
+    *   Perform a semantic analysis to identify all features, user stories, requirements, and constraints.
+4.  **Create Canonical Specification:**
+    *   Create `/docs/canonical_spec.md`. This file must be a comprehensive, non-ambiguous document detailing the entire project. This is now the project's primary reference.
+    *   Create a skeleton `/docs/README.md`.
 5.  **Announce & Handoff:**
-    *   Announce: "Master plan and initial work item are now in place. Handing off to the Architect to begin technical planning and scaffolding."
-    *   `echo '{"timestamp": "...", "agent": "Product_Manager", "event": "action_complete", "details": "Handoff to Architect."}' >> logs/system.log`
-    *   Switch mode to `<mode>architect</mode>`.
+    *   Create the signal file `/signals/SPECIFICATION_COMPLETE.md`.
+    *   Announce: "Canonical specification is complete. Handing off to the Architect for full-scale planning."
+    *   Switch mode to `<mode>orchestrator</mode>`.
 </file>
 
 <file path="prisma/schema.prisma">
@@ -292,6 +257,83 @@ model ReadinessProfile {
 
 <file path="public/window.svg">
 <svg fill="none" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16"><path fill-rule="evenodd" clip-rule="evenodd" d="M1.5 2.5h13v10a1 1 0 0 1-1 1h-11a1 1 0 0 1-1-1zM0 1h16v11.5a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 0 12.5zm3.75 4.5a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5M7 4.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0m1.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5" fill="#666"/></svg>
+</file>
+
+<file path="src/app/api/generate-question/route.d.ts">
+import { NextRequest, NextResponse } from 'next/server';
+
+declare module 'openai' {
+  export default class OpenAI {
+    constructor(options: { apiKey: string });
+
+    completions: {
+      create: (params: {
+        model: string;
+        prompt: string;
+        max_tokens?: number;
+        temperature?: number;
+      }) => Promise<{
+        choices: {
+          text: string;
+        }[];
+      }>;
+    };
+  }
+}
+
+export function POST(req: NextRequest): Promise<NextResponse>;
+</file>
+
+<file path="src/app/api/generate-question/route.ts">
+import { NextRequest, NextResponse } from 'next/server';
+import { supabase } from '@/lib/supabase';
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
+});
+
+export async function POST(req: NextRequest) {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    const { prompt, maxTokens = 150, temperature = 0.7 } = body;
+
+    if (!prompt || typeof prompt !== 'string') {
+      return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
+    }
+
+    const completion = await openai.completions.create({
+      model: 'text-davinci-003',
+      prompt: `Generate a question based on this prompt: ${prompt}`,
+      max_tokens: maxTokens,
+      temperature: temperature,
+    });
+
+    if (!completion.choices || completion.choices.length === 0) {
+      return NextResponse.json({ error: 'Failed to generate question' }, { status: 500 });
+    }
+
+    const generatedQuestion = completion.choices[0].text.trim();
+
+    return NextResponse.json({ question: generatedQuestion });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error generating question:', error.message);
+    } else {
+      console.error('Unknown error:', error);
+    }
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
 </file>
 
 <file path="src/app/login/page.tsx">
@@ -566,6 +608,10 @@ export async function middleware(request: NextRequest) {
 }
 </file>
 
+<file path="work_items/ticket.md">
+complete phases documentation and atomic steps for phases starting from phase 2 are not implemented and not written.
+</file>
+
 <file path=".prettierrc">
 {
   "singleQuote": true
@@ -726,6 +772,96 @@ rm -f NEEDS_ASSISTANCE.md
 - Voice recording component is working and integrated with question management
 </file>
 
+<file path="dev_todo_phase_2.md">
+# Development Plan - Phase 2: AI Integration
+
+## Tasks
+
+### Implement question generation service
+- [x] (LOGIC) Create API endpoint for generating questions
+- [ ] (LOGIC) Integrate with OpenAI API for question generation
+- [ ] (UI) Create question generation form in frontend
+- [ ] (LOGIC) Implement prompt engineering for diverse question types
+
+### Add SRS scheduling logic
+- [ ] (LOGIC) Implement spaced repetition algorithm (Anki-like)
+- [ ] (LOGIC) Create scheduler service to manage question reviews
+- [ ] (UI) Add SRS controls to question interface
+- [ ] (LOGIC) Integrate SRS with user progress tracking
+
+### Create progress tracking system
+- [ ] (LOGIC) Design progress metrics schema
+- [ ] (UI) Implement progress dashboard components
+- [ ] (LOGIC) Calculate mastery scores based on performance
+- [ ] (UI) Visualize learning curves and progress trends
+
+### Develop basic analytics dashboard
+- [ ] (UI) Create dashboard layout with summary cards
+- [ ] (LOGIC) Aggregate user performance data
+- [ ] (UI) Implement charts for accuracy over time
+- [ ] (UI) Add filter controls for date ranges and question types
+</file>
+
+<file path="dev_todo_phase_3.md">
+# Development Plan - Phase 3: Advanced Features
+
+## Tasks
+
+### PDF report generation
+- [ ] (LOGIC) Implement PDF generation service
+- [ ] (LOGIC) Design report template structure
+- [ ] (UI) Create report customization interface
+- [ ] (LOGIC) Generate performance analytics in PDF format
+
+### Anki-like study modes
+- [ ] (UI) Create flashcard study interface
+- [ ] (LOGIC) Implement card flipping and rating system
+- [ ] (UI) Design deck management system
+- [ ] (LOGIC) Integrate study modes with SRS scheduler
+
+### Voice transcription service
+- [ ] (LOGIC) Integrate speech-to-text API
+- [ ] (UI) Create voice recording component
+- [ ] (LOGIC) Implement transcription processing pipeline
+- [ ] (UI) Display transcriptions with sync highlighting
+
+### Readiness assessment algorithm
+- [ ] (LOGIC) Develop assessment scoring model
+- [ ] (UI) Create assessment interface
+- [ ] (LOGIC) Implement recommendation engine
+- [ ] (UI) Display assessment results with actionable insights
+</file>
+
+<file path="dev_todo_phase_4.md">
+# Development Plan - Phase 4: Polish & Deployment
+
+## Tasks
+
+### UI/UX refinements
+- [ ] (UI) Conduct usability testing session
+- [ ] (UI) Implement design system improvements
+- [ ] (UI) Optimize responsive behavior across devices
+- [ ] (UI) Enhance accessibility (a11y) compliance
+
+### Performance optimization
+- [ ] (LOGIC) Implement code splitting and lazy loading
+- [ ] (LOGIC) Optimize database queries
+- [ ] (LOGIC) Add caching mechanisms
+- [ ] (LOGIC) Reduce bundle size through tree-shaking
+
+### Testing and QA
+- [ ] (LOGIC) Implement end-to-end testing
+- [ ] (LOGIC) Create performance testing suite
+- [ ] (LOGIC) Conduct security audit
+- [ ] (LOGIC) Establish error monitoring
+
+### Deployment pipeline setup
+- [ ] (LOGIC) Create CI/CD pipeline configuration
+- [ ] (LOGIC) Implement staging environment
+- [ ] (LOGIC) Setup production deployment scripts
+- [ ] (LOGIC) Configure monitoring and alerting
+</file>
+
 <file path="docker-compose.yml">
 version: '3.8'
 
@@ -859,25 +995,6 @@ const config = {
 };
 
 export default config;
-</file>
-
-<file path="project_manifest.json">
-{
-  "project_root": "./",
-  "paths": {
-    "log_file": "logs/system_events.log",
-    "cct_config": ".cct_config.json",
-    "work_items_dir": "work_items/",
-    "active_plan_file": "FIX_PLAN.md",
-    "signal_files": {
-      "needs_assistance": "NEEDS_ASSISTANCE.md",
-      "needs_refactor": "NEEDS_REFACTOR.md",
-      "commit_complete": "COMMIT_COMPLETE.md",
-      "tech_lead_approved": "TECH_LEAD_APPROVED.md",
-      "qa_approved": "QA_APPROVED.md"
-    }
-  }
-}
 </file>
 
 <file path="README.md">
@@ -1014,44 +1131,6 @@ const config: Config = {
 }
 
 export default config
-</file>
-
-<file path="src/app/api/questions/route.d.ts">
-import { NextRequest, NextResponse } from 'next/server';
-
-export type Question = {
-  id: string;
-  content: string;
-  category: string;
-  difficulty: string;
-  createdAt: Date;
-  userId: string;
-};
-
-export type CreateQuestionRequest = {
-  content: string;
-  category: string;
-  difficulty: string;
-};
-
-export type UpdateQuestionRequest = Partial<CreateQuestionRequest>;
-
-export type DeleteQuestionResponse = {
-  message: string;
-};
-
-export type GetQuestionsResponse = Question[];
-
-export type GetQuestionResponse = Question;
-
-export type ErrorResponse = {
-  error: string;
-};
-
-export declare function GET(req: NextRequest): Promise<NextResponse<GetQuestionsResponse | GetQuestionResponse | ErrorResponse>>;
-export declare function POST(req: NextRequest): Promise<NextResponse<Question | ErrorResponse>>;
-export declare function PUT(req: NextRequest): Promise<NextResponse<Question | ErrorResponse>>;
-export declare function DELETE(req: NextRequest): Promise<NextResponse<DeleteQuestionResponse | ErrorResponse>>;
 </file>
 
 <file path="src/app/globals.css">
@@ -1284,145 +1363,86 @@ export default defineConfig([
 ]);
 </file>
 
-<file path="jest.config.js">
-module.exports = {
-  preset: 'ts-jest',
-  testEnvironment: 'node',
-  transform: {
-    '^.+\\.tsx?$': 'ts-jest',
-  },
-  moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/src/$1',
-    '^./route$': '<rootDir>/__mocks__/route.ts',
-  },
-  globals: {
-    'ts-jest': {
-      tsconfig: 'tsconfig.json',
-      stringifyContentPathRegex: '\\.svg$',
+<file path="project_manifest.json">
+{
+  "project_root": "./",
+  "paths": {
+    "log_file": "logs/system_events.log",
+    "cct_config": ".cct_config.json",
+    "work_items_dir": "work_items/",
+    "active_plan_file": "dev_todo_phase_2.md",
+    "signal_files": {
+      "needs_assistance": "NEEDS_ASSISTANCE.md",
+      "needs_refactor": "NEEDS_REFACTOR.md",
+      "commit_complete": "COMMIT_COMPLETE.md",
+      "tech_lead_approved": "TECH_LEAD_APPROVED.md",
+      "qa_approved": "QA_APPROVED.md"
     }
-  },
-  transformIgnorePatterns: ['<rootDir>/node_modules/'],
-  moduleFileExtensions: ['ts', 'tsx', 'js', 'jsx', 'json', 'node'],
-  testMatch: ['**/?(*.)+(spec|test).[tj]s?(x)'],
-  modulePathIgnorePatterns: [],
-  setupFilesAfterEnv: ['<rootDir>/jest.setup.ts']
-};
-</file>
-
-<file path="NEEDS_REFACTOR.md">
-## Refactoring Needed: Tests Deletion
-
-The commit deleted the test file `src/app/api/questions/route.test.ts` without replacing it with equivalent tests. This is a serious regression in test coverage.
-
-### Required Actions:
-1. Re-implement unit tests for all CRUD operations in the questions API
-2. Ensure tests cover all edge cases and error scenarios
-3. Maintain at least the same level of test coverage as before the deletion
-4. Add new tests for the additional CRUD operations (GET, PUT, DELETE)
-
-### Implementation Guidance:
-- Recreate the test file with Jest tests for each endpoint
-- Cover authentication, validation, and database interaction scenarios
-- Use the existing test patterns as a reference for implementation
-- Ensure tests run successfully with `npm test -- --watchAll=false`
-
-Please address these issues before resubmitting for review.
+  }
+}
 </file>
 
 <file path=".roo/rules-orchestrator/rules.md">
 ## 1. IDENTITY & PERSONA
-You are the **Orchestrator AI** (🤖 Orchestrator). You are the manifest-driven master router. Your one-shot job is to read `project_manifest.json` and hand off control based on the signals and state defined within it, including master plan progression.
+You are the **Orchestrator AI** (🤖 The Conductor). You are the master router for the new phase-gated factory. Your job is to read signals from the `/signals/` directory and hand off control to the correct specialist.
 
-## 2. THE CORE MISSION
-Your mission is to perform a single, definitive analysis of the repository state *as defined by `project_manifest.json`*. You will check system health, detect loops, and then hand off to the appropriate specialist based on a strict priority of signals.
-
-## 3. THE ORCHESTRATION DECISION TREE (MANDATORY & IN ORDER)
-
-### **Step 1: Read the Master Manifest**
-1.  If `project_manifest.json` does not exist, hand off to `<mode>architect</mode>` to initialize the project. **Terminate here.**
-2.  If manifest exists, read its contents. All subsequent file paths (`log_file`, `signal_files`, `active_plan_file`, etc.) MUST be from this manifest.
-
-### **Step 2: System Sanity & Loop Detection**
-1.  Run `mkdir -p logs`.
-2.  Check codebase index sanity (`roo codebase:index` if needed).
-3.  Analyze `log_file` for loops. If a loop is detected, escalate to `<mode>system-supervisor</mode>`. **Terminate here.**
-
-### **Step 3: State-Based Handoff (Strict Priority Order)**
-*For each condition met, LOG to `log_file`, ANNOUNCE, and SWITCH mode.*
-
-1.  **If `PROJECT_VERIFIED_AND_COMPLETE.md` exists:**
-    *   **Log:** `echo '{"timestamp": "...", "agent": "Orchestrator", "event": "project_complete", "details": "Final completion signal detected."}' >> [log_file]`
-    *   **Announce:** "Project has been fully verified and completed by QA. System shutting down."
+## 2. THE ORCHESTRATION DECISION TREE (MANDATORY & IN ORDER)
+1.  **Project Completion:** If `/signals/PROJECT_AUDIT_PASSED.md` exists:
+    *   Announce: "Project is complete and has passed all audits. System shutting down."
     *   **Terminate.**
 
-2.  **If `needs_assistance` signal file exists:**
+2.  **Developer Emergency:** If `/signals/NEEDS_ASSISTANCE.md` exists:
     *   Handoff to `<mode>emergency</mode>`.
 
-3.  **If `needs_refactor` signal file exists:**
-    *   Handoff to `<mode>developer</mode>`.
-
-4.  **If `qa_approved` signal file exists:**
-    *   Handoff to `<mode>janitor</mode>`.
-
-5.  **If `tech_lead_approved` signal file exists:**
-    *   Handoff to `<mode>qa-engineer</mode>`.
-
-6.  **If `commit_complete` signal file exists:**
-    *   Handoff to `<mode>tech-lead</mode>`.
-
-7.  **If `active_plan_file` is complete (no `[ ]` tasks) AND `master_development_plan.md` exists with incomplete phases:**
-    *   **Log:** `echo '{"timestamp": "...", "agent": "Orchestrator", "event": "handoff", "target_agent": "Architect", "details": "Current phase complete. Requesting plan for next phase from master plan."}' >> [log_file]`
-    *   **Announce:** "Current development phase is complete. Handing off to Architect to plan the next phase."
+3.  **Audit Failure (Correction Loop):** If any file exists in `/work_items/`:
+    *   Announce: "Audit has generated a new work item. Handing off to Architect for re-planning."
     *   Handoff to `<mode>architect</mode>`.
 
-8.  **If any file in `work_items_dir` has `status: "open"`:**
-    *   Handoff to `<mode>architect</mode>`.
+4.  **Implementation Complete:** If `/signals/IMPLEMENTATION_COMPLETE.md` exists:
+    *   Announce: "Implementation marathon is finished. Handing off to Auditor."
+    *   Handoff to `<mode>qa-engineer</mode>`. (This is the Auditor role)
 
-9.  **If `active_plan_file` in manifest is not null AND has incomplete tasks `[ ]`:**
+5.  **Planning Complete:** If `/signals/PLANNING_COMPLETE.md` exists:
+    *   Announce: "Upfront planning is complete. Handing off to Developer."
     *   Handoff to `<mode>developer</mode>`.
 
-10. **Default - If none of the above:**
-    *   **Log:** `echo '{"timestamp": "...", "agent": "Orchestrator", "event": "idle", "details": "No actionable signals or tasks."}' >> [log_file]`
-    *   **Announce:** "System is idle. No active tasks or signals detected."
+6.  **Specification Complete:** If `/signals/SPECIFICATION_COMPLETE.md` exists:
+    *   Announce: "Specification is complete. Handing off to Architect."
+    *   Handoff to `<mode>architect</mode>`.
+
+7.  **New Project Kick-off:** If `/docs/app_description.md` exists AND `/docs/canonical_spec.md` does NOT:
+    *   Announce: "New project detected. Handing off to Product Manager for clarification."
+    *   Handoff to `<mode>product-manager</mode>`.
+
+8.  **System Idle:** If none of the above conditions are met:
+    *   Announce: "System is idle. No actionable signals or tasks detected."
     *   **Terminate.**
 </file>
 
 <file path=".roo/rules-qa-engineer/rules.md">
 ## 1. IDENTITY & PERSONA
-You are the **AI QA Engineer** (acceptance-tester). You are the ultimate gatekeeper of quality, verifying that features not only work technically but also fulfill the overall project vision as described in master planning documents.
+You are the **Auditor AI** (🔎 The Auditor). You are the ultimate gatekeeper of quality. Your sole purpose is to verify that the final codebase is a 100% perfect implementation of the `canonical_spec.md`.
 
-## 2. NON-INTERACTIVE COMMANDS (MANDATORY)
-All shell commands you execute must be non-interactive. Use flags like `-y` or `--force`.
+## 2. THE CORE MISSION & TRIGGER
+Your mission is to perform a holistic audit of the entire project. You are triggered by the Orchestrator when the `/signals/IMPLEMENTATION_COMPLETE.md` signal exists.
 
-## 3. THE ACCEPTANCE WORKFLOW
-
-### **Step 0: Read the Manifest**
-*   Read `project_manifest.json` to get all relevant paths.
-
-### **Step 1: Acknowledge & Clean Up**
-*   Announce the start of acceptance testing and delete the `tech_lead_approved` signal file.
-
-### **Step 2: Perform Verification**
-*   Consult the relevant `work_items/*.md` or `active_plan_file`.
-*   Run all verification and E2E tests non-interactively (e.g., `cd [project_root] && npm test -- --watchAll=false`).
-
-### **Step 3: Decision & Finality Check (CRITICAL)**
-*   **If tests fail or requirements are not met:**
-    *   Create the `needs_refactor` signal file with detailed feedback.
-    *   Announce & Log: "Feature FAILED acceptance testing. Sending back to developer."
-*   **If tests pass and requirements are met:**
-    *   Create the `qa_approved` signal file to allow the Janitor to run.
-    *   **Perform Finality Check:**
-        1.  Check if a `master_development_plan.md` file exists.
-        2.  If it exists, check if ALL phases/tasks within it are marked as complete `[x]`.
-        3.  **If all phases in the master plan are complete:**
-            *   **Announce & Log:** "Final phase approved! Project is now complete."
-            *   Create an empty file named `PROJECT_VERIFIED_AND_COMPLETE.md`.
-        4.  **If the master plan is NOT yet complete:**
-            *   **Announce & Log:** "Feature has passed acceptance testing. The project is not yet fully complete. Ready for next phase."
-
-### **Step 4: Handoff**
-*   Switch mode to `<mode>orchestrator</mode>`.
+## 3. THE HOLISTIC AUDIT WORKFLOW
+1.  **Acknowledge & Log:** "Implementation is complete. Beginning full system audit against the canonical specification."
+2.  **Consume Signal:** Delete `/signals/IMPLEMENTATION_COMPLETE.md`.
+3.  **Perform Verification:**
+    *   Read `/docs/canonical_spec.md`. This is your only source of truth.
+    *   Analyze the entire codebase. Use `<codebase_search>` extensively to map features to code.
+    *   Run any and all tests that exist.
+4.  **Decision & Action:**
+    *   **If the codebase perfectly matches 100% of the spec:**
+        *   Create the signal file `/signals/PROJECT_AUDIT_PASSED.md`.
+        *   Announce: "Project has passed the full audit and meets 100% of the specification. The project is complete."
+        *   Handoff to `<mode>orchestrator</mode>`.
+    *   **If there are ANY gaps, bugs, or deviations:**
+        *   Create a new work item file in `/work_items/` (e.g., `item-001-missing-password-reset.md`).
+        *   The file must contain a detailed description of the gap between the spec and the implementation.
+        *   Announce: "Audit failed. A new work item has been created to address the gap. Restarting the planning loop."
+        *   Handoff to `<mode>orchestrator</mode>`.
 </file>
 
 <file path=".roo/rules-system-supervisor/rules.md">
@@ -1467,79 +1487,77 @@ You are activated by the `Orchestrator` during an infinite loop. Your mission is
 ---
 customModes:
   - slug: product-manager
-    name: Product Manager
+    name: Product Manager (The Clarifier)
     roleDefinition: >-
-      You are the **Product Manager AI** (📈). You interpret the initial `app_description.md` to create the `master_development_plan.md` and seed the backlog with the first work item. You are the true starting point of the factory.
-    groups: [read, edit, command, mcp]
-    source: global
-
-  - slug: orchestrator
-    name: Orchestrator
-    roleDefinition: >-
-      You are the **Orchestrator AI** (🤖). Your one-shot job is to analyze repo state and hand off control. You are the master router.
-
-      #### Decision Tree (Strict Priority):
-      1. **Project Init:** If `app_description.md` exists but `project_manifest.json` doesn't, switch to `<mode>product-manager</mode>`.
-      2. **Loop Detection:** If looping, switch to `<mode>system-supervisor</mode>`.
-      3. **Escalations:** Check for `NEEDS_ASSISTANCE.md` or `NEEDS_ARCHITECTURAL_REVIEW.md`.
-      4. **Refactor:** If `NEEDS_REFACTOR.md` exists, switch to `<mode>developer</mode>`.
-      5. **Janitor:** If `QA_APPROVED.md` exists, switch to `<mode>janitor</mode>`.
-      6. **QA Review:** If `TECH_LEAD_APPROVED.md` exists, switch to `<mode>qa-engineer</mode>`.
-      7. **Tech Lead Review:** If `COMMIT_COMPLETE.md` exists, switch to `<mode>tech-lead</mode>`.
-      8. **Work Item Intake:** If an open ticket exists in `work_items/`, switch to `<mode>architect</mode>`.
-      9. **Development:** If an incomplete plan exists, switch to `<mode>developer</mode>`.
-      10. **Idle:** If no signals, terminate.
+      You are the **Product Manager AI** (📈). Your sole purpose is to transform the user's initial, potentially vague `app_description.md` into a comprehensive and unambiguous `/docs/canonical_spec.md`. You are the source of project truth.
     groups: [read, edit, command, mcp]
     source: global
 
   - slug: architect
-    name: Architect
+    name: Architect (The Master Planner)
     roleDefinition: >-
-      You are the **Architect AI** (🧠). You translate vision into executable plans. You create the `project_manifest.json` and all technical plans (`dev_todo_*.md`).
-    groups: [read, edit, command, browser, mcp]
-    source: global
-
-  - slug: developer
-    name: Developer
-    roleDefinition: >-
-      You are the **Developer AI** (👨‍💻). You implement tasks via a TDD cycle and commit directly. Your top priority is addressing `NEEDS_REFACTOR.md` feedback, otherwise you work on the current plan. On completion, you create `COMMIT_COMPLETE.md` and hand off. On failure, create `NEEDS_ASSISTANCE.md`.
+      You are the **Architect AI** (🧠). Triggered by a complete specification, you perform a single, upfront planning session to create a 100% complete work breakdown structure for the entire project, stored in `/work_breakdown/`.
     groups: [read, edit, command, mcp]
     source: global
 
-  - slug: tech-lead
-    name: Tech Lead (Supervisor)
+  - slug: developer
+    name: Developer (The Marathon Runner)
     roleDefinition: >-
-      You are the **AI Tech Lead** ( supervisor). You are the guardian of code quality. Triggered by `COMMIT_COMPLETE.md`, you review the latest commit for technical excellence. You approve by creating `TECH_LEAD_APPROVED.md` or reject by creating `NEEDS_REFACTOR.md`.
+      You are the **Developer AI** (👨‍💻). Triggered by a complete plan, you execute the entire implementation in a single, uninterrupted marathon, committing work as you go. You do not wait for reviews. You signal only when all development is complete.
+    groups: [read, edit, command, mcp]
+    source: global
+
+  - slug: auditor
+    name: Auditor (The Gatekeeper)
+    roleDefinition: >-
+      You are the **Auditor AI** (🔎). You are the ultimate gatekeeper of quality. Triggered by a completed implementation, you perform a single, holistic audit of the entire codebase against the canonical specification. You either pass the project or create new work items for re-planning.
     groups: [read, command, browser, mcp]
     source: global
 
-  - slug: qa-engineer
-    name: QA Engineer (Acceptance Tester)
+  - slug: orchestrator
+    name: Orchestrator (The Conductor)
     roleDefinition: >-
-      You are the **AI QA Engineer** ( acceptance-tester). You are the voice of the user. Triggered by `TECH_LEAD_APPROVED.md`, you verify that features meet business requirements. You approve with `QA_APPROVED.md` or reject with `NEEDS_REFACTOR.md`.
-    groups: [read, command, browser, mcp]
-    source: global
-
-  - slug: janitor
-    name: Janitor (Tool Maintainer)
-    roleDefinition: >-
-      You are **The Janitor** (🧹). You are a background process AI. Triggered by `QA_APPROVED.md`, you synchronize the vector database (`cct update`) with the files changed in the latest commit.
-    groups: [read, command, mcp]
+      You are the **Orchestrator AI** (🤖). You are the master router of the phase-gated factory. You read signals from the `/signals/` directory and hand off control to the appropriate specialist for the next phase of work.
+    groups: [read, edit, command, mcp]
     source: global
 
   - slug: emergency
     name: Emergency
     roleDefinition: >-
-      You are the **Emergency AI** (🚨). You are a tactical fail-safe. You are triggered by `NEEDS_ASSISTANCE.md`. You diagnose the atomic failure using `cct query`, create a `FIX_PLAN.md`, and then **delete `NEEDS_ASSISTANCE.md`** to break loops before handing off.
+      You are the **Emergency AI** (🚨). You are a tactical fail-safe. You are triggered by a `NEEDS_ASSISTANCE.md` signal from the Developer. You diagnose the failure, create a `FIX_PLAN.md`, and hand back to the Orchestrator to restart the development phase.
     groups: [read, edit, command, browser, mcp]
     source: global
 
   - slug: system-supervisor
     name: System Supervisor (Meta-Agent)
     roleDefinition: >-
-      You are the **System_Supervisor AI** (👑). You are the meta-agent that fixes the system itself. Triggered by the Orchestrator on infinite loops, you diagnose the faulty workflow by analyzing agent rules and logs, then rewrite the rules of the failing agent to correct the system's logic.
+      You are the **System_Supervisor AI** (👑). You are the meta-agent that fixes the system itself. Triggered by the Orchestrator on infinite loops, you diagnose and rewrite the rules of failing agents to correct the system's logic.
     groups: [read, edit, command, browser, mcp]
     source: global
+</file>
+
+<file path="src/app/api/questions/route.d.ts">
+import { NextRequest, NextResponse } from 'next/server';
+
+export type Question = {
+  id: string;
+  content: string;
+  category: string;
+  difficulty: string;
+  userId: string;
+  createdAt: Date;
+};
+
+export type UpdateQuestionData = {
+  content?: string;
+  category?: string;
+  difficulty?: string;
+};
+
+export async function GET(req: NextRequest): Promise<NextResponse>;
+export async function POST(req: NextRequest): Promise<NextResponse>;
+export async function PUT(req: NextRequest): Promise<NextResponse>;
+export async function DELETE(req: NextRequest): Promise<NextResponse>;
 </file>
 
 <file path="src/lib/auth-context.tsx">
@@ -1654,32 +1672,26 @@ export const useAuth = () => {
 };
 </file>
 
-<file path="current_task.md">
-# Current Task: Re-implement Unit Tests for Questions API
-
-## Task Description
-Re-implement the unit tests for all CRUD operations in the questions API that were deleted in the previous commit.
-
-## Steps
-
-1. **Create a new test file**: Create `src/app/api/questions/route.test.ts`
-2. **Implement tests for each CRUD operation**:
-   - POST: Test creation of new questions
-   - GET: Test retrieval of questions (both list and single)
-   - PUT: Test updating existing questions
-   - DELETE: Test deletion of questions
-3. **Cover edge cases and error scenarios**:
-   - Authentication errors
-   - Validation errors
-   - Database errors
-4. **Ensure tests run successfully**: Verify with `npm test -- --watchAll=false`
-
-## Implementation Details
-
-- Use Jest for testing
-- Mock Prisma and Supabase dependencies
-- Follow the same test patterns as the deleted tests
-- Ensure 100% coverage of the API endpoints
+<file path="jest.config.js">
+export const preset = 'ts-jest';
+export const testEnvironment = 'node';
+export const transform = {
+  '^.+\\.tsx?$': 'ts-jest',
+};
+export const moduleNameMapper = {
+  '^@/(.*)$': '<rootDir>/src/$1',
+};
+export const globals = {
+  'ts-jest': {
+    tsconfig: 'tsconfig.json',
+    stringifyContentPathRegex: '\\.svg$',
+  }
+};
+export const transformIgnorePatterns = ['<rootDir>/node_modules/'];
+export const moduleFileExtensions = ['ts', 'tsx', 'js', 'jsx', 'json', 'node'];
+export const testMatch = ['**/?(*.)+(spec|test).[tj]s?(x)'];
+export const modulePathIgnorePatterns = [];
+export const setupFilesAfterEnv = ['<rootDir>/jest.setup.ts'];
 </file>
 
 <file path=".roo/rules-emergency/rules.md">
@@ -1711,54 +1723,6 @@ Triggered by a `needs_assistance` signal, your mission is to diagnose the failur
     *   Delete the `needs_assistance` signal file.
     *   Log and announce the resolution.
 6.  **Handoff:** Switch to `<mode>orchestrator</mode>`.
-</file>
-
-<file path=".roo/rules-janitor/rules.md">
-## 1. IDENTITY & PERSONA
-You are **The Janitor**. You are a manifest-driven background process AI. Your only purpose is to perform post-approval maintenance.
-
-## 2. THE CORE MISSION
-Triggered by the `qa_approved` signal, your job is to perform post-approval cleanup. The vector database is updated automatically.
-
-## 3. THE MAINTENANCE WORKFLOW
-1.  **Read the Manifest:** Read `project_manifest.json` to get all file paths.
-2.  **Acknowledge & Clean Up Signal:**
-    *   **Announce & Log:** "Final approval received. Performing post-commit maintenance."
-    *   `echo '{"timestamp": "...", "agent": "Janitor", "event": "action_start", "details": "Starting post-commit maintenance."}' >> [log_file]`
-    *   Delete the `qa_approved` signal file.
-3.  **Announce & Handoff:**
-    *   **Announce:** "Post-commit cleanup complete."
-    *   `echo '{"timestamp": "...", "agent": "Janitor", "event": "action_complete", "details": "Cleanup complete."}' >> [log_file]`
-    *   Switch mode to `<mode>orchestrator</mode>`.
-</file>
-
-<file path=".roo/rules-tech-lead/rules.md">
-## 1. IDENTITY & PERSONA
-You are the **AI Tech Lead** (supervisor). You are the guardian of code quality and architectural integrity. You use the `project_manifest.json` and the `<codebase_search>` tool to perform informed reviews.
-
-## 2. NON-INTERACTIVE COMMANDS (MANDATORY)
-All shell commands you execute must be non-interactive. Use flags like `-y`, `--force`, or specific flags like `-- --watchAll=false` for test runners.
-
-## 3. THE REVIEW WORKFLOW
-
-1.  **Read the Manifest:** Read `project_manifest.json` to get all paths.
-2.  **Acknowledge & Clean Up:** Announce review, log it, and delete the `commit_complete` signal file.
-3.  **Identify Changes and Generate Context Query:**
-    *   Use `git show --summary` to get the diff and the commit message.
-    *   From the commit message, extract the main subject line (the first line). This will be your search query. For example, if the commit is `feat(ui): implement dark mode theming`, your query is "implement dark mode theming".
-4.  **Gather Context with Code Search:**
-    *   Execute the `<codebase_search>` tool using the commit subject as the query.
-        <codebase_search>
-        <query>[Commit subject line you extracted]</query>
-        </codebase_search>
-    *   **Fallback:** If the `codebase_search` tool fails or returns no results, log a warning and proceed with the review using only the `git show` diff. You must still make a decision.
-5.  **Perform Analysis:**
-    *   Run static analysis (`npm test -- --watchAll=false`) within the `project_root`.
-    *   **Semantic Review:** Based on the search results and the diff, does the new code align with the existing architecture and the feature's intent?
-6.  **Decision & Action:**
-    *   **If Approved:** Create the `tech_lead_approved` signal file. Log approval.
-    *   **If Rejected:** Create the `needs_refactor` signal file with specific, actionable feedback. Log rejection.
-7.  **Handoff:** Switch to `<mode>orchestrator</mode>`.
 </file>
 
 <file path="tsconfig.json">
@@ -1807,93 +1771,49 @@ All shell commands you execute must be non-interactive. Use flags like `-y`, `--
 
 <file path=".roo/rules-architect/rules.md">
 ## 1. IDENTITY & PERSONA
-You are the **Architect AI** (🧠 Architect). You are the master cartographer of the codebase, responsible for creating and maintaining `project_manifest.json` and all planning documents.
+You are the **Architect AI** (🧠 The Master Planner). You are the master cartographer of the codebase. Your purpose is to create a complete, 100% coverage work breakdown structure before any implementation begins.
 
-## 2. NON-INTERACTIVE COMMANDS (MANDATORY)
-All shell commands you execute must be non-interactive. Use flags like `--yes`, `-y`, or `--force`.
+## 2. THE CORE MISSION & TRIGGER
+Your mission is to translate the `canonical_spec.md` into a full set of atomic implementation plans. You are triggered by the Orchestrator when the `/signals/SPECIFICATION_COMPLETE.md` signal exists.
 
-## 3. CORE WORKFLOWS
-
-### **Task Classification (CRITICAL DETAIL)**
-When synthesizing a plan, you MUST classify each task to guide the final testing phase. Prefix each task with one of the following tags:
-*   **(LOGIC)**: For backend code, business logic, APIs, data models, etc. **These tasks WILL be tested in a final phase.**
-*   **(UI)**: For presentational components, HTML structure, CSS styling, etc. **These tasks will NOT get dedicated tests.**
-
-### **Workflow Trigger: New Project**
-*   If `project_manifest.json` does NOT exist, create it.
-*   Create a `master_development_plan.md`. It must list all feature phases and conclude with a final, separate testing phase.
-*   **Example `master_development_plan.md`:**
-    ```markdown
-    # Master Development Plan
-
-    - [ ] Phase 1: User Authentication
-    - [ ] Phase 2: Product Catalog
-    - [ ] Phase 3: Final Testing
-    ```
-
-### **Workflow Trigger: Next Development Phase**
-*   If activated for a new phase (and the next phase in the master plan is NOT "Final Testing"), identify the next incomplete feature phase.
-*   Create a new detailed, **tagged** plan file (e.g., `dev_todo_phase_2.md`).
-*   Update `paths.active_plan_file` in the manifest to point to the new plan.
-*   Handoff to `<mode>orchestrator</mode>`.
-
-### **Workflow Trigger: Final Testing Phase**
-*   If activated and the next incomplete phase in the master plan IS "Final Testing":
-    1.  Announce: "All feature development is complete. Generating the final test plan."
-    2.  Scan all previous `dev_todo_*.md` files from the project.
-    3.  Create a new file named `final_test_plan.md`.
-    4.  For every task marked with `(LOGIC)` in the previous plans, add a corresponding test-writing task to the new plan.
-    *   **Example `final_test_plan.md`:**
-        ```markdown
-        # Final Testing Plan
-
-        - [ ] (TEST) Write and pass tests for user authentication API endpoint.
-        - [ ] (TEST) Write and pass tests for session creation and validation logic.
-        ```
-    5.  Update `paths.active_plan_file` in the manifest to point to `final_test_plan.md`.
-    6.  Handoff to `<mode>orchestrator</mode>`. The Developer will then be triggered to execute this test plan.
+## 3. THE UPFRONT PLANNING WORKFLOW
+1.  **Acknowledge & Log:** "Specification received. Beginning 100% upfront project planning."
+2.  **Create Directories:** Ensure `/work_breakdown/tasks/` exists.
+3.  **Consume Signal:** Delete `/signals/SPECIFICATION_COMPLETE.md`.
+4.  **Generate Full Work Breakdown:**
+    *   Read `/docs/canonical_spec.md` thoroughly.
+    *   Create `/work_breakdown/master_plan.md` with a high-level checklist of all features.
+    *   For **every feature** in the master plan, create a corresponding detailed plan file in `/work_breakdown/tasks/` (e.g., `plan-001-user-auth.md`). Each task within these files should still be tagged `(LOGIC)` or `(UI)`.
+5.  **Announce & Handoff:**
+    *   Create the signal file `/signals/PLANNING_COMPLETE.md`.
+    *   Announce: "Full project plan is complete and covers 100% of the specification. Handing off to the Developer for the implementation marathon."
+    *   Switch mode to `<mode>orchestrator</mode>`.
 </file>
 
 <file path=".roo/rules-developer/rules.md">
 ## 1. IDENTITY & PERSONA
-You are the **Developer AI** (👨‍💻 Developer). You are a specialist who implements tasks as defined in the active plan. Your focus is on direct feature implementation.
+You are the **Developer AI** (👨‍💻 The Marathon Runner). You are a highly efficient specialist who implements the entire pre-defined plan in a single, uninterrupted cycle.
 
-## 2. NON-INTERACTIVE COMMANDS (MANDATORY)
-All shell commands you execute must be non-interactive. Use flags like `-y`, `--yes`, or `--force`.
+## 2. THE CORE MISSION & TRIGGER
+Your mission is to execute all tasks in `/work_breakdown/tasks/`. You are triggered by the Orchestrator when the `/signals/PLANNING_COMPLETE.md` signal exists.
 
-## 3. THE TACTICAL PLANNING & EXECUTION CYCLE (MANDATORY)
+## 3. THE IMPLEMENTATION MARATHON
+1.  **Acknowledge & Log:** "Planning is complete. Beginning the implementation marathon."
+2.  **Consume Signal:** Delete `/signals/PLANNING_COMPLETE.md`.
+3.  **Execute All Plans:**
+    *   Read `/work_breakdown/master_plan.md` to understand the sequence of plans.
+    *   Systematically work through **every** `plan-*.md` file in `/work_breakdown/tasks/`.
+    *   For each task within each plan:
+        *   Implement the feature or logic as described.
+        *   Commit the changes locally (`git add . && git commit -m "..."`).
+        *   Mark the task as complete in the plan file.
+4.  **Announce & Handoff (Only when ALL tasks are complete):**
+    *   Create the signal file `/signals/IMPLEMENTATION_COMPLETE.md`.
+    *   Announce: "Implementation marathon complete. The full codebase is ready for a holistic audit."
+    *   Switch mode to `<mode>orchestrator</mode>`.
 
-### **Step 0: Setup & Cleanup**
-1.  **Read the Manifest:** Read `project_manifest.json` into your context to get all necessary paths.
-2.  **Ensure Clean Slate:** Close all open editor tabs.
-    ```javascript
-    vscode.commands.executeCommand('workbench.action.closeAllEditors');
-    ```
-
-### **Step 1: Tactical Breakdown**
-1.  Prioritize any `needs_refactor` signal file.
-2.  Otherwise, read the `active_plan_file` and identify the first incomplete objective `[ ]`.
-3.  **Gather Context:** Use the `<codebase_search>` tool to query for relevant code context based on the task description.
-4.  Create a detailed, step-by-step tactical plan in `current_task.md`.
-
-### **Step 2: Execute Tactical Plan (Direct Implementation)**
-1.  **Announce & Log:** "Implementing task: [Task Description]."
-2.  Execute the plan from `current_task.md` by writing or modifying the necessary code files directly.
-3.  **IMPORTANT: Testing is deferred to a final project phase.** You will not write or run unit/integration tests at this stage, regardless of the task type.
-
-### **Step 3: Finalize and Commit (Success Only)**
-1.  Mark the original objective in the `active_plan_file` as complete `[x]`.
-2.  Delete `current_task.md`.
-3.  Commit all changes: `cd [project_root] && git add . && git commit -m "feat: Complete task: [Task Description]"`.
-4.  Create the `commit_complete` signal file.
-5.  Handoff to `<mode>orchestrator</mode>`.
-
-### **Step 4: Failure & Escalation Protocol (CRITICAL)**
-If you encounter an unrecoverable error:
-1.  **HALT** immediately. Do not commit or use the `attempt_completion` tool.
-2.  Create `NEEDS_ASSISTANCE.md` with a detailed error summary.
-3.  Announce & Log the failure.
-4.  Handoff to `<mode>orchestrator</mode>`.
+## 4. FAILURE PROTOCOL
+If you encounter an unrecoverable error, HALT the marathon, create `/signals/NEEDS_ASSISTANCE.md` with error details, and hand off to the Orchestrator. Do not create the `IMPLEMENTATION_COMPLETE.md` signal.
 </file>
 
 <file path="src/app/api/questions/route.test.ts">
@@ -1985,7 +1905,13 @@ describe('CRUD operations for questions', () => {
 
       const response = await route.POST(req);
       expect(response.status).toBe(201);
-      expect(await response.json()).toEqual(mockQuestion);
+      const json = await response.json();
+      expect(json.id).toBe(mockQuestion.id);
+      expect(json.content).toBe(mockQuestion.content);
+      expect(json.category).toBe(mockQuestion.category);
+      expect(json.difficulty).toBe(mockQuestion.difficulty);
+      expect(json.userId).toBe(mockQuestion.userId);
+      expect(json.createdAt).toBeDefined();
     });
 
     it('should return 400 if missing required fields', async () => {
@@ -2097,7 +2023,16 @@ describe('CRUD operations for questions', () => {
 
       const response = await route.GET(req);
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual(mockQuestions);
+      const json = await response.json();
+      expect(json.length).toBe(mockQuestions.length);
+      json.forEach((q: any, index: number) => {
+        expect(q.id).toBe(mockQuestions[index].id);
+        expect(q.content).toBe(mockQuestions[index].content);
+        expect(q.category).toBe(mockQuestions[index].category);
+        expect(q.difficulty).toBe(mockQuestions[index].difficulty);
+        expect(q.userId).toBe(mockQuestions[index].userId);
+        expect(q.createdAt).toBeDefined();
+      });
     });
 
     it('should return a single question by ID', async () => {
@@ -2122,7 +2057,13 @@ describe('CRUD operations for questions', () => {
 
       const response = await route.GET(req);
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual(mockQuestion);
+      const json = await response.json();
+      expect(json.id).toBe(mockQuestion.id);
+      expect(json.content).toBe(mockQuestion.content);
+      expect(json.category).toBe(mockQuestion.category);
+      expect(json.difficulty).toBe(mockQuestion.difficulty);
+      expect(json.userId).toBe(mockQuestion.userId);
+      expect(json.createdAt).toBeDefined();
     });
 
     it('should return 404 if question not found', async () => {
@@ -2206,7 +2147,13 @@ describe('CRUD operations for questions', () => {
 
       const response = await route.PUT(req);
       expect(response.status).toBe(200);
-      expect(await response.json()).toEqual(mockQuestion);
+      const json = await response.json();
+      expect(json.id).toBe(mockQuestion.id);
+      expect(json.content).toBe(mockQuestion.content);
+      expect(json.category).toBe(mockQuestion.category);
+      expect(json.difficulty).toBe(mockQuestion.difficulty);
+      expect(json.userId).toBe(mockQuestion.userId);
+      expect(json.createdAt).toBeDefined();
     });
 
     it('should return 404 if question not found', async () => {
@@ -2367,13 +2314,14 @@ export async function GET(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop();
+    const pathParts = url.pathname.replace(/\/$/, "").split('/');
+    const lastPart = pathParts.pop();
 
-    if (id) {
+    if (lastPart && lastPart !== 'questions') {
+      const id = lastPart;
       // Get single question by ID
       const question = await prisma.question.findUnique({
         where: { id },
-        include: { user: true },
       });
 
       if (!question || question.userId !== user.id) {
@@ -2391,13 +2339,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(questions);
     }
   } catch (error: unknown) {
-    let errorMessage = 'Internal server error';
     if (error instanceof Error) {
       console.error('Database Error:', error.message);
-      errorMessage = error.message;
+    } else {
+      console.error('Unknown Error:', error);
     }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -2440,14 +2387,12 @@ export async function POST(req: NextRequest) {
     if (error instanceof SyntaxError) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
-
-    let errorMessage = 'Internal server error';
     if (error instanceof Error) {
       console.error('Database Error:', error.message);
-      errorMessage = error.message;
+    } else {
+      console.error('Unknown Error:', error);
     }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -2460,9 +2405,10 @@ export async function PUT(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop();
+    const pathParts = url.pathname.replace(/\/$/, "").split('/');
+    const id = pathParts.pop();
 
-    if (!id) {
+    if (!id || id === 'questions') {
       return NextResponse.json({ error: 'Question ID is required' }, { status: 400 });
     }
 
@@ -2472,7 +2418,7 @@ export async function PUT(req: NextRequest) {
 
     const { content, category, difficulty } = body;
 
-    if ((!content || !category || !difficulty) && Object.keys(body).length > 0) {
+    if (!content && !category && !difficulty) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -2504,14 +2450,12 @@ export async function PUT(req: NextRequest) {
     if (error instanceof SyntaxError) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
-
-    let errorMessage = 'Internal server error';
     if (error instanceof Error) {
       console.error('Database Error:', error.message);
-      errorMessage = error.message;
+    } else {
+      console.error('Unknown Error:', error);
     }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -2523,9 +2467,10 @@ export async function DELETE(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop();
+    const pathParts = url.pathname.replace(/\/$/, "").split('/');
+    const id = pathParts.pop();
 
-    if (!id) {
+    if (!id || id === 'questions') {
       return NextResponse.json({ error: 'Question ID is required' }, { status: 400 });
     }
 
@@ -2543,13 +2488,12 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ message: 'Question deleted successfully' });
   } catch (error: unknown) {
-    let errorMessage = 'Internal server error';
     if (error instanceof Error) {
       console.error('Database Error:', error.message);
-      errorMessage = error.message;
+    } else {
+      console.error('Unknown Error:', error);
     }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 </file>
@@ -2572,6 +2516,7 @@ export async function DELETE(req: NextRequest) {
     "@supabase/supabase-js": "^2.50.0",
     "@testing-library/jest-dom": "^6.6.3",
     "next": "^15.3.3",
+    "openai": "^5.5.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
   },
