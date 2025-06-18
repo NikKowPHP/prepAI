@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { POST } from './route';
+import { GET, POST, PUT, DELETE } from './route';
 import { prisma } from '@/lib/db';
 import { supabase } from '@/lib/supabase';
 
@@ -7,135 +7,449 @@ import { supabase } from '@/lib/supabase';
 jest.mock('@/lib/db', () => ({
   prisma: {
     question: {
-      create: jest.fn()
-    }
-  }
+      create: jest.fn(),
+      findMany: jest.fn(),
+      findUnique: jest.fn(),
+      update: jest.fn(),
+      delete: jest.fn(),
+    },
+  },
 }));
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
     auth: {
-      getUser: jest.fn()
-    }
-  }
+      getUser: jest.fn(),
+    },
+  },
 }));
 
 const mockCreate = prisma.question.create as jest.Mock;
+const mockFindMany = prisma.question.findMany as jest.Mock;
+const mockFindUnique = prisma.question.findUnique as jest.Mock;
+const mockUpdate = prisma.question.update as jest.Mock;
+const mockDelete = prisma.question.delete as jest.Mock;
 const mockGetUser = supabase.auth.getUser as jest.Mock;
 
-describe('POST /api/questions', () => {
+describe('CRUD operations for questions', () => {
   beforeEach(() => {
     jest.clearAllMocks();
   });
 
-  it('should return 401 if unauthorized', async () => {
-    mockGetUser.mockResolvedValue({
-      data: { user: null },
-      error: new Error('Not authenticated')
+  describe('POST /api/questions', () => {
+    it('should return 401 if unauthorized', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: null },
+        error: new Error('Not authenticated'),
+      });
+
+      const req = new NextRequest('http://localhost/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: 'Test question',
+          category: 'general',
+          difficulty: 'easy',
+        }),
+      });
+
+      const response = await POST(req);
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'Unauthorized' });
     });
 
-    const req = new NextRequest('http://localhost/api/questions', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
+    it('should create a new question with valid data', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+
+      const mockQuestion = {
+        id: '1',
         content: 'Test question',
         category: 'general',
-        difficulty: 'easy'
-      })
+        difficulty: 'easy',
+        userId: 'user-id',
+        createdAt: new Date(),
+      };
+      mockCreate.mockResolvedValue(mockQuestion);
+
+      const req = new NextRequest('http://localhost/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: 'Test question',
+          category: 'general',
+          difficulty: 'easy',
+        }),
+      });
+
+      const response = await POST(req);
+      expect(response.status).toBe(201);
+      expect(await response.json()).toEqual(mockQuestion);
     });
 
-    const response = await POST(req);
-    expect(response.status).toBe(401);
-    expect(await response.json()).toEqual({ error: 'Unauthorized' });
+    it('should return 400 if missing required fields', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+
+      const req = new NextRequest('http://localhost/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      const response = await POST(req);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({ error: 'Missing required fields' });
+    });
+
+    it('should return 400 if field types are invalid', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+
+      const req = new NextRequest('http://localhost/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: 123,
+          category: 'general',
+          difficulty: 'easy',
+        }),
+      });
+
+      const response = await POST(req);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({ error: 'Invalid field types' });
+    });
+
+    it('should return 500 on database error', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+      mockCreate.mockRejectedValue(new Error('Database error'));
+
+      const req = new NextRequest('http://localhost/api/questions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: 'Test question',
+          category: 'general',
+          difficulty: 'easy',
+        }),
+      });
+
+      const response = await POST(req);
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: 'Internal server error' });
+    });
   });
 
-  it('should create a new question with valid data', async () => {
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: 'user-id' } },
-      error: null
+  describe('GET /api/questions', () => {
+    it('should return 401 if unauthorized', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: null },
+        error: new Error('Not authenticated'),
+      });
+
+      const req = new NextRequest('http://localhost/api/questions', {
+        method: 'GET',
+      });
+
+      const response = await GET(req);
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'Unauthorized' });
     });
 
-    const mockQuestion = {
-      id: '1',
-      content: 'Test question',
-      category: 'general',
-      difficulty: 'easy',
-      userId: 'user-id'
-    };
-    mockCreate.mockResolvedValue(mockQuestion);
+    it('should return all questions for the user', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
 
-    const req = new NextRequest('http://localhost/api/questions', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
+      const mockQuestions = [
+        {
+          id: '1',
+          content: 'Test question 1',
+          category: 'general',
+          difficulty: 'easy',
+          userId: 'user-id',
+          createdAt: new Date(),
+        },
+        {
+          id: '2',
+          content: 'Test question 2',
+          category: 'general',
+          difficulty: 'easy',
+          userId: 'user-id',
+          createdAt: new Date(),
+        },
+      ];
+      mockFindMany.mockResolvedValue(mockQuestions);
+
+      const req = new NextRequest('http://localhost/api/questions', {
+        method: 'GET',
+      });
+
+      const response = await GET(req);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual(mockQuestions);
+    });
+
+    it('should return a single question by ID', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+
+      const mockQuestion = {
+        id: '1',
         content: 'Test question',
         category: 'general',
-        difficulty: 'easy'
-      })
+        difficulty: 'easy',
+        userId: 'user-id',
+        createdAt: new Date(),
+      };
+      mockFindUnique.mockResolvedValue(mockQuestion);
+
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'GET',
+      });
+
+      const response = await GET(req);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual(mockQuestion);
     });
 
-    const response = await POST(req);
-    expect(response.status).toBe(201);
-    expect(await response.json()).toEqual(mockQuestion);
+    it('should return 404 if question not found', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+
+      mockFindUnique.mockResolvedValue(null);
+
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'GET',
+      });
+
+      const response = await GET(req);
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: 'Question not found' });
+    });
+
+    it('should return 500 on database error', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+      mockFindMany.mockRejectedValue(new Error('Database error'));
+
+      const req = new NextRequest('http://localhost/api/questions', {
+        method: 'GET',
+      });
+
+      const response = await GET(req);
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: 'Internal server error' });
+    });
   });
 
-  it('should return 400 if missing required fields', async () => {
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: 'user-id' } },
-      error: null
+  describe('PUT /api/questions/[id]', () => {
+    it('should return 401 if unauthorized', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: null },
+        error: new Error('Not authenticated'),
+      });
+
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: 'Updated question',
+        }),
+      });
+
+      const response = await PUT(req);
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'Unauthorized' });
     });
 
-    const req = new NextRequest('http://localhost/api/questions', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({})
-    });
+    it('should update an existing question', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
 
-    const response = await POST(req);
-    expect(response.status).toBe(400);
-    expect(await response.json()).toEqual({ error: 'Missing required fields' });
-  });
-
-  it('should return 400 if field types are invalid', async () => {
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: 'user-id' } },
-      error: null
-    });
-
-    const req = new NextRequest('http://localhost/api/questions', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
-        content: 123,
+      const mockQuestion = {
+        id: '1',
+        content: 'Updated question',
         category: 'general',
-        difficulty: 'easy'
-      })
+        difficulty: 'easy',
+        userId: 'user-id',
+        createdAt: new Date(),
+      };
+      mockFindUnique.mockResolvedValue(mockQuestion);
+      mockUpdate.mockResolvedValue(mockQuestion);
+
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: 'Updated question',
+        }),
+      });
+
+      const response = await PUT(req);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual(mockQuestion);
     });
 
-    const response = await POST(req);
-    expect(response.status).toBe(400);
-    expect(await response.json()).toEqual({ error: 'Invalid field types' });
+    it('should return 404 if question not found', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+
+      mockFindUnique.mockResolvedValue(null);
+
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: 'Updated question',
+        }),
+      });
+
+      const response = await PUT(req);
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: 'Question not found' });
+    });
+
+    it('should return 400 if missing required fields', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+
+      const response = await PUT(req);
+      expect(response.status).toBe(400);
+      expect(await response.json()).toEqual({ error: 'Missing required fields' });
+    });
+
+    it('should return 500 on database error', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+      mockFindUnique.mockResolvedValue({
+        id: '1',
+        userId: 'user-id',
+      });
+      mockUpdate.mockRejectedValue(new Error('Database error'));
+
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          content: 'Updated question',
+        }),
+      });
+
+      const response = await PUT(req);
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: 'Internal server error' });
+    });
   });
 
-  it('should return 500 on database error', async () => {
-    mockGetUser.mockResolvedValue({
-      data: { user: { id: 'user-id' } },
-      error: null
-    });
-    mockCreate.mockRejectedValue(new Error('Database error'));
+  describe('DELETE /api/questions/[id]', () => {
+    it('should return 401 if unauthorized', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: null },
+        error: new Error('Not authenticated'),
+      });
 
-    const req = new NextRequest('http://localhost/api/questions', {
-      method: 'POST',
-      headers: {'Content-Type': 'application/json'},
-      body: JSON.stringify({
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'DELETE',
+      });
+
+      const response = await DELETE(req);
+      expect(response.status).toBe(401);
+      expect(await response.json()).toEqual({ error: 'Unauthorized' });
+    });
+
+    it('should delete an existing question', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+
+      const mockQuestion = {
+        id: '1',
         content: 'Test question',
         category: 'general',
-        difficulty: 'easy'
-      })
+        difficulty: 'easy',
+        userId: 'user-id',
+        createdAt: new Date(),
+      };
+      mockFindUnique.mockResolvedValue(mockQuestion);
+      mockDelete.mockResolvedValue(undefined);
+
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'DELETE',
+      });
+
+      const response = await DELETE(req);
+      expect(response.status).toBe(200);
+      expect(await response.json()).toEqual({ message: 'Question deleted successfully' });
     });
 
-    const response = await POST(req);
-    expect(response.status).toBe(500);
-    expect(await response.json()).toEqual({ error: 'Internal server error' });
+    it('should return 404 if question not found', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+
+      mockFindUnique.mockResolvedValue(null);
+
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'DELETE',
+      });
+
+      const response = await DELETE(req);
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ error: 'Question not found' });
+    });
+
+    it('should return 500 on database error', async () => {
+      mockGetUser.mockResolvedValue({
+        data: { user: { id: 'user-id' } },
+        error: null,
+      });
+      mockFindUnique.mockResolvedValue({
+        id: '1',
+        userId: 'user-id',
+      });
+      mockDelete.mockRejectedValue(new Error('Database error'));
+
+      const req = new NextRequest('http://localhost/api/questions/1', {
+        method: 'DELETE',
+      });
+
+      const response = await DELETE(req);
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: 'Internal server error' });
+    });
   });
 });

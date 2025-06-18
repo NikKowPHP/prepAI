@@ -1,32 +1,27 @@
-# Refactor API Route Status Codes
+# Current Task: Implement Basic Question Management CRUD Operations
 
-## Objective
-Fix HTTP status codes in POST /api/questions route to match test expectations:
-- 201 Created on successful question creation
-- 400 Bad Request for missing/invalid fields
-- 500 Internal Server Error on database errors
+## Task Description
+Implement the missing CRUD operations for question management in the Next.js API routes.
 
 ## Steps
-1. **Analyze Current Implementation**
-   - Review route.ts response status codes
-   - Identify any missing or incorrect status codes
 
-2. **Update Status Codes**
-   - Ensure successful creation returns 201
-   - Validate all error cases return correct codes:
-     - 400 for missing/invalid fields
-     - 500 for database errors
+1. **Add GET endpoint to retrieve questions**
+   - Implement GET /api/questions to retrieve all questions for the authenticated user
+   - Implement GET /api/questions/[id] to retrieve a single question by ID
 
-3. **Verify Tests**
-   - Confirm tests correctly expect the updated status codes
-   - Ensure mocks are properly set up for each scenario
+2. **Add PUT endpoint to update questions**
+   - Implement PUT /api/questions/[id] to update an existing question
 
-4. **Run Tests**
-   - Execute tests to validate fixes
-   - Confirm all tests pass with correct status codes
+3. **Add DELETE endpoint to delete questions**
+   - Implement DELETE /api/questions/[id] to delete an existing question
 
-## Workflow
-This is a (LOGIC) task. Follow TDD cycle:
-1. RED: Confirm current tests fail as expected
-2. GREEN: Update route.ts to return correct status codes
-3. REFACTOR: Clean up code while maintaining behavior
+4. **Update route.d.ts with type definitions for all endpoints**
+
+5. **Update tests to cover all CRUD operations**
+
+## Implementation Details
+
+- All endpoints should check for user authentication
+- All endpoints should validate input data
+- All endpoints should handle errors appropriately
+- Use Prisma for database operations
