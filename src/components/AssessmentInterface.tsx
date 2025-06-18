@@ -7,6 +7,7 @@ const AssessmentInterface: React.FC = () => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [score, setScore] = useState<number | null>(null);
   const [recommendations, setRecommendations] = useState<string[]>([]);
+  const [actionPlan, setActionPlan] = useState<string[]>([]);
 
   const handleAnswerChange = (questionId: string, answer: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
@@ -17,7 +18,13 @@ const AssessmentInterface: React.FC = () => {
 
     const score = assessmentService.calculateScore(answers);
     setScore(score);
-    setRecommendations(assessmentService.getRecommendations(score));
+
+    // Get recommendations and action plan
+    const recs = assessmentService.getRecommendations(score);
+    const actions = assessmentService.generateRecommendationEngine(score);
+
+    setRecommendations(recs);
+    setActionPlan(actions);
   };
 
   return (
@@ -67,6 +74,13 @@ const AssessmentInterface: React.FC = () => {
               <ul className="list-disc list-inside">
                 {recommendations.map((rec, index) => (
                   <li key={index}>{rec}</li>
+                ))}
+              </ul>
+
+              <h4 className="font-bold mb-2 mt-4">Action Plan:</h4>
+              <ul className="list-disc list-inside">
+                {actionPlan.map((action, index) => (
+                  <li key={index}>{action}</li>
                 ))}
               </ul>
             </div>
