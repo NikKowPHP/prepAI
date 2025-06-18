@@ -16,7 +16,7 @@
 
 ### Voice transcription service
 - [x] (LOGIC) Integrate speech-to-text API
-- [ ] (UI) Create voice recording component
+- [x] (UI) Create voice recording component
 - [ ] (LOGIC) Implement transcription processing pipeline
 - [ ] (UI) Display transcriptions with sync highlighting
 
