@@ -31,10 +31,19 @@ AI-driven interview preparation system with:
 
 ### Phase 3: Advanced Features
 1. PDF report generation
-2. SRS Study Modes:
-   - Repeat mode: Reinforce questions needing review
-   - Study mode: Focus on new/recent questions
-   - Discover mode: Find and add new questions
+2. Enhanced SRS Study Modes:
+   - Repeat mode:
+        * Struggle tracking
+        * Weighted selection for difficult questions
+        * Overdue prioritization algorithm
+   - Study mode:
+        * Review count tracking
+        * Time-based decay selection
+        * Separate queues for new vs. recent questions
+   - Discover mode:
+        * Topic relationship modeling
+        * AI-generated question integration
+        * Knowledge gap analysis
 3. Voice transcription service
 4. Readiness assessment algorithm
 

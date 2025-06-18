@@ -23,6 +23,19 @@
 - [x] (LOGIC) Write tests for each mode
 - [x] (LOGIC) Update documentation to explain different modes
 
+### SRS Mode Enhancements (Post-Audit)
+- [ ] (LOGIC) Implement struggle tracking for Repeat mode
+- [ ] (LOGIC) Implement weighted question selection for Repeat mode
+- [ ] (LOGIC) Implement overdue question prioritization for Repeat mode
+- [ ] (LOGIC) Implement review count tracking for Study mode
+- [ ] (LOGIC) Implement time-based decay for Study mode question selection
+- [ ] (LOGIC) Implement separate queues for new vs. recent questions in Study mode
+- [ ] (LOGIC) Implement topic relationship modeling for Discover mode
+- [ ] (LOGIC) Enhance AI question generation for Discover mode
+- [ ] (LOGIC) Implement knowledge gap analysis for Discover mode
+- [ ] (LOGIC) Write comprehensive tests for all enhanced SRS mode features
+- [ ] (LOGIC) Update documentation to reflect enhanced SRS mode functionality
+
 ### Voice transcription service
 - [x] (LOGIC) Integrate speech-to-text API
 - [x] (UI) Create voice recording component
