@@ -5,7 +5,7 @@
 ### UI/UX refinements
 - [x] (UI) Conduct usability testing session
 - [x] (UI) Implement design system improvements
-- [ ] (UI) Optimize responsive behavior across devices
+- [x] (UI) Optimize responsive behavior across devices
 - [ ] (UI) Enhance accessibility (a11y) compliance
 
 ### Performance optimization
