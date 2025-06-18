@@ -5,6 +5,7 @@ import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 import QuestionForm from '@/components/QuestionForm';
 import VoiceRecorder from '@/components/VoiceRecorder';
+import SRSControls from '@/components/SRSControls';
 
 interface Question {
   id: string;
@@ -74,6 +75,17 @@ const QuestionsPage: React.FC = () => {
     console.log('Recording saved at:', filePath);
   };
 
+  const handleReviewComplete = (questionId: string, remembered: boolean) => {
+    // Update the question in the state to reflect the review status
+    setQuestions(prevQuestions =>
+      prevQuestions.map(question =>
+        question.id === questionId
+          ? { ...question, lastReviewed: new Date(), reviewStatus: remembered ? 'remembered' : 'forgotten' }
+          : question
+      )
+    );
+  };
+
   if (loading) return <div>Loading questions...</div>;
   if (error) return <div className="text-red-500">{error}</div>;
 
@@ -97,6 +109,10 @@ const QuestionsPage: React.FC = () => {
                   <span className="font-medium">Difficulty:</span> {question.difficulty} |
                   <span className="font-medium">Added:</span> {new Date(question.createdAt).toLocaleDateString()}
                 </p>
+                <SRSControls
+                  questionId={question.id}
+                  onReviewComplete={(remembered) => handleReviewComplete(question.id, remembered)}
+                />
               </li>
             ))}
           </ul>
