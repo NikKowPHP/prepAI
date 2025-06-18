@@ -3,6 +3,7 @@
 import React from 'react';
 import ProgressDashboard from '@/components/ProgressDashboard';
 import AnalyticsCharts from '@/components/AnalyticsCharts';
+import ReportGenerator from '@/components/ReportGenerator';
 
 const DashboardPage: React.FC = () => {
   return (
@@ -14,6 +15,9 @@ const DashboardPage: React.FC = () => {
         </div>
         <div className="col-span-1 md:col-span-2 lg:col-span-3">
           <AnalyticsCharts />
+        </div>
+        <div className="col-span-1 md:col-span-2 lg:col-span-3 mt-6">
+          <ReportGenerator />
         </div>
       </div>
     </div>

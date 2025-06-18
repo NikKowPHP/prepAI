@@ -3,10 +3,10 @@
 ## Tasks
 
 ### PDF report generation
-- [ ] (LOGIC) Implement PDF generation service
+- [x] (LOGIC) Implement PDF generation service
 - [ ] (LOGIC) Design report template structure
-- [ ] (UI) Create report customization interface
-- [ ] (LOGIC) Generate performance analytics in PDF format
+- [x] (UI) Create report customization interface
+- [x] (LOGIC) Generate performance analytics in PDF format
 
 ### Anki-like study modes
 - [ ] (UI) Create flashcard study interface
