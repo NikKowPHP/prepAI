@@ -6,7 +6,7 @@
 - [x] (UI) Conduct usability testing session
 - [x] (UI) Implement design system improvements
 - [x] (UI) Optimize responsive behavior across devices
-- [ ] (UI) Enhance accessibility (a11y) compliance
+- [x] (UI) Enhance accessibility (a11y) compliance
 
 ### Performance optimization
 - [ ] (LOGIC) Implement code splitting and lazy loading
