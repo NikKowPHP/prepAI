@@ -21,3 +21,8 @@
 {"timestamp": "2025-06-17T13:12:37+02:00", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "FIX_PLAN.md verification steps need execution"}
 {"timestamp": "2025-06-18T06:19:32Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Tech Lead", "details": "Commit complete signal detected. Handing off for technical review."}
 {"timestamp": "2025-06-18T06:24:26Z", "agent": "Tech Lead", "event": "rejection", "details": "Tests failed. Created NEEDS_REFACTOR.md with detailed feedback."}
+{"timestamp": "2025-06-18T06:28:05Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Tech Lead", "details": "Commit complete signal detected. Handing off for technical review."}
+{"timestamp": "2025-06-18T06:32:34Z", "agent": "Tech Lead", "event": "review_start", "details": "Starting code review for latest commit"}
+{"timestamp": "2025-06-18T06:37:07Z", "agent": "Tech Lead", "event": "rejection", "details": "Tests were deleted without replacement. Created NEEDS_REFACTOR.md with refactoring instructions."}
+{"timestamp": "2025-06-18T06:38:15Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "NEEDS_REFACTOR.md detected. Handing off for implementation."}
+{"timestamp": "2025-06-18T07:01:29Z", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "NEEDS_REFACTOR.md detected. Handing off for implementation."}

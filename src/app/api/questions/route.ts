@@ -10,13 +10,14 @@ export async function GET(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop();
+    const pathParts = url.pathname.replace(/\/$/, "").split('/');
+    const lastPart = pathParts.pop();
 
-    if (id) {
+    if (lastPart && lastPart !== 'questions') {
+      const id = lastPart;
       // Get single question by ID
       const question = await prisma.question.findUnique({
         where: { id },
-        include: { user: true },
       });
 
       if (!question || question.userId !== user.id) {
@@ -34,13 +35,12 @@ export async function GET(req: NextRequest) {
       return NextResponse.json(questions);
     }
   } catch (error: unknown) {
-    let errorMessage = 'Internal server error';
     if (error instanceof Error) {
       console.error('Database Error:', error.message);
-      errorMessage = error.message;
+    } else {
+      console.error('Unknown Error:', error);
     }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -83,14 +83,12 @@ export async function POST(req: NextRequest) {
     if (error instanceof SyntaxError) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
-
-    let errorMessage = 'Internal server error';
     if (error instanceof Error) {
       console.error('Database Error:', error.message);
-      errorMessage = error.message;
+    } else {
+      console.error('Unknown Error:', error);
     }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -103,9 +101,10 @@ export async function PUT(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop();
+    const pathParts = url.pathname.replace(/\/$/, "").split('/');
+    const id = pathParts.pop();
 
-    if (!id) {
+    if (!id || id === 'questions') {
       return NextResponse.json({ error: 'Question ID is required' }, { status: 400 });
     }
 
@@ -115,7 +114,7 @@ export async function PUT(req: NextRequest) {
 
     const { content, category, difficulty } = body;
 
-    if ((!content || !category || !difficulty) && Object.keys(body).length > 0) {
+    if (!content && !category && !difficulty) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
     }
 
@@ -147,14 +146,12 @@ export async function PUT(req: NextRequest) {
     if (error instanceof SyntaxError) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
-
-    let errorMessage = 'Internal server error';
     if (error instanceof Error) {
       console.error('Database Error:', error.message);
-      errorMessage = error.message;
+    } else {
+      console.error('Unknown Error:', error);
     }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
 
@@ -166,9 +163,10 @@ export async function DELETE(req: NextRequest) {
     }
 
     const url = new URL(req.url);
-    const id = url.pathname.split('/').pop();
+    const pathParts = url.pathname.replace(/\/$/, "").split('/');
+    const id = pathParts.pop();
 
-    if (!id) {
+    if (!id || id === 'questions') {
       return NextResponse.json({ error: 'Question ID is required' }, { status: 400 });
     }
 
@@ -186,12 +184,11 @@ export async function DELETE(req: NextRequest) {
 
     return NextResponse.json({ message: 'Question deleted successfully' });
   } catch (error: unknown) {
-    let errorMessage = 'Internal server error';
     if (error instanceof Error) {
       console.error('Database Error:', error.message);
-      errorMessage = error.message;
+    } else {
+      console.error('Unknown Error:', error);
     }
-
-    return NextResponse.json({ error: errorMessage }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
