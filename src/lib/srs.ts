@@ -75,6 +75,25 @@ export const getRepeatModeQuestions = (questions: Question[], easeThreshold = 2.
   });
 };
 
+/**
+ * Get questions for Study mode (new or recently added)
+ * @param questions - Array of questions to filter
+ * @param reviewThreshold - Maximum number of reviews to consider as "new" (default: 3)
+ * @returns Filtered list of questions for new learning
+ */
+export const getStudyModeQuestions = (questions: Question[], reviewThreshold = 3): Question[] => {
+  return questions.filter(question => {
+    // Consider questions with no last review date or few reviews as "new"
+    if (!question.lastReviewed) return true;
+
+    // Get total reviews (approximated by days since creation / interval)
+    const daysSinceCreated = (new Date().getTime() - question.createdAt.getTime()) / (1000 * 60 * 60 * 24);
+    const approxReviews = daysSinceCreated / question.reviewInterval;
+
+    return approxReviews <= reviewThreshold;
+  });
+};
+
 export const updateQuestionAfterReview = (question: Question, remembered: boolean): Question => {
   const { newInterval, newEase } = calculateNextReview(question);
 
