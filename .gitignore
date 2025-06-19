@@ -31,7 +31,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 # env files (can opt-in for committing if needed)
-.env*
+# .env*  # Commented out to allow tracking .env.example
 
 # vercel
 .vercel
@@ -44,4 +44,4 @@ next-env.d.ts
 
 # AI-generated directories
 logs/
-work_breakdown/
+# work_breakdown/  # Commented out to allow tracking plan files
