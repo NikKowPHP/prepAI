@@ -10,7 +10,7 @@
 - [x] (TEST) Add tests for environment validation logic (src/lib/__tests__/config.test.ts)
 
 ## Documentation Updates
-- [ ] (DOCS) Add configuration instructions to README (README.md)
+- [x] (DOCS) Add configuration instructions to README (README.md)
 - [ ] (DOCS) Create detailed setup guide (docs/SETUP_GUIDE.md)
 
 ## Verification

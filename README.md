@@ -1,49 +1,87 @@
 # AI Interview Prep Platform
 
-## Setup Instructions
+## Development Setup
 
 ### Environment Configuration
 
-1. Create a `.env` file in the root directory by copying the example:
-   ```
+1. Copy the example environment file:
+   ```bash
    cp .env.example .env
    ```
 
-2. Add your Supabase credentials to the `.env` file:
-   ```
-   NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
+2. Configure required environment variables in `.env`:
+   ```bash
+   # Supabase Configuration
+   NEXT_PUBLIC_SUPABASE_URL=your_supabase_project_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
+
+   # Optional Development Variables
+   DEBUG_MODE=true
    ```
 
-3. For development, you can use the example file as a reference:
-   ```
-   cat .env.example
+3. Verify all required variables are set:
+   ```bash
+   npm run check-env
    ```
 
-### Running the Application
+### Testing Configuration
+
+1. Set up test environment variables:
+   ```bash
+   echo "NODE_ENV=test" >> .env.test
+   ```
+
+2. Run the test suite:
+   ```bash
+   npm test
+   ```
+
+### Application Execution
 
 1. Install dependencies:
-   ```
+   ```bash
    npm install
    ```
 
 2. Start the development server:
-   ```
+   ```bash
    npm run dev
    ```
 
-3. Open your browser and navigate to http://localhost:3000
+3. Access the application at:
+   ```bash
+   open http://localhost:3000
+   ```
 
-## CI/CD Configuration
+## Production Configuration
 
-To add Supabase credentials to your CI/CD pipeline:
+### CI/CD Pipeline Setup
 
-1. In your CI/CD service (e.g., GitHub Actions, GitLab CI), add environment variables:
+1. Add these secrets to your CI/CD environment:
    - `NEXT_PUBLIC_SUPABASE_URL`
    - `NEXT_PUBLIC_SUPABASE_ANON_KEY`
 
-2. Reference these variables in your CI/CD configuration file:
+2. Example GitHub Actions configuration:
    ```yaml
    env:
      NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.SUPABASE_URL }}
      NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.SUPABASE_ANON_KEY }}
+     NODE_ENV: production
+   ```
+
+## Verification Checklist
+
+1. Validate environment configuration:
+   ```bash
+   npm run validate-config
+   ```
+
+2. Test application startup without `.env` file:
+   ```bash
+   rm -f .env && npm run dev
+   ```
+
+3. Verify production build:
+   ```bash
+   npm run build && npm start
+   ```
