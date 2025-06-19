@@ -4,7 +4,7 @@
 - [x] (LOGIC) Implement struggle tracking in database schema (src/lib/srs.ts)
 - [x] (LOGIC) Add weighted selection algorithm for difficult questions (src/lib/srs.ts)
 - [x] (LOGIC) Create overdue question prioritization algorithm (src/lib/scheduler.ts)
-- [ ] (UI) Add visual indicators for struggle metrics in study interface (src/components/SRSControls.tsx)
+- [x] (UI) Add visual indicators for struggle metrics in study interface (src/components/SRSControls.tsx)
 
 ## Study Mode Enhancements
 - [ ] (LOGIC) Implement review count tracking per question (src/lib/srs.ts)

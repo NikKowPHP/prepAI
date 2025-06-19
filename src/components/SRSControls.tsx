@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { schedulerService } from '@/lib/scheduler';
 import { progressService } from '@/lib/progress';
+import { supabase } from '@/lib/supabase';
 
 type StudyMode = 'repeat' | 'study' | 'discover';
 
@@ -19,24 +20,37 @@ const SRSControls: React.FC<SRSControlsProps> = ({ questionId, onReviewComplete 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [studyMode, setStudyMode] = useState<StudyMode>('study'); // Default to study mode
+  const [struggleCount, setStruggleCount] = useState(0);
+  const [lastStruggledAt, setLastStruggledAt] = useState<Date | null>(null);
+  const [totalStruggleTime, setTotalStruggleTime] = useState(0);
 
   useEffect(() => {
     if (!user || !questionId) return;
 
-    const fetchNextReview = async () => {
+    const fetchQuestionData = async () => {
       try {
+        const { data, error } = await supabase
+          .from('questions')
+          .select('last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time')
+          .eq('id', questionId)
+          .single();
+
+        if (error) throw error;
+
         const nextReviewDates = await schedulerService.getNextReviewDates('questions', [questionId]);
-        const date = nextReviewDates[questionId];
-        setNextReviewDate(date);
+        setNextReviewDate(nextReviewDates[questionId]);
+        setStruggleCount(data.struggle_count || 0);
+        setLastStruggledAt(data.last_struggled_at ? new Date(data.last_struggled_at) : null);
+        setTotalStruggleTime(data.total_struggle_time || 0);
       } catch (err) {
-        setError('Failed to load next review date');
+        setError('Failed to load question data');
         console.error(err);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchNextReview();
+    fetchQuestionData();
   }, [user, questionId]);
 
   const handleReview = async () => {
@@ -75,6 +89,36 @@ const SRSControls: React.FC<SRSControlsProps> = ({ questionId, onReviewComplete 
   return (
     <div className="mt-4 p-4 bg-gray-100 rounded-md">
       <h3 className="font-semibold mb-2">Spaced Repetition System</h3>
+      
+      {/* Struggle Metrics */}
+      <div className="mb-4 p-3 bg-white rounded-md shadow-sm">
+        <h4 className="font-medium mb-2">Struggle Metrics</h4>
+        <div className="grid grid-cols-3 gap-4 text-sm">
+          <div className="text-center">
+            <p className="font-semibold">{struggleCount}</p>
+            <p className="text-gray-600">Times struggled</p>
+          </div>
+          <div className="text-center">
+            <p className="font-semibold">
+              {lastStruggledAt ?
+                new Date(lastStruggledAt).toLocaleDateString() :
+                'Never'
+              }
+            </p>
+            <p className="text-gray-600">Last struggled</p>
+          </div>
+          <div className="text-center">
+            <p className="font-semibold">
+              {totalStruggleTime > 0 ?
+                `${Math.floor(totalStruggleTime / 60)}m ${totalStruggleTime % 60}s` :
+                '0s'
+              }
+            </p>
+            <p className="text-gray-600">Total time</p>
+          </div>
+        </div>
+      </div>
+
       <div className="mb-2 flex space-x-2">
         <label className="font-medium mr-2">Mode:</label>
         <select
