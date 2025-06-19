@@ -15,4 +15,4 @@
 
 ## Verification
 - [x] (QA) Test application startup without .env file
-- [ ] (QA) Verify CI/CD pipeline with test credentials
+- [x] (QA) Verify CI/CD pipeline with test credentials
