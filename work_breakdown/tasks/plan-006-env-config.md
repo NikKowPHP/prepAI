@@ -7,7 +7,7 @@
 
 ## Test Improvements
 - [x] (LOGIC) Modify test setup to handle environment variables (jest.config.js, jest.setup.ts)
-- [ ] (TEST) Add tests for environment validation logic (src/lib/__tests__/config.test.ts)
+- [x] (TEST) Add tests for environment validation logic (src/lib/__tests__/config.test.ts)
 
 ## Documentation Updates
 - [ ] (DOCS) Add configuration instructions to README (README.md)
