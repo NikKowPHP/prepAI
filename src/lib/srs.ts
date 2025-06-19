@@ -7,6 +7,7 @@ export interface Question {
   struggleCount: number;
   lastStruggledAt: Date | null;
   totalStruggleTime: number;
+  reviewCount: number;
 }
 
 export const calculateNextReview = (question: Question): { daysUntilReview: number, newInterval: number, newEase: number } => {
@@ -166,5 +167,6 @@ export const updateQuestionAfterReview = (question: Question, remembered: boolea
     struggleCount,
     lastStruggledAt,
     totalStruggleTime,
+    reviewCount: question.reviewCount + 1,
   };
 };

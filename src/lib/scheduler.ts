@@ -12,7 +12,7 @@ export const createSchedulerService = (): SchedulerService => {
   const getQuestionsDueForReview = async (table: 'questions' | 'flashcards' = 'questions'): Promise<Question[]> => {
     const { data, error } = await supabase
       .from(table)
-      .select('id, created_at, last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time')
+      .select('id, created_at, last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time, review_count')
       .order('last_reviewed', { ascending: false });
 
     if (error) {
@@ -31,6 +31,7 @@ export const createSchedulerService = (): SchedulerService => {
       struggleCount: item.struggle_count || 0,
       lastStruggledAt: item.last_struggled_at ? new Date(item.last_struggled_at) : null,
       totalStruggleTime: item.total_struggle_time || 0,
+      reviewCount: item.review_count || 0,
     }));
 
     // Filter and sort questions by overdue priority
@@ -59,7 +60,7 @@ export const createSchedulerService = (): SchedulerService => {
   const markQuestionAsReviewed = async (table: 'questions' | 'flashcards', questionId: string, remembered: boolean): Promise<void> => {
     const { data: itemData, error: fetchError } = await supabase
       .from(table)
-      .select('id, created_at, last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time')
+      .select('id, created_at, last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time, review_count')
       .eq('id', questionId)
       .single();
 
@@ -77,6 +78,7 @@ export const createSchedulerService = (): SchedulerService => {
       struggleCount: itemData.struggle_count || 0,
       lastStruggledAt: itemData.last_struggled_at ? new Date(itemData.last_struggled_at) : null,
       totalStruggleTime: itemData.total_struggle_time || 0,
+      reviewCount: itemData.review_count || 0,
     }, remembered, 0);
 
     const { error: updateError } = await supabase
@@ -96,7 +98,7 @@ export const createSchedulerService = (): SchedulerService => {
   const getNextReviewDates = async (table: 'questions' | 'flashcards', questionIds: string[]): Promise<{ [questionId: string]: Date }> => {
     const { data, error } = await supabase
       .from(table)
-      .select('id, last_reviewed, review_interval, review_ease, created_at, struggle_count, last_struggled_at, total_struggle_time')
+      .select('id, last_reviewed, review_interval, review_ease, created_at, struggle_count, last_struggled_at, total_struggle_time, review_count')
       .in('id', questionIds);
 
     if (error) {
@@ -118,6 +120,7 @@ export const createSchedulerService = (): SchedulerService => {
         struggleCount: item.struggle_count || 0,
         lastStruggledAt: item.last_struggled_at ? new Date(item.last_struggled_at) : null,
         totalStruggleTime: item.total_struggle_time || 0,
+        reviewCount: item.review_count || 0,
       });
 
       const nextReview = new Date();
@@ -131,7 +134,7 @@ export const createSchedulerService = (): SchedulerService => {
   const getQuestionsByMode = async (mode: 'repeat' | 'study' | 'discover', userId: string, userQuestions: string[]): Promise<Question[]> => {
     const { data, error } = await supabase
       .from('questions')
-      .select('id, created_at, last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time')
+      .select('id, created_at, last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time, review_count')
       .eq('userId', userId);
 
     if (error) {

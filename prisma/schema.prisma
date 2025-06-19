@@ -27,6 +27,10 @@ model Question {
   lastReviewed      DateTime?
   reviewInterval    Int      @default(1)
   reviewEase        Float    @default(2.5)
+  struggleCount     Int      @default(0)
+  lastStruggledAt   DateTime?
+  totalStruggleTime Int      @default(0)
+  reviewCount       Int      @default(0)
   user              User     @relation(fields: [userId], references: [id])
   reviews           Review[]
 }

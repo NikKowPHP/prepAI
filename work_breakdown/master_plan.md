@@ -22,6 +22,7 @@ AI-driven interview preparation system with:
 4. Setup Prisma ORM with initial schema
 5. Implement basic question management
 6. Create voice recording component
+7. Complete environment configuration fixes (see plan-006-env-config.md)
 
 ### Phase 2: AI Integration
 1. Implement question generation service
