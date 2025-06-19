@@ -2,7 +2,7 @@
 
 ## Configuration Setup
 - [x] (LOGIC) Create .env file template with required variables (.env.example)
-- [ ] (LOGIC) Add Supabase URL and Anon Key validation at application startup (src/lib/supabase.ts)
+- [x] (LOGIC) Add Supabase URL and Anon Key validation at application startup (src/lib/supabase.ts)
 - [ ] (LOGIC) Implement CI/CD pipeline configuration for environment variables (github/workflows/*.yml)
 
 ## Test Improvements
