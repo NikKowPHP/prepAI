@@ -2,7 +2,7 @@
 
 ## Repeat Mode Enhancements
 - [x] (LOGIC) Implement struggle tracking in database schema (src/lib/srs.ts)
-- [ ] (LOGIC) Add weighted selection algorithm for difficult questions (src/lib/srs.ts)
+- [x] (LOGIC) Add weighted selection algorithm for difficult questions (src/lib/srs.ts)
 - [ ] (LOGIC) Create overdue question prioritization algorithm (src/lib/scheduler.ts)
 - [ ] (UI) Add visual indicators for struggle metrics in study interface (src/components/SRSControls.tsx)
 

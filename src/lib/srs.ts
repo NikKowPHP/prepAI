@@ -4,6 +4,9 @@ export interface Question {
   lastReviewed: Date | null;
   reviewInterval: number;
   reviewEase: number;
+  struggleCount: number;
+  lastStruggledAt: Date | null;
+  totalStruggleTime: number;
 }
 
 export const calculateNextReview = (question: Question): { daysUntilReview: number, newInterval: number, newEase: number } => {
@@ -67,11 +70,31 @@ export const getQuestionsDueForReview = (questions: Question[]): Question[] => {
  * @param easeThreshold - Maximum ease factor to consider for repeat (default: 2.0)
  * @returns Filtered list of questions needing reinforcement
  */
+/**
+ * Calculate selection weight for a question based on struggle metrics and ease
+ */
+const calculateQuestionWeight = (question: Question): number => {
+  const easeFactor = Math.max(1.3, question.reviewEase);
+  const struggleWeight = Math.log(question.struggleCount + 1) * 2;
+  const recentStruggleWeight = question.lastStruggledAt
+    ? (1 / (1 + (Date.now() - question.lastStruggledAt.getTime()) / (1000 * 60 * 60 * 24))) * 2
+    : 0;
+    
+  return (struggleWeight + recentStruggleWeight) / easeFactor;
+};
+
 export const getRepeatModeQuestions = (questions: Question[], easeThreshold = 2.0): Question[] => {
-  return questions.filter(question => {
+  // First filter questions that need review
+  const filtered = questions.filter(question => {
     const { daysUntilReview } = calculateNextReview(question);
-    // Include questions that are overdue OR have low ease factor
     return daysUntilReview === 0 || question.reviewEase <= easeThreshold;
+  });
+
+  // Then sort by calculated weight (descending)
+  return filtered.sort((a, b) => {
+    const weightA = calculateQuestionWeight(a);
+    const weightB = calculateQuestionWeight(b);
+    return weightB - weightA;
   });
 };
 
@@ -110,19 +133,27 @@ export const getDiscoverModeQuestions = (questions: Question[], userQuestions: s
   });
 };
 
-export const updateQuestionAfterReview = (question: Question, remembered: boolean): Question => {
+export const updateQuestionAfterReview = (question: Question, remembered: boolean, timeSpent = 0): Question => {
   const { newInterval, newEase } = calculateNextReview(question);
 
   // Adjust interval and ease based on whether the user remembered the answer
   let adjustedInterval = newInterval;
   let adjustedEase = newEase;
+  let struggleCount = question.struggleCount;
+  let lastStruggledAt = question.lastStruggledAt;
+  let totalStruggleTime = question.totalStruggleTime;
 
   if (!remembered) {
-    // If user didn't remember, reset to shorter interval and decrease ease
+    // If user didn't remember, update struggle metrics
+    struggleCount += 1;
+    lastStruggledAt = new Date();
+    totalStruggleTime += timeSpent;
+
+    // Adjust interval and ease more aggressively
     adjustedInterval = Math.max(1, Math.ceil(newInterval / 2));
     adjustedEase = Math.max(1.3, newEase - 0.2);
   } else {
-    // If user remembered, increase interval and ease slightly
+    // If user remembered, improve metrics slightly
     adjustedInterval = Math.ceil(newInterval * 1.1);
     adjustedEase = Math.min(3.0, newEase + 0.1);
   }
@@ -132,5 +163,8 @@ export const updateQuestionAfterReview = (question: Question, remembered: boolea
     lastReviewed: new Date(),
     reviewInterval: adjustedInterval,
     reviewEase: adjustedEase,
+    struggleCount,
+    lastStruggledAt,
+    totalStruggleTime,
   };
 };
