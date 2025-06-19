@@ -6,7 +6,7 @@
 - [x] (LOGIC) Implement CI/CD pipeline configuration for environment variables (github/workflows/*.yml)
 
 ## Test Improvements
-- [ ] (LOGIC) Modify test setup to handle environment variables (jest.config.js, jest.setup.ts)
+- [x] (LOGIC) Modify test setup to handle environment variables (jest.config.js, jest.setup.ts)
 - [ ] (TEST) Add tests for environment validation logic (src/lib/__tests__/config.test.ts)
 
 ## Documentation Updates
