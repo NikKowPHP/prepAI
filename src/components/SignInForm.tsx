@@ -1,6 +1,7 @@
 import React from 'react';
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
+import AuthErrorDisplay from './AuthErrorDisplay';
 
 export default function SignInForm() {
   const [email, setEmail] = useState('');
@@ -30,7 +31,7 @@ export default function SignInForm() {
 
   return (
     <form onSubmit={handleSubmit} className="max-w-md mx-auto space-y-4">
-      {error && <div className="text-red-500">{error}</div>}
+      {error && <AuthErrorDisplay error={error} />}
       <div>
         <label htmlFor="email" className="block text-sm font-medium">
           Email
