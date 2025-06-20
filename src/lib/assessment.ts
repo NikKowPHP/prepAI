@@ -1,9 +1,149 @@
+export interface TopicRelationship {
+  topic: string;
+  relatedTopics: string[];
+  strength: number; // 0-1 scale of relationship strength
+}
+
+export interface QuestionPerformance {
+  questionId: string;
+  topic: string;
+  subtopics: string[];
+  correctness: number; // 0-1 scale
+  responseTime: number;
+  attempts: number;
+  relatedTopics?: string[]; // Dynamically discovered related topics
+}
+
+const defaultTopicRelationships: TopicRelationship[] = [
+  {
+    topic: 'javascript',
+    relatedTopics: ['typescript', 'web-development', 'nodejs'],
+    strength: 0.8
+  },
+  {
+    topic: 'typescript',
+    relatedTopics: ['javascript', 'angular', 'react'],
+    strength: 0.9
+  },
+  {
+    topic: 'react',
+    relatedTopics: ['javascript', 'typescript', 'redux'],
+    strength: 0.85
+  }
+];
+
+export interface KnowledgeGap {
+  topic: string;
+  subtopic?: string;
+  severity: number; // 0-1 scale
+  relatedQuestions: string[];
+  relatedTopics?: string[]; // Added for topic relationship modeling
+}
+
 export interface AssessmentService {
   calculateScore: (answers: Record<string, string>) => number;
   getRecommendations: (score: number) => string[];
   generateRecommendationEngine: (score: number) => string[];
-  analyzeKnowledgeGaps: (questionPerformance: Record<string, { correct: boolean, topics: string[] }>) => { gaps: string[], suggestedQuestions: string[] };
+  analyzeKnowledgeGaps: (
+    performances: QuestionPerformance[],
+    allTopics: string[]
+  ) => Promise<KnowledgeGap[]>;
 }
+
+/**
+ * Analyzes question performances to identify knowledge gaps using AI
+ * @param performances Array of question performance data
+ * @param allTopics All available topics in the system
+ * @returns Array of identified knowledge gaps
+ */
+const analyzeKnowledgeGaps = async (
+  performances: QuestionPerformance[],
+  _allTopics: string[]
+): Promise<KnowledgeGap[]> => {
+  void _allTopics; // Explicitly mark as unused for now
+  // TODO: Use allTopics to identify gaps in topics not yet attempted
+  // Build topic relationship map
+  const topicRelations = new Map<string, TopicRelationship>(
+    defaultTopicRelationships.map(rel => [rel.topic, rel])
+  );
+
+  // Group performances by topic/subtopic and enrich with related topics
+  const topicMap = new Map<string, QuestionPerformance[]>();
+  
+  for (const perf of performances) {
+    const key = `${perf.topic}|${perf.subtopics.join(',')}`;
+    const existing = topicMap.get(key) || [];
+    
+    // Add related topics from predefined relationships
+    const enrichedPerf = {
+      ...perf,
+      relatedTopics: topicRelations.get(perf.topic)?.relatedTopics || []
+    };
+    
+    topicMap.set(key, [...existing, enrichedPerf]);
+  }
+
+  // Calculate gap severity scores with related topics
+  const gaps: KnowledgeGap[] = [];
+  
+  for (const [key, perfs] of topicMap) {
+    const [topic, subtopic] = key.split('|');
+    const avgCorrectness = perfs.reduce((sum, p) => sum + p.correctness, 0) / perfs.length;
+    const severity = 1 - avgCorrectness;
+    
+    const gap: KnowledgeGap = {
+      topic,
+      subtopic: subtopic || undefined,
+      severity,
+      relatedQuestions: perfs.map(p => p.questionId)
+    };
+
+    // Find related topics with high severity gaps
+    const relatedTopics = new Set<string>();
+    for (const perf of perfs) {
+      for (const rt of perf.relatedTopics || []) {
+        if (severity > 0.7) { // Only include strong relationships for severe gaps
+          relatedTopics.add(rt);
+        }
+      }
+    }
+
+    if (relatedTopics.size > 0) {
+      gap.relatedTopics = Array.from(relatedTopics);
+    }
+
+    gaps.push(gap);
+  }
+
+  // Combine heuristic gaps with AI analysis
+  try {
+    const aiGaps = await fetch('/api/analyze-knowledge-gaps', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        performances,
+        topics: _allTopics,
+        currentGaps: gaps
+      }),
+    }).then(res => res.json());
+
+    // Merge and deduplicate gaps
+    const mergedGaps = [...gaps];
+    for (const aiGap of aiGaps) {
+      if (!mergedGaps.some(g => g.topic === aiGap.topic && g.subtopic === aiGap.subtopic)) {
+        mergedGaps.push(aiGap);
+      }
+    }
+
+    // Sort by severity descending
+    return mergedGaps.sort((a, b) => b.severity - a.severity);
+  } catch (error) {
+    console.error('AI knowledge gap analysis failed:', error);
+    return gaps; // Fallback to heuristic gaps
+  }
+};
 
 export const createAssessmentService = (): AssessmentService => {
   const calculateScore = (answers: Record<string, string>): number => {
@@ -56,65 +196,6 @@ export const createAssessmentService = (): AssessmentService => {
     return recommendations;
   };
 
-  const analyzeKnowledgeGaps = async (questionPerformance: Record<string, { correct: boolean, topics: string[] }>): Promise<{ gaps: string[], suggestedQuestions: string[] }> => {
-    try {
-      // Try AI-powered analysis first
-      const aiResponse = await fetch('/api/analyze-knowledge-gaps', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          questionPerformance,
-          userId: 'currentUser' // Would need to pass real user ID in implementation
-        }),
-      });
-
-      if (aiResponse.ok) {
-        const aiData = await aiResponse.json();
-        return {
-          gaps: aiData.gaps,
-          suggestedQuestions: aiData.suggestions
-        };
-      }
-    } catch (error) {
-      console.error('AI analysis failed, falling back to heuristic', error);
-    }
-
-    // Fallback to heuristic analysis if AI fails
-    const topicPerformance: Record<string, { correctCount: number, totalCount: number }> = {};
-
-    Object.values(questionPerformance).forEach(entry => {
-      entry.topics.forEach(topic => {
-        if (!topicPerformance[topic]) {
-          topicPerformance[topic] = { correctCount: 0, totalCount: 0 };
-        }
-        topicPerformance[topic].totalCount += 1;
-        if (entry.correct) {
-          topicPerformance[topic].correctCount += 1;
-        }
-      });
-    });
-
-    const gaps: string[] = [];
-    const suggestedQuestions: string[] = [];
-
-    Object.entries(topicPerformance).forEach(([topic, performance]) => {
-      const successRate = performance.correctCount / performance.totalCount;
-      if (successRate < 0.5) {
-        gaps.push(topic);
-        const relatedQuestions = Object.keys(questionPerformance)
-          .filter(q => questionPerformance[q].topics.includes(topic))
-          .map(q => `Question: ${q}`);
-        suggestedQuestions.push(`Focus on ${topic}:`, ...relatedQuestions);
-      }
-    });
-
-    return {
-      gaps,
-      suggestedQuestions: suggestedQuestions.length > 0 ? suggestedQuestions : ['No specific knowledge gaps identified. Keep up the good work!']
-    };
-  };
 
   return {
     calculateScore,

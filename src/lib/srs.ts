@@ -41,12 +41,15 @@ export const calculateNextReview = (question: Question): { daysUntilReview: numb
     // In a real system, this would be based on user performance
     const newEase = Math.min(question.reviewEase + 0.1, 3.0);
 
-    // Calculate new interval using SM2 algorithm
+    // Calculate base interval using SM2 algorithm
+    const baseInterval = daysSinceLastReview * newEase;
+    
+    // Apply struggle factor - reduces interval for high struggle questions
+    const struggleFactor = Math.max(0.5, 1 - (question.struggleCount * 0.1));
+    const adjustedInterval = baseInterval * struggleFactor;
+  
     const newInterval = Math.ceil(
-      Math.max(
-        1,
-        daysSinceLastReview * newEase
-      )
+      Math.max(1, adjustedInterval)
     );
 
     return {
@@ -80,9 +83,25 @@ export const getQuestionsDueForReview = (questions: Question[]): Question[] => {
  */
 const calculateQuestionWeight = (question: Question): number => {
   const easeFactor = Math.max(1.3, question.reviewEase);
-  const struggleWeight = Math.log(question.struggleCount + 1) * 2;
-    
-  return struggleWeight / easeFactor;
+  
+  // Calculate time since last struggle (in days)
+  const daysSinceLastStruggle = question.lastStruggledAt
+    ? (Date.now() - question.lastStruggledAt.getTime()) / (1000 * 60 * 60 * 24)
+    : Infinity;
+  
+  // Recent struggles get higher weight
+  const recencyFactor = daysSinceLastStruggle < 7
+    ? 1 + (7 - daysSinceLastStruggle) * 0.2
+    : 1;
+
+  // Total struggle time contributes to weight
+  const timeFactor = Math.log(question.totalStruggleTime / 1000 + 1) * 0.5;
+
+  // Combine factors for final weight
+  return (
+    (Math.log(question.struggleCount + 1) * 2) * recencyFactor +
+    timeFactor
+  ) / easeFactor;
 };
 
 export const getRepeatModeQuestions = (
@@ -213,9 +232,10 @@ export const updateQuestionAfterReview = (question: Question, remembered: boolea
     lastStruggledAt = new Date();
     totalStruggleTime += timeSpent;
 
-    // Adjust interval and ease more aggressively
-    adjustedInterval = Math.max(1, Math.ceil(newInterval / 2));
-    adjustedEase = Math.max(1.3, newEase - 0.2);
+    // Adjust interval and ease more aggressively based on struggle history
+    const strugglePenalty = 1 + (question.struggleCount * 0.2);
+    adjustedInterval = Math.max(1, Math.ceil(newInterval / strugglePenalty));
+    adjustedEase = Math.max(1.3, newEase - (0.2 * strugglePenalty));
   } else {
     // If user remembered, improve metrics slightly
     adjustedInterval = Math.ceil(newInterval * 1.1);

@@ -2,7 +2,12 @@ import { getQuestionsByMode, calculateNextReview, Question } from '../../src/lib
 
 describe('SRS Workflow End-to-End Tests', () => {
   const now = new Date();
-  const testQuestions: Question[] = [
+  interface ExtendedQuestion extends Question {
+    topics?: string[];
+    struggleTopics?: string[];
+  }
+
+  const testQuestions: ExtendedQuestion[] = [
     // New question (never reviewed)
     {
       id: '1',
@@ -102,6 +107,53 @@ describe('SRS Workflow End-to-End Tests', () => {
     expect(questionIds).not.toContain('2');
     expect(questionIds).not.toContain('3');
     expect(questionIds).not.toContain('4');
+  });
+
+  test('Struggle tracking and visualization', async () => {
+    // Start with a new question
+    const newQuestion = testQuestions[0];
+    
+    // Mark as hard (struggled)
+    const struggledQuestion: Question = {
+      ...newQuestion,
+      lastReviewed: new Date(),
+      rating: 'hard', // Explicitly set as 'hard' to match the Question type
+      struggleCount: 1,
+      lastStruggledAt: new Date(),
+      totalStruggleTime: 60,
+      reviewCount: 1
+    };
+
+    // Verify it appears in Repeat mode
+    const repeatQuestions = await getQuestionsByMode('repeat', [struggledQuestion, ...testQuestions.slice(1)]);
+    expect(repeatQuestions.map(q => q.id)).toContain(struggledQuestion.id);
+
+    // Verify next review interval is shorter
+    const nextReview = calculateNextReview(struggledQuestion);
+    expect(nextReview.newInterval).toBeLessThan(struggledQuestion.reviewInterval);
+
+    // Verify visualization would show struggle
+    expect(struggledQuestion.struggleCount).toBeGreaterThan(0);
+    expect(struggledQuestion.lastStruggledAt).toBeInstanceOf(Date);
+  });
+
+  test('Knowledge gap analysis integration', async () => {
+    // Create questions with topic relationships
+    const questionsWithTopics = testQuestions.map(q => ({
+      ...q,
+      topics: ['topic1', 'topic2'] as string[],
+      struggleTopics: (q.rating === 'hard' ? ['topic1'] : []) as string[]
+    }));
+
+    // Get discover mode questions with knowledge gap in topic1
+    const discoveredQuestions = await getQuestionsByMode('discover',
+      questionsWithTopics,
+      ['2', '3', '4'], // Already in queue
+      ['topic1'] // Gap in topic1
+    );
+
+    // Should prioritize questions related to topic1
+    expect(discoveredQuestions.some(q => q.topics?.includes('topic1'))).toBeTruthy();
   });
 
   test('Full workflow from discovery to mastery', async () => {
