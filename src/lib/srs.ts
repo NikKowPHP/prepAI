@@ -96,25 +96,34 @@ export const getRepeatModeQuestions = (
   easeThreshold = 2.0,
   struggleThreshold = 2
 ): Question[] => {
-  // First filter questions that need review
-  const filtered = questions.filter(question => {
-    const { daysUntilReview } = calculateNextReview(question);
-    const isRecentStruggle = question.lastStruggledAt
-      ? (Date.now() - question.lastStruggledAt.getTime()) < 7 * 24 * 60 * 60 * 1000
-      : false;
-    
-    return daysUntilReview === 0 ||
-           question.reviewEase <= easeThreshold ||
-           question.struggleCount > struggleThreshold ||
-           isRecentStruggle;
-  });
+  try {
+    if (!questions?.length) {
+      return [];
+    }
 
-  // Then sort by calculated weight (descending)
-  return filtered.sort((a, b) => {
-    const weightA = calculateQuestionWeight(a);
-    const weightB = calculateQuestionWeight(b);
-    return weightB - weightA;
-  });
+    // First filter questions that need review
+    const filtered = questions.filter(question => {
+      const { daysUntilReview } = calculateNextReview(question);
+      const isRecentStruggle = question.lastStruggledAt
+        ? (Date.now() - question.lastStruggledAt.getTime()) < 7 * 24 * 60 * 60 * 1000
+        : false;
+      
+      return daysUntilReview === 0 ||
+             question.reviewEase <= easeThreshold ||
+             question.struggleCount > struggleThreshold ||
+             isRecentStruggle;
+    });
+
+    // Then sort by calculated weight (descending)
+    return filtered.sort((a, b) => {
+      const weightA = calculateQuestionWeight(a);
+      const weightB = calculateQuestionWeight(b);
+      return weightB - weightA;
+    });
+  } catch (error) {
+    console.error('Error in getRepeatModeQuestions:', error);
+    throw new Error('Failed to get repeat mode questions');
+  }
 };
 
 /**
@@ -129,15 +138,24 @@ export interface StudyModeQueues {
 }
 
 export const getStudyModeQuestions = (questions: Question[], reviewThreshold = 3): StudyModeQueues => {
-  const newQuestions = questions.filter(q => q.reviewCount === 0);
-  const recentQuestions = questions.filter(q => {
-    return q.reviewCount > 0 && q.reviewCount <= reviewThreshold;
-  });
+  try {
+    if (!questions?.length) {
+      return { newQuestions: [], recentQuestions: [] };
+    }
 
-  return {
-    newQuestions,
-    recentQuestions
-  };
+    const newQuestions = questions.filter(q => q.reviewCount === 0);
+    const recentQuestions = questions.filter(q => {
+      return q.reviewCount > 0 && q.reviewCount <= reviewThreshold;
+    });
+
+    return {
+      newQuestions,
+      recentQuestions
+    };
+  } catch (error) {
+    console.error('Error in getStudyModeQuestions:', error);
+    throw new Error('Failed to get study mode questions');
+  }
 };
 
 /**
@@ -161,23 +179,32 @@ const calculateTopicSimilarity = (topicsA: string[], topicsB: string[]): number 
  * @returns Filtered list of questions for discovery, sorted by relevance
  */
 export const getDiscoverModeQuestions = (questions: Question[], userQuestions: string[], currentTopics: string[] = []): Question[] => {
-  return questions
-    .filter(question => {
-      // Exclude questions already in user's queue
-      if (userQuestions.includes(question.id)) return false;
+  try {
+    if (!questions?.length) {
+      return [];
+    }
 
-      // Include questions with some topic overlap if they have topics
-      if (!question.topics || question.topics.length === 0) return false;
+    return questions
+      .filter(question => {
+        // Exclude questions already in user's queue
+        if (userQuestions.includes(question.id)) return false;
 
-      return question.isAIGenerated ||
-        (question.topics && calculateTopicSimilarity(question.topics, currentTopics) > 0);
-    })
-    .sort((a, b) => {
-      // Sort by topic similarity (descending)
-      const similarityA = calculateTopicSimilarity(a.topics || [], currentTopics);
-      const similarityB = calculateTopicSimilarity(b.topics || [], currentTopics);
-      return similarityB - similarityA;
-    });
+        // Include questions with some topic overlap if they have topics
+        if (!question.topics || question.topics.length === 0) return false;
+
+        return question.isAIGenerated ||
+          (question.topics && calculateTopicSimilarity(question.topics, currentTopics) > 0);
+      })
+      .sort((a, b) => {
+        // Sort by topic similarity (descending)
+        const similarityA = calculateTopicSimilarity(a.topics || [], currentTopics);
+        const similarityB = calculateTopicSimilarity(b.topics || [], currentTopics);
+        return similarityB - similarityA;
+      });
+  } catch (error) {
+    console.error('Error in getDiscoverModeQuestions:', error);
+    throw new Error('Failed to get discover mode questions');
+  }
 };
 
 export const updateQuestionAfterReview = (question: Question, remembered: boolean, timeSpent = 0): Question => {
@@ -231,16 +258,21 @@ export const getQuestionsByMode = (
   userQuestions?: string[],
   currentTopics?: string[]
 ): Question[] => {
-  switch(mode) {
-    case 'repeat':
-      return getRepeatModeQuestions(questions);
-    case 'study': {
-      const { newQuestions, recentQuestions } = getStudyModeQuestions(questions);
-      return [...newQuestions, ...recentQuestions];
+  try {
+    switch(mode) {
+      case 'repeat':
+        return getRepeatModeQuestions(questions);
+      case 'study': {
+        const { newQuestions, recentQuestions } = getStudyModeQuestions(questions);
+        return [...newQuestions, ...recentQuestions];
+      }
+      case 'discover':
+        return getDiscoverModeQuestions(questions, userQuestions || [], currentTopics || []);
+      default:
+        return [];
     }
-    case 'discover':
-      return getDiscoverModeQuestions(questions, userQuestions || [], currentTopics || []);
-    default:
-      return [];
+  } catch (error) {
+    console.error(`Error getting questions for mode ${mode}:`, error);
+    return [];
   }
 };
