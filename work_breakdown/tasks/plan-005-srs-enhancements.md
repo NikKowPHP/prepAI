@@ -15,7 +15,7 @@
 ## Audit Fixes
 - [x] (LOGIC) Ensure getQuestionsByMode returns empty array instead of undefined (src/lib/srs.ts)
 - [x] (LOGIC) Implement Repeat mode filtering: ease < 2.0 OR overdue OR high struggle (src/lib/srs.ts)
-- [ ] (LOGIC) Implement Study mode filtering: new questions + recent questions (<=3 reviews) (src/lib/srs.ts)
+- [x] (LOGIC) Implement Study mode filtering: new questions + recent questions (<=3 reviews) (src/lib/srs.ts)
 - [ ] (LOGIC) Implement Discover mode filtering: AI-generated + topic-related questions (src/lib/srs.ts)
 - [ ] (LOGIC) Add API error handling for all SRS modes (src/lib/srs.ts)
 - [ ] (TEST) Add tests for mode filtering edge cases (src/lib/__tests__/srsModes.test.ts)
