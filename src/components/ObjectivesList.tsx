@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { getObjectives } from '@/lib/objectives';
+import { getObjectives, deleteObjective } from '@/lib/objectives';
 
 interface Objective {
   id: string;
@@ -13,6 +13,7 @@ const ObjectivesList: React.FC = () => {
   const { user } = useAuth();
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchObjectives = async () => {
@@ -48,9 +49,36 @@ const ObjectivesList: React.FC = () => {
               {objective.description && (
                 <p className="text-gray-600 mt-1">{objective.description}</p>
               )}
-              <p className="text-sm text-gray-400 mt-2">
-                Created: {objective.createdAt.toLocaleDateString()}
-              </p>
+              <div className="flex justify-between items-center mt-2">
+                <p className="text-sm text-gray-400">
+                  Created: {objective.createdAt.toLocaleDateString()}
+                </p>
+                <button
+                  onClick={async () => {
+                    if (!user) {
+                      alert('User not authenticated');
+                      return;
+                    }
+                    
+                    if (window.confirm('Are you sure you want to delete this objective?')) {
+                      try {
+                        setDeletingId(objective.id);
+                        await deleteObjective(objective.id, user.id);
+                        setObjectives(objectives.filter(obj => obj.id !== objective.id));
+                      } catch (error) {
+                        console.error('Failed to delete objective:', error);
+                        alert('Failed to delete objective');
+                      } finally {
+                        setDeletingId(null);
+                      }
+                    }
+                  }}
+                  disabled={deletingId === objective.id}
+                  className="text-red-500 hover:text-red-700 disabled:text-red-300 disabled:cursor-not-allowed"
+                >
+                  {deletingId === objective.id ? 'Deleting...' : 'Delete'}
+                </button>
+              </div>
             </li>
           ))}
         </ul>

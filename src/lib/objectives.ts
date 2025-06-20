@@ -57,3 +57,26 @@ export const getObjectives = async (userId: string) => {
     throw new Error('Failed to fetch objectives');
   }
 };
+
+export const deleteObjective = async (objectiveId: string, userId: string) => {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user || user.id !== userId) {
+      throw new Error('Unauthorized');
+    }
+
+    await prisma.objective.delete({
+      where: {
+        id: objectiveId,
+        userId: userId
+      }
+    });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error deleting objective:', error.message);
+      throw error;
+    }
+    console.error('Unknown error deleting objective');
+    throw new Error('Failed to delete objective');
+  }
+};

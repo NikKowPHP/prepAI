@@ -14,7 +14,7 @@
 6. [x] (LOGIC) Develop topic-based filtering algorithm
 7. [x] (LOGIC) Store user objectives in database
 8. [x] (UI) Display current objectives in dashboard
-9. [ ] (UI) Add objective deletion functionality
+9. [x] (UI) Add objective deletion functionality
 10. [ ] (LOGIC) Integrate with question generation service
 
 ## Dependencies
