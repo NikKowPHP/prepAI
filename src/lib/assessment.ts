@@ -2,6 +2,7 @@ export interface AssessmentService {
   calculateScore: (answers: Record<string, string>) => number;
   getRecommendations: (score: number) => string[];
   generateRecommendationEngine: (score: number) => string[];
+  analyzeKnowledgeGaps: (questionPerformance: Record<string, { correct: boolean, topics: string[] }>) => { gaps: string[], suggestedQuestions: string[] };
 }
 
 export const createAssessmentService = (): AssessmentService => {
@@ -55,10 +56,51 @@ export const createAssessmentService = (): AssessmentService => {
     return recommendations;
   };
 
+  const analyzeKnowledgeGaps = (questionPerformance: Record<string, { correct: boolean, topics: string[] }>): { gaps: string[], suggestedQuestions: string[] } => {
+    const topicPerformance: Record<string, { correctCount: number, totalCount: number }> = {};
+
+    // Analyze performance by topic
+    Object.values(questionPerformance).forEach(entry => {
+      entry.topics.forEach(topic => {
+        if (!topicPerformance[topic]) {
+          topicPerformance[topic] = { correctCount: 0, totalCount: 0 };
+        }
+        topicPerformance[topic].totalCount += 1;
+        if (entry.correct) {
+          topicPerformance[topic].correctCount += 1;
+        }
+      });
+    });
+
+    // Identify knowledge gaps (topics with low performance)
+    const gaps: string[] = [];
+    const suggestedQuestions: string[] = [];
+
+    Object.entries(topicPerformance).forEach(([topic, performance]) => {
+      const successRate = performance.correctCount / performance.totalCount;
+      if (successRate < 0.5) { // Consider topics with less than 50% success as gaps
+        gaps.push(topic);
+
+        // Suggest questions related to this topic
+        const relatedQuestions = Object.keys(questionPerformance)
+          .filter(q => questionPerformance[q].topics.includes(topic))
+          .map(q => `Question: ${q}`);
+
+        suggestedQuestions.push(`Focus on ${topic}:`, ...relatedQuestions);
+      }
+    });
+
+    return {
+      gaps,
+      suggestedQuestions: suggestedQuestions.length > 0 ? suggestedQuestions : ['No specific knowledge gaps identified. Keep up the good work!']
+    };
+  };
+
   return {
     calculateScore,
     getRecommendations,
     generateRecommendationEngine,
+    analyzeKnowledgeGaps,
   };
 };
 
