@@ -11,7 +11,7 @@
 3. [x] (UI) Add topic filtering component
 4. [x] (LOGIC) Create API endpoint for role listing
 5. [x] (LOGIC) Implement objective creation service
-6. [ ] (LOGIC) Develop topic-based filtering algorithm
+6. [x] (LOGIC) Develop topic-based filtering algorithm
 7. [ ] (LOGIC) Store user objectives in database
 8. [ ] (UI) Display current objectives in dashboard
 9. [ ] (UI) Add objective deletion functionality

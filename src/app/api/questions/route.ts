@@ -12,6 +12,7 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const pathParts = url.pathname.replace(/\/$/, "").split('/');
     const lastPart = pathParts.pop();
+    const topics = url.searchParams.get('topics')?.split(',') || [];
 
     if (lastPart && lastPart !== 'questions') {
       const id = lastPart;
@@ -28,7 +29,14 @@ export async function GET(req: NextRequest) {
     } else {
       // Get all questions for the user
       const questions = await prisma.question.findMany({
-        where: { userId: user.id },
+        where: {
+          userId: user.id,
+          ...(topics.length > 0 && {
+            topics: {
+              hasSome: topics
+            }
+          })
+        },
         orderBy: { createdAt: 'desc' },
       });
 

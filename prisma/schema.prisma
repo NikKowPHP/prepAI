@@ -23,6 +23,8 @@ model Question {
   id                String   @id @default(cuid())
   userId            String
   content           String
+  category          String?
+  difficulty        String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   lastReviewed      DateTime?
