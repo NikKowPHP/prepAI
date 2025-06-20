@@ -105,14 +105,21 @@ export const getRepeatModeQuestions = (questions: Question[], easeThreshold = 2.
  * @param reviewThreshold - Maximum number of reviews to consider as "new" (default: 3)
  * @returns Filtered list of questions for new learning
  */
-export const getStudyModeQuestions = (questions: Question[], reviewThreshold = 3): Question[] => {
-  return questions.filter(question => {
-    // Consider questions with no reviews as "new"
-    if (question.reviewCount === 0) return true;
+export interface StudyModeQueues {
+  newQuestions: Question[];
+  recentQuestions: Question[];
+}
 
-    // Include questions with low review count
-    return question.reviewCount <= reviewThreshold;
+export const getStudyModeQuestions = (questions: Question[], reviewThreshold = 3): StudyModeQueues => {
+  const newQuestions = questions.filter(q => q.reviewCount === 0);
+  const recentQuestions = questions.filter(q => {
+    return q.reviewCount > 0 && q.reviewCount <= reviewThreshold;
   });
+
+  return {
+    newQuestions,
+    recentQuestions
+  };
 };
 
 /**
