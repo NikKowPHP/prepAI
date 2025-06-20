@@ -30,7 +30,7 @@
 - [x] (UI) Add smart filtering interface for knowledge gaps (src/components/DiscoverMode.tsx)
 
 ## Struggle Tracking Enhancements
-- [ ] (LOGIC) Factor struggle metrics into scheduling algorithms (src/lib/scheduler.ts)
+- [x] (LOGIC) Factor struggle metrics into scheduling algorithms (src/lib/scheduler.ts)
 - [ ] (UI) Add real-time struggle visualization:
     * Progress heatmaps (src/components/ProgressDashboard.tsx)
     * Difficulty indicators during study sessions (src/components/FlashcardStudy.tsx)

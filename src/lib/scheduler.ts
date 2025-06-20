@@ -159,7 +159,22 @@ export const createSchedulerService = (): SchedulerService => {
     let filteredQuestions;
     switch (mode) {
       case 'repeat':
-        filteredQuestions = questions.filter(q => q.reviewEase <= 2.0 || !q.lastReviewed);
+        filteredQuestions = questions.filter(q => {
+          const isHighStruggle = q.struggleCount > 2;
+          const recentStruggle = q.lastStruggledAt
+            ? (Date.now() - q.lastStruggledAt.getTime()) < 7 * 24 * 60 * 60 * 1000
+            : false;
+          return q.reviewEase <= 2.0 || !q.lastReviewed || isHighStruggle || recentStruggle;
+        }).sort((a, b) => {
+          // Calculate priority scores based on struggle metrics
+          const aScore = (a.struggleCount * 2) +
+            (a.lastStruggledAt ? (1 / (Date.now() - a.lastStruggledAt.getTime())) : 0) +
+            (a.totalStruggleTime / 1000);
+          const bScore = (b.struggleCount * 2) +
+            (b.lastStruggledAt ? (1 / (Date.now() - b.lastStruggledAt.getTime())) : 0) +
+            (b.totalStruggleTime / 1000);
+          return bScore - aScore; // Higher scores first
+        });
         break;
       case 'study':
         filteredQuestions = questions.filter(q => {
