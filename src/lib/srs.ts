@@ -13,6 +13,7 @@ export interface Question {
   rating: 'easy' | 'normal' | 'hard';
   user_id: string;
   topics?: string[];
+  isAIGenerated?: boolean;
 }
 
 export const calculateNextReview = (question: Question): { daysUntilReview: number, newInterval: number, newEase: number } => {
@@ -168,7 +169,8 @@ export const getDiscoverModeQuestions = (questions: Question[], userQuestions: s
       // Include questions with some topic overlap if they have topics
       if (!question.topics || question.topics.length === 0) return false;
 
-      return calculateTopicSimilarity(question.topics, currentTopics) > 0;
+      return question.isAIGenerated ||
+        (question.topics && calculateTopicSimilarity(question.topics, currentTopics) > 0);
     })
     .sort((a, b) => {
       // Sort by topic similarity (descending)
