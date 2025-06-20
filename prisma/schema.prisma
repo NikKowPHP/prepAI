@@ -31,6 +31,9 @@ model Question {
   lastStruggledAt   DateTime?
   totalStruggleTime Int      @default(0)
   reviewCount       Int      @default(0)
+  overdue           Boolean  @default(false)
+  weight            Float    @default(1.0)
+  topics            String[] @default([])
   user              User     @relation(fields: [userId], references: [id])
   reviews           Review[]
 }
