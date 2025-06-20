@@ -31,7 +31,7 @@
 
 ## Struggle Tracking Enhancements
 - [x] (LOGIC) Factor struggle metrics into scheduling algorithms (src/lib/scheduler.ts)
-- [ ] (UI) Add real-time struggle visualization:
+- [x] (UI) Add real-time struggle visualization:
     * Progress heatmaps (src/components/ProgressDashboard.tsx)
     * Difficulty indicators during study sessions (src/components/FlashcardStudy.tsx)
 

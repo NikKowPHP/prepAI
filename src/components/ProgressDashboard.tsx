@@ -31,6 +31,11 @@ interface ProgressMetrics {
   incorrectAnswers: number;
   masteryScore: number;
   nextReviewDates: { [questionId: string]: Date };
+  struggleData: {
+    date: string;
+    count: number;
+    totalTime: number;
+  }[];
 }
 
 interface ChartData {
@@ -42,6 +47,29 @@ interface ChartData {
     fill: boolean;
   }[];
 }
+
+const generateHeatmapData = (struggleData: {date: string, count: number, totalTime: number}[]) => {
+  const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const weeks = 6;
+  const data = [];
+
+  // Initialize empty grid
+  for (let i = 0; i < weeks; i++) {
+    data.push(Array(7).fill(0));
+  }
+
+  // Populate with actual data
+  struggleData.forEach(entry => {
+    const date = new Date(entry.date);
+    const week = Math.floor(date.getDate() / 7);
+    const day = date.getDay();
+    if (week < weeks && day < 7) {
+      data[week][day] += entry.count + (entry.totalTime / 60); // Combine count and time
+    }
+  });
+
+  return { data, days };
+};
 
 const ProgressDashboard: React.FC = () => {
   const { user } = useAuth();
@@ -148,6 +176,46 @@ const ProgressDashboard: React.FC = () => {
           <Line data={progressTrends} />
         ) : (
           <p>No progress trend data available.</p>
+        )}
+      </div>
+      <div className="mt-6 p-4 bg-gray-100 rounded-md">
+        <h3 className="font-semibold mb-2">Struggle Heatmap</h3>
+        {metrics.struggleData && metrics.struggleData.length > 0 ? (
+          <div className="heatmap-container">
+            <table className="heatmap">
+              <tbody>
+                {generateHeatmapData(metrics.struggleData).data.map((week, i) => (
+                  <tr key={i}>
+                    {week.map((value, j) => (
+                      <td
+                        key={j}
+                        className="heatmap-cell"
+                        style={{
+                          backgroundColor: `rgba(255, 0, 0, ${Math.min(1, value / 10)})`,
+                          width: '30px',
+                          height: '30px'
+                        }}
+                        title={`${generateHeatmapData(metrics.struggleData).days[j]}: ${Math.round(value)} struggles`}
+                      />
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            <div className="heatmap-legend mt-2 flex gap-2 items-center">
+              <span className="text-sm">Less</span>
+              {[0, 0.25, 0.5, 0.75, 1].map(opacity => (
+                <div
+                  key={opacity}
+                  className="h-4 w-4"
+                  style={{backgroundColor: `rgba(255, 0, 0, ${opacity})`}}
+                />
+              ))}
+              <span className="text-sm">More</span>
+            </div>
+          </div>
+        ) : (
+          <p>No struggle data available.</p>
         )}
       </div>
     </div>
