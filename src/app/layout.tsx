@@ -57,7 +57,11 @@ function AuthLinks() {
     return (
       <>
         <span>Welcome, {user.email}</span>
-        <Link href="/api/auth/signout" className="hover:underline">Logout</Link>
+        <form action="/api/auth/signout" method="POST">
+          <button type="submit" className="hover:underline bg-transparent border-none text-white cursor-pointer">
+            Logout
+          </button>
+        </form>
       </>
     );
   }
