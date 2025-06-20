@@ -1,14 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import TopicFilter from './TopicFilter';
+import { useAuth } from '../lib/auth-context';
 
 interface RoleSelectProps {
   onRoleSelect: (role: string) => void;
-  onNewObjective?: (objective: { name: string; description: string }) => void;
+  onNewObjective?: (objective: { name: string; description?: string; userId: string }) => void;
   onTopicsChange?: (topics: string[]) => void;
 }
 
 const RoleSelect: React.FC<RoleSelectProps> = ({ onRoleSelect, onNewObjective, onTopicsChange }) => {
+  const { user } = useAuth();
   const [selectedRole, setSelectedRole] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [newObjectiveName, setNewObjectiveName] = useState('');
@@ -65,15 +67,21 @@ const RoleSelect: React.FC<RoleSelectProps> = ({ onRoleSelect, onNewObjective, o
     onRoleSelect(role);
   };
 
-  const handleNewObjective = () => {
-    if (onNewObjective && newObjectiveName) {
-      onNewObjective({
-        name: newObjectiveName,
-        description: newObjectiveDescription
-      });
-      setNewObjectiveName('');
-      setNewObjectiveDescription('');
-      setIsModalOpen(false);
+  const handleNewObjective = async () => {
+    if (onNewObjective && newObjectiveName && user?.id) {
+      try {
+        await onNewObjective({
+          name: newObjectiveName,
+          description: newObjectiveDescription,
+          userId: user.id
+        });
+        setNewObjectiveName('');
+        setNewObjectiveDescription('');
+        setIsModalOpen(false);
+      } catch (error) {
+        console.error('Failed to create objective:', error);
+        // Optionally show error to user
+      }
     }
   };
 
