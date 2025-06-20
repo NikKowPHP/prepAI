@@ -15,7 +15,7 @@
 6. [x] (LOGIC) Implement user login endpoint
 7. [x] (LOGIC) Implement session management
 8. [x] (LOGIC) Create logout functionality
-9. [ ] (UI) Implement error handling for auth failures
+9. [x] (UI) Implement error handling for auth failures
 10. [ ] (LOGIC) Add password validation rules
 
 ## Dependencies
