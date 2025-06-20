@@ -197,7 +197,16 @@ const FlashcardStudy: React.FC = () => {
           Next review: {nextReviewDate.toLocaleDateString()}
         </p>
       )}
-      <div className="flashcard bg-white border rounded shadow p-4 mb-4">
+      <div
+        className="flashcard bg-white border-4 rounded shadow p-4 mb-4 relative"
+        style={{
+          borderColor: `rgba(255, 0, 0, ${Math.min(0.8, currentFlashcard.struggleCount / 5)})`,
+          borderWidth: `${Math.min(4, 1 + currentFlashcard.struggleCount)}px`
+        }}
+      >
+        <div className="difficulty-indicator absolute top-2 right-2 bg-red-500 text-white px-2 py-1 rounded text-xs">
+          {currentFlashcard.struggleCount} struggles
+        </div>
         <div className="question text-lg font-semibold mb-2">
           {isFlipped ? currentFlashcard.answer : currentFlashcard.question}
         </div>
