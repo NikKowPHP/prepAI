@@ -2,17 +2,25 @@ import React from 'react';
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import AuthErrorDisplay from './AuthErrorDisplay';
+import { validatePassword } from '../lib/validation';
 
 export default function SignUpForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [passwordError, setPasswordError] = useState<string | undefined>();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError('');
+
+    const validation = validatePassword(password);
+    if (!validation.valid) {
+      setPasswordError(validation.message);
+      return;
+    }
 
     const { error } = await supabase.auth.signUp({
       email,
@@ -44,6 +52,9 @@ export default function SignUpForm() {
           className="w-full px-3 py-2 border rounded"
           required
         />
+        {passwordError && (
+          <div className="text-red-500 text-sm mt-1">{passwordError}</div>
+        )}
       </div>
       <div>
         <label htmlFor="password" className="block text-sm font-medium">
@@ -53,10 +64,14 @@ export default function SignUpForm() {
           id="password"
           type="password"
           value={password}
-          onChange={(e) => setPassword(e.target.value)}
+          onChange={(e) => {
+            setPassword(e.target.value);
+            const validation = validatePassword(e.target.value);
+            setPasswordError(validation.valid ? undefined : validation.message);
+          }}
           className="w-full px-3 py-2 border rounded"
           required
-          minLength={6}
+          minLength={8}
         />
       </div>
       <button
