@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog } from '@headlessui/react';
 import TopicFilter from './TopicFilter';
 
@@ -14,14 +14,50 @@ const RoleSelect: React.FC<RoleSelectProps> = ({ onRoleSelect, onNewObjective, o
   const [newObjectiveName, setNewObjectiveName] = useState('');
   const [newObjectiveDescription, setNewObjectiveDescription] = useState('');
   
-  // Temporary roles - will be replaced with API data later
-  const roles = [
-    'Software Engineer',
-    'Frontend Developer',
-    'Backend Developer',
-    'Full Stack Developer',
-    'DevOps Engineer'
-  ];
+  const [roles, setRoles] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    
+    const fetchRoles = async () => {
+      try {
+        const response = await fetch('/api/roles', {
+          signal: controller.signal
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch roles');
+        }
+        
+        const data = await response.json();
+        setRoles(data);
+      } catch (err) {
+        if (!controller.signal.aborted) {
+          setError(err instanceof Error ? err.message : 'Failed to fetch roles');
+          // Fallback to default roles if API fails
+          setRoles([
+            'Software Engineer',
+            'Frontend Developer',
+            'Backend Developer',
+            'Full Stack Developer',
+            'DevOps Engineer'
+          ]);
+        }
+      } finally {
+        if (!controller.signal.aborted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchRoles();
+    
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   const handleChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const role = e.target.value;
@@ -55,11 +91,17 @@ const RoleSelect: React.FC<RoleSelectProps> = ({ onRoleSelect, onNewObjective, o
           required
         >
           <option value="">Select a role</option>
-          {roles.map((role) => (
-            <option key={role} value={role}>
-              {role}
-            </option>
-          ))}
+          {isLoading ? (
+            <option value="" disabled>Loading roles...</option>
+          ) : error ? (
+            <option value="" disabled>{error}</option>
+          ) : (
+            roles.map((role) => (
+              <option key={role} value={role}>
+                {role}
+              </option>
+            ))
+          )}
         </select>
       </div>
   
