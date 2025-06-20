@@ -202,3 +202,31 @@ export const updateQuestionAfterReview = (question: Question, remembered: boolea
     reviewCount: question.reviewCount + 1,
   };
 };
+
+/**
+ * Get questions by mode, ensuring consistent array return type
+ * @param mode - SRS mode (repeat/study/discover)
+ * @param questions - All available questions
+ * @param userQuestions - Questions in user's queue (for discover mode)
+ * @param currentTopics - Current active topics (for discover mode)
+ * @returns Array of questions for the specified mode (empty array if none)
+ */
+export const getQuestionsByMode = (
+  mode: 'repeat' | 'study' | 'discover',
+  questions: Question[],
+  userQuestions?: string[],
+  currentTopics?: string[]
+): Question[] => {
+  switch(mode) {
+    case 'repeat':
+      return getRepeatModeQuestions(questions);
+    case 'study': {
+      const { newQuestions, recentQuestions } = getStudyModeQuestions(questions);
+      return [...newQuestions, ...recentQuestions];
+    }
+    case 'discover':
+      return getDiscoverModeQuestions(questions, userQuestions || [], currentTopics || []);
+    default:
+      return [];
+  }
+};

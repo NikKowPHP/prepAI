@@ -32,19 +32,26 @@ AI-driven interview preparation system with:
 
 ### Phase 3: Advanced Features
 1. PDF report generation
-2. Enhanced SRS Study Modes:
+2. Enhanced SRS Study Modes (see plan-005-srs-enhancements.md):
    - Repeat mode:
         * Struggle tracking
         * Weighted selection for difficult questions
         * Overdue prioritization algorithm
+        * [AUDIT] Implement filtering (ease < 2.0 OR overdue OR high struggle)
    - Study mode:
         * Review count tracking
         * Time-based decay selection
         * Separate queues for new vs. recent questions
+        * [AUDIT] Implement filtering (new + recent questions <=3 reviews)
    - Discover mode:
         * Topic relationship modeling
         * AI-generated question integration
-        * Knowledge gap analysis
+        * [AUDIT] Implement AI-powered knowledge gap analysis
+        * [AUDIT] Implement filtering (AI-generated + topic-related questions)
+   - [AUDIT] Ensure getQuestionsByMode returns empty array instead of undefined
+   - [AUDIT] Add API error handling for all SRS modes
+   - [AUDIT] Implement real-time struggle visualization
+   - [AUDIT] Add end-to-end SRS workflow tests
 3. Voice transcription service
 4. Readiness assessment algorithm
 
@@ -55,4 +62,4 @@ AI-driven interview preparation system with:
 4. Deployment pipeline setup
 
 ## Phase Priority
-Focus on completing Phase 1 before proceeding to subsequent phases. Estimated timeline: 2 weeks per phase.
+Focus on completing Phase 3 SRS enhancements before proceeding to deployment. Estimated timeline: 2 weeks for SRS fixes.
