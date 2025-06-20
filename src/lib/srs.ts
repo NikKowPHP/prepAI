@@ -75,26 +75,20 @@ export const getQuestionsDueForReview = (questions: Question[]): Question[] => {
  * Get questions for Repeat mode (low ease, overdue, or high struggle)
  * @param questions - Array of questions to filter
  * @param easeThreshold - Maximum ease factor to consider for repeat (default: 2.0)
- * @param struggleThreshold - Minimum struggle count to consider (default: 2)
+ * @param struggleThreshold - Minimum struggle count to consider (default: 3)
  * @returns Filtered list of questions needing reinforcement
- */
-/**
- * Calculate selection weight for a question based on struggle metrics and ease
  */
 const calculateQuestionWeight = (question: Question): number => {
   const easeFactor = Math.max(1.3, question.reviewEase);
   const struggleWeight = Math.log(question.struggleCount + 1) * 2;
-  const recentStruggleWeight = question.lastStruggledAt
-    ? (1 / (1 + (Date.now() - question.lastStruggledAt.getTime()) / (1000 * 60 * 60 * 24))) * 2
-    : 0;
     
-  return (struggleWeight + recentStruggleWeight) / easeFactor;
+  return struggleWeight / easeFactor;
 };
 
 export const getRepeatModeQuestions = (
   questions: Question[],
   easeThreshold = 2.0,
-  struggleThreshold = 2
+  struggleThreshold = 3
 ): Question[] => {
   try {
     if (!questions?.length) {
@@ -104,14 +98,10 @@ export const getRepeatModeQuestions = (
     // First filter questions that need review
     const filtered = questions.filter(question => {
       const { daysUntilReview } = calculateNextReview(question);
-      const isRecentStruggle = question.lastStruggledAt
-        ? (Date.now() - question.lastStruggledAt.getTime()) < 7 * 24 * 60 * 60 * 1000
-        : false;
       
       return daysUntilReview === 0 ||
              question.reviewEase <= easeThreshold ||
-             question.struggleCount > struggleThreshold ||
-             isRecentStruggle;
+             question.struggleCount >= struggleThreshold;
     });
 
     // Then sort by calculated weight (descending)

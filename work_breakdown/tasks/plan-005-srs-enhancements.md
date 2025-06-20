@@ -12,13 +12,22 @@
 - [x] (LOGIC) Create separate queues for new vs. recent questions (src/lib/srs.ts)
 - [x] (UI) Implement UI for new/recent question queues (src/components/FlashcardStudy.tsx)
 
-## Audit Fixes
-- [x] (LOGIC) Ensure getQuestionsByMode returns empty array instead of undefined (src/lib/srs.ts)
-- [x] (LOGIC) Implement Repeat mode filtering: ease < 2.0 OR overdue OR high struggle (src/lib/srs.ts)
-- [x] (LOGIC) Implement Study mode filtering: new questions + recent questions (<=3 reviews) (src/lib/srs.ts)
-- [x] (LOGIC) Implement Discover mode filtering: AI-generated + topic-related questions (src/lib/srs.ts)
-- [x] (LOGIC) Add API error handling for all SRS modes (src/lib/srs.ts)
-- [x] (TEST) Add tests for mode filtering edge cases (src/lib/__tests__/srsModes.test.ts)
+## Critical Fixes (Per Audit Items 006 & 007)
+- [x] (LOGIC) Implement strict Repeat mode filtering: ease < 2.0 OR overdue OR struggleCount >= 3 (src/lib/srs.ts)
+- [x] (LOGIC) Remove recent-struggle inclusion from Repeat Mode (src/lib/srs.ts)
+- [ ] (LOGIC) Complete knowledge gap analysis integration (src/lib/assessment.ts)
+- [ ] (UI) Add real-time struggle visualization indicators (src/components/FlashcardStudy.tsx)
+- [x] (TEST) Add comprehensive validation tests for Repeat mode (src/lib/__tests__/srsModes.test.ts)
+- [ ] (TEST) Create end-to-end SRS workflow tests (tests/e2e/srsWorkflow.test.ts)
+
+## Knowledge Gap Analysis
+- [ ] (LOGIC) Connect Discover mode to question generation API (src/app/api/generate-question/route.ts)
+- [ ] (LOGIC) Implement topic relationship modeling for gap detection (src/lib/assessment.ts)
+- [ ] (UI) Enhance knowledge gap filtering interface (src/components/DiscoverMode.tsx)
+
+## Struggle Tracking Enhancements
+- [ ] (LOGIC) Factor struggle metrics into scheduling algorithms (src/lib/scheduler.ts)
+- [ ] (UI) Implement progress heatmaps with struggle metrics (src/components/ProgressDashboard.tsx)
 
 ## Discover Mode Enhancements
 - [x] (LOGIC) Implement topic relationship modeling (src/lib/srs.ts)

@@ -32,13 +32,20 @@ describe('SRS Modes Tests', () => {
     });
   });
 
-  it('should filter questions for Repeat mode', async () => {
+  it('should filter questions for Repeat mode with strict criteria', async () => {
     const mode = 'repeat';
     const questions = await schedulerService.getQuestionsByMode(mode, mockUser.id, []);
 
-    expect(questions).toHaveLength(2);
+    // Should include:
+    // q1 - ease 1.5 < 2.0
+    // q4 - struggleCount 3 >= 3
+    // q6 - struggleCount 4 >= 3
+    // q8 - ease 1.8 < 2.0
+    expect(questions).toHaveLength(4);
     expect(questions.map(q => q.id)).toContain('q1');
     expect(questions.map(q => q.id)).toContain('q4');
+    expect(questions.map(q => q.id)).toContain('q6');
+    expect(questions.map(q => q.id)).toContain('q8');
   });
 
   it('should filter questions for Study mode', async () => {
@@ -141,31 +148,38 @@ describe('SRS Modes Tests', () => {
     // Verify sorting by struggle metrics
     expect(sorted[0].id).toBe('q6'); // Highest struggleCount (4)
     expect(sorted[1].id).toBe('q4'); // Next highest (3)
-    expect(sorted[2].id).toBe('q8'); // Then (2)
-    expect(sorted[3].id).toBe('q2'); // Then (2 but older struggle date)
+    // q8 and q2 should not be included since they don't meet the >=3 threshold
+    expect(sorted).toHaveLength(2);
     
     // Verify questions with low ease factor are included
     expect(sorted.some(q => q.reviewEase <= 2.0)).toBe(true);
-    
-    // Verify questions with recent struggles are prioritized
-    const recentStruggleQuestions = sorted.filter(q =>
-      q.lastStruggledAt &&
-      (Date.now() - q.lastStruggledAt.getTime()) < 86400000 * 7 // Within 7 days
-    );
-    expect(recentStruggleQuestions.length).toBeGreaterThan(0);
   });
 
   // Test full Repeat mode filtering criteria
-  it('should include questions with ease < 2.0 OR overdue OR high struggle', () => {
+  it('should include questions with ease < 2.0 OR overdue OR struggleCount >=3', () => {
     const questions = mockQuestions.filter(q => q.user_id === mockUser.id);
     const filtered = getRepeatModeQuestions(questions);
     
     filtered.forEach(q => {
       const isOverdue = q.lastReviewed &&
         ((Date.now() - q.lastReviewed.getTime()) / 86400000) > q.reviewInterval;
-      const meetsCriteria = q.reviewEase < 2.0 || isOverdue || q.struggleCount >= 2;
+      const meetsCriteria = q.reviewEase < 2.0 || isOverdue || q.struggleCount >= 3;
       expect(meetsCriteria).toBe(true);
     });
+  });
+
+  it('should exclude questions with only recent struggles', () => {
+    const testQuestion = {
+      ...mockQuestions[0],
+      id: 'test1',
+      reviewEase: 2.5,
+      struggleCount: 2, // Below threshold
+      lastStruggledAt: new Date(), // Recent struggle
+    };
+    const questions = [...mockQuestions, testQuestion];
+    const filtered = getRepeatModeQuestions(questions);
+    
+    expect(filtered.some(q => q.id === 'test1')).toBe(false);
   });
 
   // Test time-based decay for Study mode
