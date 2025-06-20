@@ -2,7 +2,11 @@ import React, { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'next/navigation';
 
-const QuestionGeneratorForm: React.FC = () => {
+interface QuestionGeneratorFormProps {
+  selectedRole?: string;
+}
+
+const QuestionGeneratorForm: React.FC<QuestionGeneratorFormProps> = ({ selectedRole }) => {
   const { user } = useAuth();
   const router = useRouter();
   const [prompt, setPrompt] = useState('');
@@ -30,7 +34,13 @@ const QuestionGeneratorForm: React.FC = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ prompt, maxTokens, temperature, questionType }),
+        body: JSON.stringify({
+          prompt,
+          maxTokens,
+          temperature,
+          questionType,
+          role: selectedRole
+        }),
       });
 
       if (!res.ok) {
