@@ -201,4 +201,94 @@ describe('SRS Modes Tests', () => {
     expect(gaps).toContain('physics'); // q6 has high struggle but low reviews
     expect(gaps).not.toContain('chemistry'); // q7 has no struggles, good performance
   });
+
+  // Edge case tests
+  it('should handle undefined reviewEase in Repeat mode', () => {
+    const edgeQuestions = [...mockQuestions, {
+      ...mockQuestions[0],
+      id: 'edge1',
+      reviewEase: undefined,
+    }];
+
+    const questions = getRepeatModeQuestions(edgeQuestions);
+    expect(questions.some(q => q.id === 'edge1')).toBe(false);
+  });
+
+  it('should handle negative struggleCount in Repeat mode', () => {
+    const edgeQuestions = [...mockQuestions, {
+      ...mockQuestions[0],
+      id: 'edge2',
+      struggleCount: -5,
+    }];
+
+    const questions = getRepeatModeQuestions(edgeQuestions);
+    expect(questions.some(q => q.id === 'edge2')).toBe(false);
+  });
+
+  it('should handle very old struggle dates in Repeat mode', () => {
+    const edgeQuestions = [...mockQuestions, {
+      ...mockQuestions[0],
+      id: 'edge3',
+      lastStruggledAt: new Date('2000-01-01'),
+    }];
+
+    const questions = getRepeatModeQuestions(edgeQuestions);
+    expect(questions.some(q => q.id === 'edge3')).toBe(false);
+  });
+
+  it('should handle NaN reviewCount in Study mode', () => {
+    const edgeQuestions = [...mockQuestions, {
+      ...mockQuestions[0],
+      id: 'edge4',
+      reviewCount: NaN,
+    }];
+
+    const { newQuestions, recentQuestions } = getStudyModeQuestions(edgeQuestions);
+    expect([...newQuestions, ...recentQuestions].some(q => q.id === 'edge4')).toBe(false);
+  });
+
+  it('should handle missing lastReviewed in Study mode', () => {
+    const edgeQuestions = [...mockQuestions, {
+      ...mockQuestions[0],
+      id: 'edge5',
+      lastReviewed: undefined,
+    }];
+
+    const { newQuestions } = getStudyModeQuestions(edgeQuestions);
+    expect(newQuestions.some(q => q.id === 'edge5')).toBe(true);
+  });
+
+  it('should handle AI-generated questions without topics in Discover mode', () => {
+    const edgeQuestions = [...mockQuestions, {
+      ...mockQuestions[0],
+      id: 'edge6',
+      isAIGenerated: true,
+      topics: undefined,
+    }];
+
+    const questions = getDiscoverModeQuestions(edgeQuestions, []);
+    expect(questions.some(q => q.id === 'edge6')).toBe(true);
+  });
+
+  it('should handle empty topics array in Discover mode', () => {
+    const edgeQuestions = [...mockQuestions, {
+      ...mockQuestions[0],
+      id: 'edge7',
+      topics: [],
+    }];
+
+    const questions = getDiscoverModeQuestions(edgeQuestions, []);
+    expect(questions.some(q => q.id === 'edge7')).toBe(false);
+  });
+
+  it('should handle invalid topic data types in Discover mode', () => {
+    const edgeQuestions = [...mockQuestions, {
+      ...mockQuestions[0],
+      id: 'edge8',
+      topics: [123, true], // Invalid types
+    } as unknown as Question]; // Force invalid type
+
+    const questions = getDiscoverModeQuestions(edgeQuestions, []);
+    expect(questions.some(q => q.id === 'edge8')).toBe(false);
+  });
 });

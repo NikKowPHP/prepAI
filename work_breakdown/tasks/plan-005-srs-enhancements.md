@@ -18,7 +18,7 @@
 - [x] (LOGIC) Implement Study mode filtering: new questions + recent questions (<=3 reviews) (src/lib/srs.ts)
 - [x] (LOGIC) Implement Discover mode filtering: AI-generated + topic-related questions (src/lib/srs.ts)
 - [x] (LOGIC) Add API error handling for all SRS modes (src/lib/srs.ts)
-- [ ] (TEST) Add tests for mode filtering edge cases (src/lib/__tests__/srsModes.test.ts)
+- [x] (TEST) Add tests for mode filtering edge cases (src/lib/__tests__/srsModes.test.ts)
 
 ## Discover Mode Enhancements
 - [x] (LOGIC) Implement topic relationship modeling (src/lib/srs.ts)
