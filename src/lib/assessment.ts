@@ -56,10 +56,34 @@ export const createAssessmentService = (): AssessmentService => {
     return recommendations;
   };
 
-  const analyzeKnowledgeGaps = (questionPerformance: Record<string, { correct: boolean, topics: string[] }>): { gaps: string[], suggestedQuestions: string[] } => {
+  const analyzeKnowledgeGaps = async (questionPerformance: Record<string, { correct: boolean, topics: string[] }>): Promise<{ gaps: string[], suggestedQuestions: string[] }> => {
+    try {
+      // Try AI-powered analysis first
+      const aiResponse = await fetch('/api/analyze-knowledge-gaps', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          questionPerformance,
+          userId: 'currentUser' // Would need to pass real user ID in implementation
+        }),
+      });
+
+      if (aiResponse.ok) {
+        const aiData = await aiResponse.json();
+        return {
+          gaps: aiData.gaps,
+          suggestedQuestions: aiData.suggestions
+        };
+      }
+    } catch (error) {
+      console.error('AI analysis failed, falling back to heuristic', error);
+    }
+
+    // Fallback to heuristic analysis if AI fails
     const topicPerformance: Record<string, { correctCount: number, totalCount: number }> = {};
 
-    // Analyze performance by topic
     Object.values(questionPerformance).forEach(entry => {
       entry.topics.forEach(topic => {
         if (!topicPerformance[topic]) {
@@ -72,20 +96,16 @@ export const createAssessmentService = (): AssessmentService => {
       });
     });
 
-    // Identify knowledge gaps (topics with low performance)
     const gaps: string[] = [];
     const suggestedQuestions: string[] = [];
 
     Object.entries(topicPerformance).forEach(([topic, performance]) => {
       const successRate = performance.correctCount / performance.totalCount;
-      if (successRate < 0.5) { // Consider topics with less than 50% success as gaps
+      if (successRate < 0.5) {
         gaps.push(topic);
-
-        // Suggest questions related to this topic
         const relatedQuestions = Object.keys(questionPerformance)
           .filter(q => questionPerformance[q].topics.includes(topic))
           .map(q => `Question: ${q}`);
-
         suggestedQuestions.push(`Focus on ${topic}:`, ...relatedQuestions);
       }
     });

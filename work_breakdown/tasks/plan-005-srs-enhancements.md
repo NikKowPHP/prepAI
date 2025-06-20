@@ -23,7 +23,7 @@
 ## Discover Mode Enhancements
 - [x] (LOGIC) Implement topic relationship modeling (src/lib/srs.ts)
 - [x] (LOGIC) Enhance AI question generation integration (src/app/api/generate-question/route.ts)
-- [ ] (LOGIC) Implement AI-powered knowledge gap analysis:
+- [x] (LOGIC) Implement AI-powered knowledge gap analysis:
     * Connect Discover mode to question generation API (src/app/api/generate-question/route.ts)
     * Implement topic relationship modeling for gap detection (src/lib/assessment.ts)
     * Create gap visualization algorithms (src/lib/assessment.ts)
