@@ -8,7 +8,7 @@
 
 ## Implementation Tasks
 1. [x] (UI) Create sign up form with email and password fields
-2. [ ] (UI) Create sign in form with email and password
+2. [x] (UI) Create sign in form with email and password
 3. [ ] (UI) Implement sign out button in navigation
 4. [x] (LOGIC) Set up Supabase authentication service
 5. [ ] (LOGIC) Implement user registration endpoint
