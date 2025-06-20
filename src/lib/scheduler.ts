@@ -153,6 +153,7 @@ export const createSchedulerService = (): SchedulerService => {
       struggleCount: item.struggle_count || 0,
       lastStruggledAt: item.last_struggled_at ? new Date(item.last_struggled_at) : null,
       totalStruggleTime: item.total_struggle_time || 0,
+      reviewCount: item.review_count || 0,
     }));
 
     let filteredQuestions;
@@ -162,10 +163,15 @@ export const createSchedulerService = (): SchedulerService => {
         break;
       case 'study':
         filteredQuestions = questions.filter(q => {
-          if (!q.lastReviewed) return true;
-          const daysSinceCreated = (new Date().getTime() - q.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-          const approxReviews = daysSinceCreated / q.reviewInterval;
-          return approxReviews <= 3;
+          if (!q.lastReviewed) return true; // New questions always included
+          if (q.reviewCount <= 3) return true; // Low review count questions included
+
+          // Apply time-based decay: reduce probability for older questions
+          const daysSinceLastReview = (new Date().getTime() - q.lastReviewed.getTime()) / (1000 * 60 * 60 * 24);
+          const decayFactor = Math.max(0, 1 - (daysSinceLastReview / (q.reviewInterval * 2)));
+
+          // Random selection with decay factor
+          return Math.random() < decayFactor;
         });
         break;
       case 'discover':
