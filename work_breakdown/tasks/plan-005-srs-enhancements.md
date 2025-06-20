@@ -37,8 +37,8 @@
 
 ## Test Coverage
 - [x] (TEST) Add end-to-end SRS workflow tests (tests/e2e/srsWorkflow.test.ts)
-- [ ] (TEST) Cover all mode filtering scenarios (src/lib/__tests__/srsModes.test.ts)
-- [ ] (TEST) Add knowledge gap analysis unit tests (src/lib/__tests__/assessment.test.ts)
+- [x] (TEST) Cover all mode filtering scenarios (src/lib/__tests__/srsModes.test.ts)
+- [x] (TEST) Add knowledge gap analysis unit tests (src/lib/__tests__/assessment.test.ts)
 
 ## Cross-Mode Requirements
 - [x] (LOGIC) Update database schema to support new fields (prisma/schema.prisma)

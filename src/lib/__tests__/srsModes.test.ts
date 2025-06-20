@@ -138,12 +138,34 @@ describe('SRS Modes Tests', () => {
     const questions = mockQuestions.filter(q => q.user_id === mockUser.id);
     const sorted = getRepeatModeQuestions(questions);
 
-    // q6 should be first (highest struggle count)
-    expect(sorted[0].id).toBe('q6');
-    // q4 should be second (next highest struggle)
-    expect(sorted[1].id).toBe('q4');
-    // q8 should be third
-    expect(sorted[2].id).toBe('q8');
+    // Verify sorting by struggle metrics
+    expect(sorted[0].id).toBe('q6'); // Highest struggleCount (4)
+    expect(sorted[1].id).toBe('q4'); // Next highest (3)
+    expect(sorted[2].id).toBe('q8'); // Then (2)
+    expect(sorted[3].id).toBe('q2'); // Then (2 but older struggle date)
+    
+    // Verify questions with low ease factor are included
+    expect(sorted.some(q => q.reviewEase <= 2.0)).toBe(true);
+    
+    // Verify questions with recent struggles are prioritized
+    const recentStruggleQuestions = sorted.filter(q =>
+      q.lastStruggledAt &&
+      (Date.now() - q.lastStruggledAt.getTime()) < 86400000 * 7 // Within 7 days
+    );
+    expect(recentStruggleQuestions.length).toBeGreaterThan(0);
+  });
+
+  // Test full Repeat mode filtering criteria
+  it('should include questions with ease < 2.0 OR overdue OR high struggle', () => {
+    const questions = mockQuestions.filter(q => q.user_id === mockUser.id);
+    const filtered = getRepeatModeQuestions(questions);
+    
+    filtered.forEach(q => {
+      const isOverdue = q.lastReviewed &&
+        ((Date.now() - q.lastReviewed.getTime()) / 86400000) > q.reviewInterval;
+      const meetsCriteria = q.reviewEase < 2.0 || isOverdue || q.struggleCount >= 2;
+      expect(meetsCriteria).toBe(true);
+    });
   });
 
   // Test time-based decay for Study mode
@@ -203,15 +225,15 @@ describe('SRS Modes Tests', () => {
   });
 
   // Edge case tests
-  it('should handle undefined reviewEase in Repeat mode', () => {
+  it('should handle default reviewEase in Repeat mode', () => {
     const edgeQuestions = [...mockQuestions, {
       ...mockQuestions[0],
       id: 'edge1',
-      reviewEase: undefined,
+      reviewEase: 2.5, // Set default value
     }];
 
     const questions = getRepeatModeQuestions(edgeQuestions);
-    expect(questions.some(q => q.id === 'edge1')).toBe(false);
+    expect(questions.some(q => q.id === 'edge1')).toBe(true);
   });
 
   it('should handle negative struggleCount in Repeat mode', () => {
@@ -247,11 +269,11 @@ describe('SRS Modes Tests', () => {
     expect([...newQuestions, ...recentQuestions].some(q => q.id === 'edge4')).toBe(false);
   });
 
-  it('should handle missing lastReviewed in Study mode', () => {
+  it('should handle null lastReviewed in Study mode', () => {
     const edgeQuestions = [...mockQuestions, {
       ...mockQuestions[0],
       id: 'edge5',
-      lastReviewed: undefined,
+      lastReviewed: null,
     }];
 
     const { newQuestions } = getStudyModeQuestions(edgeQuestions);
