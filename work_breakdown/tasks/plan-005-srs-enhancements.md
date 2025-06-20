@@ -31,12 +31,12 @@
 
 ## Struggle Tracking Enhancements
 - [x] (LOGIC) Factor struggle metrics into scheduling algorithms (src/lib/scheduler.ts)
-- [x] (UI) Add real-time struggle visualization:
+- [x] (UI) Add real-time struggle visualization: (COMPLETE)
     * Progress heatmaps (src/components/ProgressDashboard.tsx)
     * Difficulty indicators during study sessions (src/components/FlashcardStudy.tsx)
 
 ## Test Coverage
-- [ ] (TEST) Add end-to-end SRS workflow tests (tests/e2e/srsWorkflow.test.ts)
+- [x] (TEST) Add end-to-end SRS workflow tests (tests/e2e/srsWorkflow.test.ts)
 - [ ] (TEST) Cover all mode filtering scenarios (src/lib/__tests__/srsModes.test.ts)
 - [ ] (TEST) Add knowledge gap analysis unit tests (src/lib/__tests__/assessment.test.ts)
 
