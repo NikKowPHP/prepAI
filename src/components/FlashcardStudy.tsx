@@ -3,7 +3,7 @@ import { supabase } from '../lib/supabase';
 import { useAuth } from '../lib/auth-context';
 import { schedulerService } from '../lib/scheduler';
 
-interface Flashcard {
+interface FlashcardBase {
   id: string;
   question: string;
   answer: string;
@@ -12,6 +12,38 @@ interface Flashcard {
   last_reviewed?: string | null;
   review_interval?: number;
   review_ease?: number;
+  reviewCount?: number;
+}
+
+interface Flashcard extends FlashcardBase {
+  createdAt: Date;
+  lastReviewed: Date | null;
+  reviewInterval: number;
+  reviewEase: number;
+  struggleCount: number;
+  lastStruggledAt: Date | null;
+  totalStruggleTime: number;
+}
+
+interface FlashcardQueues {
+  newQuestions: Flashcard[];
+  recentQuestions: Flashcard[];
+}
+
+interface RawFlashcard {
+  id: string;
+  question: string;
+  answer: string;
+  rating: 'easy' | 'normal' | 'hard';
+  user_id: string;
+  created_at?: string;
+  last_reviewed?: string | null;
+  review_interval?: number;
+  review_ease?: number;
+  review_count?: number;
+  struggle_count?: number;
+  last_struggled_at?: string | null;
+  total_struggle_time?: number;
 }
 
 const FlashcardStudy: React.FC = () => {
@@ -22,6 +54,7 @@ const FlashcardStudy: React.FC = () => {
   const [rating, setRating] = useState<'easy' | 'normal' | 'hard'>('normal');
   const [isLoading, setIsLoading] = useState(true);
   const [nextReviewDate, setNextReviewDate] = useState<Date | null>(null);
+  const [queueType, setQueueType] = useState<'new' | 'recent'>('new');
 
   useEffect(() => {
     if (user) {
@@ -42,7 +75,31 @@ const FlashcardStudy: React.FC = () => {
         return;
       }
 
-      setFlashcards(data || []);
+      // Convert to Flashcard type with defaults
+      const flashcards = (data || []).map((f: RawFlashcard): Flashcard => ({
+        id: f.id,
+        question: f.question,
+        answer: f.answer,
+        rating: f.rating,
+        user_id: f.user_id,
+        createdAt: f.created_at ? new Date(f.created_at) : new Date(),
+        lastReviewed: f.last_reviewed ? new Date(f.last_reviewed) : null,
+        reviewInterval: f.review_interval || 1,
+        reviewEase: f.review_ease || 2.5,
+        struggleCount: f.struggle_count || 0,
+        lastStruggledAt: f.last_struggled_at ? new Date(f.last_struggled_at) : null,
+        totalStruggleTime: f.total_struggle_time || 0,
+        reviewCount: f.review_count || 0,
+      }));
+
+      // Get study mode queues
+      const queues: FlashcardQueues = {
+        newQuestions: flashcards.filter(f => f.reviewCount === 0),
+        recentQuestions: flashcards.filter(f => f.reviewCount && f.reviewCount > 0 && f.reviewCount <= 3)
+      };
+
+      // Set initial queue based on state
+      setFlashcards(queueType === 'new' ? queues.newQuestions : queues.recentQuestions);
     } catch (err) {
       console.error('Error fetching flashcards:', err);
     } finally {
@@ -115,6 +172,26 @@ const FlashcardStudy: React.FC = () => {
   return (
     <div className="p-4 border rounded shadow">
       <h2 className="text-xl font-bold mb-4">Flashcard Study</h2>
+      <div className="mb-4 flex space-x-4">
+        <button
+          onClick={() => {
+            setQueueType('new');
+            setFlashcards(prev => prev.filter(f => f.reviewCount === 0));
+          }}
+          className={`px-4 py-2 rounded ${queueType === 'new' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        >
+          New Questions
+        </button>
+        <button
+          onClick={() => {
+            setQueueType('recent');
+            setFlashcards(prev => prev.filter(f => f.reviewCount !== undefined && f.reviewCount > 0 && f.reviewCount <= 3));
+          }}
+          className={`px-4 py-2 rounded ${queueType === 'recent' ? 'bg-blue-500 text-white' : 'bg-gray-200'}`}
+        >
+          Recent Questions
+        </button>
+      </div>
       {nextReviewDate && (
         <p className="mb-4">
           Next review: {nextReviewDate.toLocaleDateString()}
