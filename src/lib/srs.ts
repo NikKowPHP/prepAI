@@ -107,14 +107,11 @@ export const getRepeatModeQuestions = (questions: Question[], easeThreshold = 2.
  */
 export const getStudyModeQuestions = (questions: Question[], reviewThreshold = 3): Question[] => {
   return questions.filter(question => {
-    // Consider questions with no last review date or few reviews as "new"
-    if (!question.lastReviewed) return true;
+    // Consider questions with no reviews as "new"
+    if (question.reviewCount === 0) return true;
 
-    // Get total reviews (approximated by days since creation / interval)
-    const daysSinceCreated = (new Date().getTime() - question.createdAt.getTime()) / (1000 * 60 * 60 * 24);
-    const approxReviews = daysSinceCreated / question.reviewInterval;
-
-    return approxReviews <= reviewThreshold;
+    // Include questions with low review count
+    return question.reviewCount <= reviewThreshold;
   });
 };
 
