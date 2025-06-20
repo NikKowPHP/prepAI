@@ -1,6 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { getObjectives, deleteObjective } from '@/lib/objectives';
+interface Question {
+  id: string;
+  text: string;
+  type: string;
+  options?: string[];
+}
 
 interface Objective {
   id: string;
@@ -14,6 +20,8 @@ const ObjectivesList: React.FC = () => {
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [generatedQuestions, setGeneratedQuestions] = useState<Question[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   useEffect(() => {
     const fetchObjectives = async () => {
@@ -39,10 +47,68 @@ const ObjectivesList: React.FC = () => {
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
       <h2 className="text-xl font-semibold mb-4">Your Learning Objectives</h2>
-      {objectives.length === 0 ? (
-        <p className="text-gray-500">No objectives created yet.</p>
-      ) : (
-        <ul className="space-y-3">
+      <div className="space-y-6">
+      {/* Objectives list */}
+        {objectives.length === 0 ? (
+          <p className="text-gray-500">No objectives created yet.</p>
+        ) : (
+          <>
+            <button
+              onClick={async () => {
+                if (!user) {
+                  alert('User not authenticated');
+                  return;
+                }
+                
+                try {
+                  setIsGenerating(true);
+                  const topics = objectives.map(obj => obj.name);
+                  const response = await fetch('/api/generate-question', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      prompt: 'Generate interview preparation questions',
+                      topics: topics,
+                      questionType: 'multiple_choice'
+                    }),
+                  });
+
+                  if (!response.ok) {
+                    throw new Error('Failed to generate questions');
+                  }
+
+                  const data = await response.json();
+                  setGeneratedQuestions(prev => [
+                    ...prev,
+                    {
+                      id: Date.now().toString(),
+                      text: data.question,
+                      type: data.type,
+                      options: data.type === 'multiple_choice' ? ['A', 'B', 'C', 'D'] : []
+                    },
+                    ...(data.relatedQuestions || []).map((q: string, i: number) => ({
+                      id: `${Date.now()}-${i}`,
+                      text: q,
+                      type: data.type,
+                      options: data.type === 'multiple_choice' ? ['A', 'B', 'C', 'D'] : []
+                    }))
+                  ]);
+                } catch (error) {
+                  console.error('Error generating questions:', error);
+                  alert('Failed to generate questions');
+                } finally {
+                  setIsGenerating(false);
+                }
+              }}
+              disabled={isGenerating}
+              className="bg-blue-500 text-white px-4 py-2 rounded-md hover:bg-blue-600 disabled:bg-blue-300 disabled:cursor-not-allowed"
+            >
+              {isGenerating ? 'Generating...' : 'Generate Questions'}
+            </button>
+
+            <ul className="space-y-3">
           {objectives.map((objective) => (
             <li key={objective.id} className="p-3 bg-gray-50 rounded-md">
               <h3 className="font-medium">{objective.name}</h3>
@@ -78,11 +144,12 @@ const ObjectivesList: React.FC = () => {
                 >
                   {deletingId === objective.id ? 'Deleting...' : 'Delete'}
                 </button>
-              </div>
-            </li>
-          ))}
-        </ul>
-      )}
+                  </div>
+                </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 };
