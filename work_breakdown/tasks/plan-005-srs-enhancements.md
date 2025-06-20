@@ -42,5 +42,5 @@
 
 ## Cross-Mode Requirements
 - [x] (LOGIC) Update database schema to support new fields (prisma/schema.prisma)
-- [ ] (LOGIC) Update tests to cover all SRS mode cases (src/lib/__tests__/srsModes.test.ts)
+- [x] (LOGIC) Update tests to cover all SRS mode cases (src/lib/__tests__/srsModes.test.ts)
 - [x] (DOCS) Update documentation to reflect enhanced functionality (docs/canonical_spec.md)
