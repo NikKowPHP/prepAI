@@ -8,6 +8,11 @@ export interface Question {
   lastStruggledAt: Date | null;
   totalStruggleTime: number;
   reviewCount: number;
+  question: string;
+  answer: string;
+  rating: 'easy' | 'normal' | 'hard';
+  user_id: string;
+  topics?: string[];
 }
 
 export const calculateNextReview = (question: Question): { daysUntilReview: number, newInterval: number, newEase: number } => {
@@ -123,19 +128,42 @@ export const getStudyModeQuestions = (questions: Question[], reviewThreshold = 3
 };
 
 /**
+ * Calculate similarity between two sets of topics
+ * @param topicsA - Topics from first question
+ * @param topicsB - Topics from second question
+ * @returns Similarity score (0-1)
+ */
+const calculateTopicSimilarity = (topicsA: string[], topicsB: string[]): number => {
+  if (topicsA.length === 0 || topicsB.length === 0) return 0;
+
+  const intersection = topicsA.filter(topic => topicsB.includes(topic));
+  return intersection.length / Math.max(topicsA.length, topicsB.length);
+};
+
+/**
  * Get questions for Discover mode (potential new questions)
  * @param questions - Array of questions to filter
  * @param userQuestions - IDs of questions already in user's queue
- * @returns Filtered list of questions for discovery
+ * @param currentTopics - Topics from currently active questions
+ * @returns Filtered list of questions for discovery, sorted by relevance
  */
-export const getDiscoverModeQuestions = (questions: Question[], userQuestions: string[]): Question[] => {
-  return questions.filter(question => {
-    // Exclude questions already in user's queue
-    if (userQuestions.includes(question.id)) return false;
+export const getDiscoverModeQuestions = (questions: Question[], userQuestions: string[], currentTopics: string[] = []): Question[] => {
+  return questions
+    .filter(question => {
+      // Exclude questions already in user's queue
+      if (userQuestions.includes(question.id)) return false;
 
-    // For now, include all other questions as potential discoveries
-    return true;
-  });
+      // Include questions with some topic overlap if they have topics
+      if (!question.topics || question.topics.length === 0) return false;
+
+      return calculateTopicSimilarity(question.topics, currentTopics) > 0;
+    })
+    .sort((a, b) => {
+      // Sort by topic similarity (descending)
+      const similarityA = calculateTopicSimilarity(a.topics || [], currentTopics);
+      const similarityB = calculateTopicSimilarity(b.topics || [], currentTopics);
+      return similarityB - similarityA;
+    });
 };
 
 export const updateQuestionAfterReview = (question: Question, remembered: boolean, timeSpent = 0): Question => {
