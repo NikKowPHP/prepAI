@@ -36,3 +36,24 @@ export const createObjective = async (input: CreateObjectiveInput) => {
     throw new Error('Failed to create objective');
   }
 };
+
+export const getObjectives = async (userId: string) => {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user || user.id !== userId) {
+      throw new Error('Unauthorized');
+    }
+
+    return await prisma.objective.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+    });
+  } catch (error: unknown) {
+    if (error instanceof Error) {
+      console.error('Error fetching objectives:', error.message);
+      throw error;
+    }
+    console.error('Unknown error fetching objectives');
+    throw new Error('Failed to fetch objectives');
+  }
+};
