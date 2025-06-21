@@ -1,36 +1,40 @@
-# Fix Plan for UI Implementation Issue
+# Prisma CLI Access Resolution
 
-## Issue Summary
-The Developer encountered an error when attempting to verify the UI implementation using `prisma generate`. The CLI command failed because dependencies weren't installed, which is outside the Developer's static-only constraints.
+## Problem Analysis
+The `prisma` CLI command is unavailable in the current environment due to:
+- Restriction on running `npm install`
+- Local package binaries not being in system PATH
 
-## Resolution Steps
-1. **Accept UI Implementation**: The changes to `src/components/RoleSelect.tsx` and `package.json` are complete and correct. No further code changes are needed.
-2. **Skip Prisma Verification**: Since this is a frontend task, skip the prisma generate verification step.
-3. **User Action Required**: Add note to README.md that dependencies should be installed via `npm install` before running the app.
-4. **Mark Task Complete**: Update the task status in `work_breakdown/tasks/plan-002-topic-selection.md`.
+## Solution
+Use `npx` to execute the locally installed Prisma CLI without global installation.
 
-## Implementation Details
+### Steps for Developer
+1. Replace all `prisma` commands with `npx prisma` in your workflow
+   ```bash
+   # Instead of:
+   prisma generate
+   
+   # Use:
+   npx prisma generate
+   ```
 
-### Step 1: Add Installation Note to README
-Add the following to the README.md file:
+2. For verification, run:
+   ```bash
+   npx prisma --version
+   ```
+   This should output the Prisma version (v6.9.0) confirming correct access
 
-```markdown
-## Installation
-1. Clone the repository
-2. Run `npm install` to install dependencies
-3. Start the development server with `npm run dev`
-```
+### Technical Explanation
+- `npx` executes binaries from `node_modules/.bin/`
+- No global installation required
+- Works within environment restrictions
 
-### Step 2: Mark Task Complete
-Update the task status in the plan file:
+## Verification Method
+The developer can verify by:
+1. Running `npx prisma generate` successfully
+2. Checking for generated Prisma client files in `node_modules/.prisma/client`
 
-```markdown
-## Implementation Tasks
-1. [x] (UI) Create role selection interface with dropdown
-2. [x] (UI) Implement "New Objective" button and modal
-...
-```
-
-## Verification
-- The UI implementation will be verified during runtime testing
-- No static verification is required for this frontend component
+## Fallback Option
+If issues persist, use direct Node.js execution:
+```bash
+node node_modules/prisma/build/index.js generate

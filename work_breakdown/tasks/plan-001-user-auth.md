@@ -18,6 +18,11 @@
 9. [x] (UI) Implement error handling for auth failures
 10. [x] (LOGIC) Add password validation rules
 
+## Verification Tasks
+1. [x] (TEST) Manual verification of sign up flow (see docs/auth_verification.md)
+2. [x] (TEST) Manual verification of sign in flow (see docs/auth_verification.md)
+3. [x] (TEST) Manual verification of sign out functionality (see docs/auth_verification.md)
+
 ## Dependencies
 - Supabase authentication service
 - Prisma user schema
