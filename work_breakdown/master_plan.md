@@ -58,3 +58,4 @@
 - [ ] Application Layer: API route implementation
 - [ ] Domain Layer: Service integration
 - [ ] Data Layer: Supabase + Prisma configuration
+- [ ] Audit Fixes (plan-009-audit-fixes.md)

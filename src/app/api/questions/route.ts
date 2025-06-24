@@ -217,6 +217,60 @@ export async function PUT(req: NextRequest) {
   }
 }
 
+// ROO-AUDIT-TAG :: plan-002-topic-selection.md :: Implement API endpoint for objective-question linking
+export async function PATCH(req: NextRequest) {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser();
+    if (authError || !user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    const body = await req.json();
+    if (!body || typeof body !== 'object') {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
+    }
+
+    const { questionId, objectiveId } = body;
+    if (!questionId || !objectiveId) {
+      return NextResponse.json({ error: 'Missing questionId or objectiveId' }, { status: 400 });
+    }
+
+    // Verify user owns both the question and objective
+    const [question, objective] = await Promise.all([
+      prisma.question.findUnique({ where: { id: questionId } }),
+      prisma.objective.findUnique({ where: { id: objectiveId } })
+    ]);
+
+    if (!question || question.userId !== user.id) {
+      return NextResponse.json({ error: 'Question not found or unauthorized' }, { status: 404 });
+    }
+    if (!objective || objective.userId !== user.id) {
+      return NextResponse.json({ error: 'Objective not found or unauthorized' }, { status: 404 });
+    }
+
+    // Create the link
+    const link = await prisma.objectiveQuestion.create({
+      data: {
+        objectiveId,
+        questionId
+      }
+    });
+
+    return NextResponse.json(link);
+  } catch (error: unknown) {
+    if (error instanceof SyntaxError) {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+    if (error instanceof Error) {
+      console.error('Database Error:', error.message);
+    } else {
+      console.error('Unknown Error:', error);
+    }
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
+}
+// ROO-AUDIT-TAG :: plan-002-topic-selection.md :: END
+
 export async function DELETE(req: NextRequest) {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
