@@ -18,7 +18,7 @@
 10. [x] (LOGIC) Implement API endpoint for objective-question linking
 11. [x] (LOGIC) Create service to trigger question generation when objectives are created
 12. [x] (TEST) Verify new objectives appear in question generation interface
-13. [ ] (TEST) Verify generated questions match selected objectives
+13. [x] (TEST) Verify generated questions match selected objectives
 
 ## Dependencies
 - User authentication
