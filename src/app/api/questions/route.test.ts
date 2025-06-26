@@ -1,35 +1,55 @@
+// ROO-AUDIT-TAG :: plan-009-audit-fixes.md :: Update test cases for new test database setup
 import { NextRequest } from 'next/server';
 import * as route from './route';
-import { prisma } from '@/lib/db';
-import { supabase } from '@/lib/supabase';
+import type { Question } from '@prisma/client';
 
-// Mock Prisma and Supabase
-jest.mock('@/lib/db', () => ({
-  prisma: {
-    question: {
-      create: jest.fn(),
-      findMany: jest.fn(),
-      findUnique: jest.fn(),
-      update: jest.fn(),
-      delete: jest.fn(),
+// Type definitions for test mocks
+type MockUser = {
+  id: string;
+  app_metadata: Record<string, unknown>;
+  user_metadata: Record<string, unknown>;
+  aud: string;
+  created_at: string;
+};
+
+
+// ROO-AUDIT-TAG :: plan-009-audit-fixes.md :: Replace mock implementations with test database setup
+import { PrismaClient } from '@prisma/client';
+import { createClient, AuthError } from '@supabase/supabase-js';
+
+// Test database instance
+const testPrisma = new PrismaClient({
+  datasources: {
+    db: {
+      url: process.env.TEST_DATABASE_URL,
     },
   },
+});
+
+// Test Supabase client
+const testSupabase = createClient(
+  process.env.TEST_SUPABASE_URL!,
+  process.env.TEST_SUPABASE_KEY!
+);
+
+// Mock implementations using test services
+jest.mock('@/lib/db', () => ({
+  prisma: testPrisma,
 }));
 
 jest.mock('@/lib/supabase', () => ({
-  supabase: {
-    auth: {
-      getUser: jest.fn(),
-    },
-  },
+  supabase: testSupabase,
 }));
 
-const mockCreate = prisma.question.create as jest.Mock;
-const mockFindMany = prisma.question.findMany as jest.Mock;
-const mockFindUnique = prisma.question.findUnique as jest.Mock;
-const mockUpdate = prisma.question.update as jest.Mock;
-const mockDelete = prisma.question.delete as jest.Mock;
-const mockGetUser = supabase.auth.getUser as jest.Mock;
+// Test data setup
+beforeAll(async () => {
+  await testPrisma.question.deleteMany();
+});
+
+afterAll(async () => {
+  await testPrisma.$disconnect();
+});
+// ROO-AUDIT-TAG :: plan-009-audit-fixes.md :: END
 
 describe('CRUD operations for questions', () => {
   beforeEach(() => {
@@ -38,9 +58,14 @@ describe('CRUD operations for questions', () => {
 
   describe('POST /api/questions', () => {
     it('should return 401 if unauthorized', async () => {
-      mockGetUser.mockResolvedValue({
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
         data: { user: null },
-        error: new Error('Not authenticated'),
+        error: {
+          message: 'Not authenticated',
+          name: 'AuthError',
+          code: 'invalid-auth',
+          status: 401
+        } as AuthError,
       });
 
       const req = new NextRequest('http://localhost/api/questions', {
@@ -59,20 +84,18 @@ describe('CRUD operations for questions', () => {
     });
 
     it('should create a new question with valid data', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          } satisfies MockUser
+        },
         error: null,
       });
-
-      const mockQuestion = {
-        id: '1',
-        content: 'Test question',
-        category: 'general',
-        difficulty: 'easy',
-        userId: 'user-id',
-        createdAt: new Date(),
-      };
-      mockCreate.mockResolvedValue(mockQuestion);
 
       const req = new NextRequest('http://localhost/api/questions', {
         method: 'POST',
@@ -86,18 +109,32 @@ describe('CRUD operations for questions', () => {
 
       const response = await route.POST(req);
       expect(response.status).toBe(201);
-      const json = await response.json();
-      expect(json.id).toBe(mockQuestion.id);
-      expect(json.content).toBe(mockQuestion.content);
-      expect(json.category).toBe(mockQuestion.category);
-      expect(json.difficulty).toBe(mockQuestion.difficulty);
-      expect(json.userId).toBe(mockQuestion.userId);
+      
+      const json: Question = await response.json();
+      expect(json.content).toBe('Test question');
+      expect(json.category).toBe('general');
+      expect(json.difficulty).toBe('easy');
+      expect(json.userId).toBe('user-id');
       expect(json.createdAt).toBeDefined();
+
+      // Verify the question was actually created in test database
+      const createdQuestion = await testPrisma.question.findUnique({
+        where: { id: json.id }
+      });
+      expect(createdQuestion).toBeTruthy();
     });
 
     it('should return 400 if missing required fields', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
 
@@ -113,8 +150,16 @@ describe('CRUD operations for questions', () => {
     });
 
     it('should return 400 if field types are invalid', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
 
@@ -134,11 +179,22 @@ describe('CRUD operations for questions', () => {
     });
 
     it('should return 500 on database error', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
-      mockCreate.mockRejectedValue(new Error('Database error'));
+      
+      jest.spyOn(testPrisma.question, 'create').mockImplementation(() => {
+        throw new Error('Database error');
+      });
 
       const req = new NextRequest('http://localhost/api/questions', {
         method: 'POST',
@@ -158,9 +214,14 @@ describe('CRUD operations for questions', () => {
 
   describe('GET /api/questions', () => {
     it('should return 401 if unauthorized', async () => {
-      mockGetUser.mockResolvedValue({
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
         data: { user: null },
-        error: new Error('Not authenticated'),
+        error: {
+          message: 'Not authenticated',
+          name: 'AuthError',
+          code: 'invalid-auth',
+          status: 401
+        } as AuthError,
       });
 
       const req = new NextRequest('http://localhost/api/questions', {
@@ -173,30 +234,38 @@ describe('CRUD operations for questions', () => {
     });
 
     it('should return all questions for the user', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
 
-      const mockQuestions = [
-        {
-          id: '1',
-          content: 'Test question 1',
-          category: 'general',
-          difficulty: 'easy',
-          userId: 'user-id',
-          createdAt: new Date(),
-        },
-        {
-          id: '2',
-          content: 'Test question 2',
-          category: 'general',
-          difficulty: 'easy',
-          userId: 'user-id',
-          createdAt: new Date(),
-        },
-      ];
-      mockFindMany.mockResolvedValue(mockQuestions);
+      // Create test questions directly in the database
+      const questions = await Promise.all([
+        testPrisma.question.create({
+          data: {
+            content: 'Test question 1',
+            category: 'general',
+            difficulty: 'easy',
+            userId: 'user-id',
+          },
+        }),
+        testPrisma.question.create({
+          data: {
+            content: 'Test question 2',
+            category: 'general',
+            difficulty: 'easy',
+            userId: 'user-id',
+          },
+        }),
+      ]);
 
       const req = new NextRequest('http://localhost/api/questions', {
         method: 'GET',
@@ -204,58 +273,72 @@ describe('CRUD operations for questions', () => {
 
       const response = await route.GET(req);
       expect(response.status).toBe(200);
-      const json = await response.json();
-      expect(json.length).toBe(mockQuestions.length);
-      json.forEach((q: any, index: number) => {
-        expect(q.id).toBe(mockQuestions[index].id);
-        expect(q.content).toBe(mockQuestions[index].content);
-        expect(q.category).toBe(mockQuestions[index].category);
-        expect(q.difficulty).toBe(mockQuestions[index].difficulty);
-        expect(q.userId).toBe(mockQuestions[index].userId);
+      const json: Question[] = await response.json();
+      expect(json.length).toBe(questions.length);
+      json.forEach((q, index) => {
+        expect(q.id).toBe(questions[index].id);
+        expect(q.content).toBe(questions[index].content);
+        expect(q.category).toBe(questions[index].category);
+        expect(q.difficulty).toBe(questions[index].difficulty);
+        expect(q.userId).toBe(questions[index].userId);
         expect(q.createdAt).toBeDefined();
       });
     });
 
     it('should return a single question by ID', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
 
-      const mockQuestion = {
-        id: '1',
-        content: 'Test question',
-        category: 'general',
-        difficulty: 'easy',
-        userId: 'user-id',
-        createdAt: new Date(),
-      };
-      mockFindUnique.mockResolvedValue(mockQuestion);
+      // Create test question directly in the database
+      const question = await testPrisma.question.create({
+        data: {
+          content: 'Test question',
+          category: 'general',
+          difficulty: 'easy',
+          userId: 'user-id',
+        },
+      });
 
-      const req = new NextRequest('http://localhost/api/questions/1', {
+      const req = new NextRequest(`http://localhost/api/questions/${question.id}`, {
         method: 'GET',
       });
 
       const response = await route.GET(req);
       expect(response.status).toBe(200);
-      const json = await response.json();
-      expect(json.id).toBe(mockQuestion.id);
-      expect(json.content).toBe(mockQuestion.content);
-      expect(json.category).toBe(mockQuestion.category);
-      expect(json.difficulty).toBe(mockQuestion.difficulty);
-      expect(json.userId).toBe(mockQuestion.userId);
+      const json: Question = await response.json();
+      expect(json.id).toBe(question.id);
+      expect(json.content).toBe(question.content);
+      expect(json.category).toBe(question.category);
+      expect(json.difficulty).toBe(question.difficulty);
+      expect(json.userId).toBe(question.userId);
       expect(json.createdAt).toBeDefined();
     });
 
     it('should return 404 if question not found', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
 
-      mockFindUnique.mockResolvedValue(null);
-
-      const req = new NextRequest('http://localhost/api/questions/1', {
+      const req = new NextRequest('http://localhost/api/questions/non-existent-id', {
         method: 'GET',
       });
 
@@ -265,11 +348,22 @@ describe('CRUD operations for questions', () => {
     });
 
     it('should return 500 on database error', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
-      mockFindMany.mockRejectedValue(new Error('Database error'));
+      
+      jest.spyOn(testPrisma.question, 'findMany').mockImplementation(() => {
+        throw new Error('Database error');
+      });
 
       const req = new NextRequest('http://localhost/api/questions', {
         method: 'GET',
@@ -283,9 +377,14 @@ describe('CRUD operations for questions', () => {
 
   describe('PUT /api/questions/[id]', () => {
     it('should return 401 if unauthorized', async () => {
-      mockGetUser.mockResolvedValue({
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
         data: { user: null },
-        error: new Error('Not authenticated'),
+        error: {
+          message: 'Not authenticated',
+          name: 'AuthError',
+          code: 'invalid-auth',
+          status: 401
+        } as AuthError,
       });
 
       const req = new NextRequest('http://localhost/api/questions/1', {
@@ -302,23 +401,30 @@ describe('CRUD operations for questions', () => {
     });
 
     it('should update an existing question', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
 
-      const mockQuestion = {
-        id: '1',
-        content: 'Updated question',
-        category: 'general',
-        difficulty: 'easy',
-        userId: 'user-id',
-        createdAt: new Date(),
-      };
-      mockFindUnique.mockResolvedValue(mockQuestion);
-      mockUpdate.mockResolvedValue(mockQuestion);
+      // Create initial question
+      const question = await testPrisma.question.create({
+        data: {
+          content: 'Original question',
+          category: 'general',
+          difficulty: 'easy',
+          userId: 'user-id',
+        },
+      });
 
-      const req = new NextRequest('http://localhost/api/questions/1', {
+      const req = new NextRequest(`http://localhost/api/questions/${question.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -328,24 +434,36 @@ describe('CRUD operations for questions', () => {
 
       const response = await route.PUT(req);
       expect(response.status).toBe(200);
-      const json = await response.json();
-      expect(json.id).toBe(mockQuestion.id);
-      expect(json.content).toBe(mockQuestion.content);
-      expect(json.category).toBe(mockQuestion.category);
-      expect(json.difficulty).toBe(mockQuestion.difficulty);
-      expect(json.userId).toBe(mockQuestion.userId);
+      const json: Question = await response.json();
+      expect(json.id).toBe(question.id);
+      expect(json.content).toBe('Updated question');
+      expect(json.category).toBe('general');
+      expect(json.difficulty).toBe('easy');
+      expect(json.userId).toBe('user-id');
       expect(json.createdAt).toBeDefined();
+
+      // Verify the update in the database
+      const updatedQuestion = await testPrisma.question.findUnique({
+        where: { id: question.id }
+      });
+      expect(updatedQuestion?.content).toBe('Updated question');
     });
 
     it('should return 404 if question not found', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
 
-      mockFindUnique.mockResolvedValue(null);
-
-      const req = new NextRequest('http://localhost/api/questions/1', {
+      const req = new NextRequest('http://localhost/api/questions/non-existent-id', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -359,8 +477,16 @@ describe('CRUD operations for questions', () => {
     });
 
     it('should return 400 if missing required fields', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
 
@@ -376,17 +502,34 @@ describe('CRUD operations for questions', () => {
     });
 
     it('should return 500 on database error', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
-      mockFindUnique.mockResolvedValue({
-        id: '1',
-        userId: 'user-id',
-      });
-      mockUpdate.mockRejectedValue(new Error('Database error'));
 
-      const req = new NextRequest('http://localhost/api/questions/1', {
+      // Create test question
+      const question = await testPrisma.question.create({
+        data: {
+          content: 'Test question',
+          category: 'general',
+          difficulty: 'easy',
+          userId: 'user-id',
+        },
+      });
+
+      jest.spyOn(testPrisma.question, 'update').mockImplementation(() => {
+        throw new Error('Database error');
+      });
+
+      const req = new NextRequest(`http://localhost/api/questions/${question.id}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -402,9 +545,14 @@ describe('CRUD operations for questions', () => {
 
   describe('DELETE /api/questions/[id]', () => {
     it('should return 401 if unauthorized', async () => {
-      mockGetUser.mockResolvedValue({
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
         data: { user: null },
-        error: new Error('Not authenticated'),
+        error: {
+          message: 'Not authenticated',
+          name: 'AuthError',
+          code: 'invalid-auth',
+          status: 401
+        } as AuthError,
       });
 
       const req = new NextRequest('http://localhost/api/questions/1', {
@@ -417,40 +565,59 @@ describe('CRUD operations for questions', () => {
     });
 
     it('should delete an existing question', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
 
-      const mockQuestion = {
-        id: '1',
-        content: 'Test question',
-        category: 'general',
-        difficulty: 'easy',
-        userId: 'user-id',
-        createdAt: new Date(),
-      };
-      mockFindUnique.mockResolvedValue(mockQuestion);
-      mockDelete.mockResolvedValue(undefined);
+      // Create test question
+      const question = await testPrisma.question.create({
+        data: {
+          content: 'Test question',
+          category: 'general',
+          difficulty: 'easy',
+          userId: 'user-id',
+        },
+      });
 
-      const req = new NextRequest('http://localhost/api/questions/1', {
+      const req = new NextRequest(`http://localhost/api/questions/${question.id}`, {
         method: 'DELETE',
       });
 
       const response = await route.DELETE(req);
       expect(response.status).toBe(200);
       expect(await response.json()).toEqual({ message: 'Question deleted successfully' });
+
+      // Verify deletion
+      const deletedQuestion = await testPrisma.question.findUnique({
+        where: { id: question.id }
+      });
+      expect(deletedQuestion).toBeNull();
     });
 
     it('should return 404 if question not found', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
 
-      mockFindUnique.mockResolvedValue(null);
-
-      const req = new NextRequest('http://localhost/api/questions/1', {
+      const req = new NextRequest('http://localhost/api/questions/non-existent-id', {
         method: 'DELETE',
       });
 
@@ -460,17 +627,34 @@ describe('CRUD operations for questions', () => {
     });
 
     it('should return 500 on database error', async () => {
-      mockGetUser.mockResolvedValue({
-        data: { user: { id: 'user-id' } },
+      jest.spyOn(testSupabase.auth, 'getUser').mockResolvedValue({
+        data: {
+          user: {
+            id: 'user-id',
+            app_metadata: {},
+            user_metadata: {},
+            aud: '',
+            created_at: ''
+          }
+        },
         error: null,
       });
-      mockFindUnique.mockResolvedValue({
-        id: '1',
-        userId: 'user-id',
-      });
-      mockDelete.mockRejectedValue(new Error('Database error'));
 
-      const req = new NextRequest('http://localhost/api/questions/1', {
+      // Create test question
+      const question = await testPrisma.question.create({
+        data: {
+          content: 'Test question',
+          category: 'general',
+          difficulty: 'easy',
+          userId: 'user-id',
+        },
+      });
+
+      jest.spyOn(testPrisma.question, 'delete').mockImplementation(() => {
+        throw new Error('Database error');
+      });
+
+      const req = new NextRequest(`http://localhost/api/questions/${question.id}`, {
         method: 'DELETE',
       });
 
