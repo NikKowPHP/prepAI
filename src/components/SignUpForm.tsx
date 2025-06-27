@@ -2,7 +2,7 @@ import React from 'react';
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import AuthErrorDisplay from './AuthErrorDisplay';
-import { validateEmail, validatePassword } from '../lib/validation';
+import { validateEmail, validatePassword, calculatePasswordStrength } from '../lib/validation';
 
 export default function SignUpForm() {
   const [email, setEmail] = useState('');
@@ -11,6 +11,7 @@ export default function SignUpForm() {
   const [error, setError] = useState('');
   const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
+  const [passwordStrength, setPasswordStrength] = useState(0);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -68,6 +69,22 @@ export default function SignUpForm() {
         {emailError && (
           <div className="text-red-500 text-sm mt-1">{emailError}</div>
         )}
+        <div className="password-strength-meter mt-2 flex gap-1 h-2">
+          {[1, 2, 3, 4].map((i) => (
+            <div
+              key={i}
+              className={`flex-1 rounded-sm ${
+                passwordStrength >= i
+                  ? passwordStrength >= 3
+                    ? 'bg-green-500'
+                    : passwordStrength >= 2
+                    ? 'bg-yellow-500'
+                    : 'bg-red-500'
+                  : 'bg-gray-200'
+              }`}
+            />
+          ))}
+        </div>
         {passwordError && (
           <div className="text-red-500 text-sm mt-1">{passwordError}</div>
         )}
@@ -84,6 +101,7 @@ export default function SignUpForm() {
             setPassword(e.target.value);
             const validation = validatePassword(e.target.value);
             setPasswordError(validation.valid ? undefined : validation.message);
+            setPasswordStrength(calculatePasswordStrength(e.target.value));
           }}
           className="w-full px-3 py-2 border rounded"
           required
