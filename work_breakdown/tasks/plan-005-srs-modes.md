@@ -4,7 +4,7 @@
 [x] Create UI controls for SRS modes in [`SRSControls.tsx`](src/components/SRSControls.tsx)
 [x] Implement Repeat Mode logic
 [x] Implement Study Mode logic
-[ ] Implement Discover Mode logic
+[x] Implement Discover Mode logic
 [ ] Add mode switching functionality
 [ ] Integrate with question database
 [ ] Add progress tracking for each mode
