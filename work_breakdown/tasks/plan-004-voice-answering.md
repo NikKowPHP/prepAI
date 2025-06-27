@@ -2,7 +2,7 @@
 
 [x] Complete voice recording UI in [`VoiceRecorder.tsx`](src/components/VoiceRecorder.tsx)
 [x] Implement audio transcription in [`transcription.ts`](src/lib/transcription.ts)
-[ ] Add answer assessment logic in [`assessment.ts`](src/lib/assessment.ts)
+[x] Add answer assessment logic in [`assessment.ts`](src/lib/assessment.ts)
 [ ] Create API endpoint for voice processing
 [ ] Implement audio playback functionality
 [ ] Add error handling for audio recording

@@ -49,6 +49,7 @@ export interface AssessmentService {
     performances: QuestionPerformance[],
     allTopics: string[]
   ) => Promise<KnowledgeGap[]>;
+  generateFeedback: (transcribedAnswer: string, expectedAnswer: string) => string[];
 }
 
 /**
@@ -148,22 +149,51 @@ const analyzeKnowledgeGaps = async (
 
 export const createAssessmentService = (): AssessmentService => {
   const validateAnswer = (transcribedAnswer: string, expectedAnswer: string): number => {
-    // Basic validation that can be improved with NLP later
-    const transcribed = transcribedAnswer.toLowerCase().trim();
-    const expected = expectedAnswer.toLowerCase().trim();
+    // Preprocess both answers
+    const preprocess = (text: string) =>
+      text.toLowerCase()
+        .replace(/[^\w\s]/g, '') // Remove punctuation
+        .replace(/\s+/g, ' ')    // Collapse whitespace
+        .trim();
 
-    if (transcribed === expected) return 1.0; // Exact match
-    if (transcribed.includes(expected) || expected.includes(transcribed)) return 0.8; // Partial match
+    const processedAnswer = preprocess(transcribedAnswer);
+    const processedExpected = preprocess(expectedAnswer);
+
+    // Exact match
+    if (processedAnswer === processedExpected) return 1.0;
+
+    // Split into important words (excluding stop words)
+    const stopWords = new Set(['the', 'a', 'an', 'is', 'are', 'was', 'were']);
+    const answerWords = processedAnswer.split(' ').filter(w => !stopWords.has(w));
+    const expectedWords = processedExpected.split(' ').filter(w => !stopWords.has(w));
+
+    // Calculate word overlap score
+    const expectedWordSet = new Set(expectedWords);
+    const matchingWords = answerWords.filter(w => expectedWordSet.has(w));
+    const wordOverlapScore = matchingWords.length / expectedWords.length;
+
+    // Calculate order score (measures how well the words are ordered)
+    let orderScore = 0;
+    let lastMatchIndex = -1;
+    for (const word of expectedWords) {
+      const idx = answerWords.indexOf(word);
+      if (idx > lastMatchIndex) {
+        orderScore++;
+        lastMatchIndex = idx;
+      }
+    }
+    orderScore /= expectedWords.length;
+
+    // Combine scores with weighting
+    const finalScore =
+      (wordOverlapScore * 0.6) +
+      (orderScore * 0.3) +
+      (processedAnswer.includes(processedExpected) ? 0.1 : 0);
+
+    return Math.min(finalScore, 0.95); // Never give perfect score for non-exact matches
     
     // Split into words and check for keyword matches
-    const transcribedWords = new Set(transcribed.split(/\W+/));
-    const expectedWords = expected.split(/\W+/);
-    const matchedKeywords = expectedWords.filter(word =>
-      transcribedWords.has(word) && word.length > 3 // Ignore short words
-    ).length;
-
-    const keywordScore = matchedKeywords / expectedWords.length;
-    return Math.min(keywordScore + 0.2, 0.7); // Never give full points for keyword matches
+    // This old validation logic has been replaced by the enhanced validateAnswer function
   };
 
   const calculateScore = (answers: Record<string, string>): number => {
@@ -176,14 +206,42 @@ export const createAssessmentService = (): AssessmentService => {
         totalScore += 1;
       } else if (typeof answer === 'string') {
         // Assume format "expected|actual" for voice answers
-        const [expected, actual] = answer.split('|');
-        if (expected && actual) {
-          totalScore += validateAnswer(actual, expected);
+        const [expectedAnswer, actualAnswer] = answer.split('|');
+        if (expectedAnswer && actualAnswer) {
+          totalScore += validateAnswer(actualAnswer, expectedAnswer);
         }
       }
     }
 
     return (totalScore / totalQuestions) * 100;
+  };
+
+  const generateFeedback = (transcribedAnswer: string, expectedAnswer: string): string[] => {
+    const feedback: string[] = [];
+    
+    // Check for missing key terms
+    const expectedTerms = expectedAnswer.toLowerCase().match(/\b\w{4,}\b/g) || [];
+    const answerTerms = new Set(transcribedAnswer.toLowerCase().match(/\b\w{4,}\b/g) || []);
+    
+    const missingTerms = expectedTerms.filter(term => !answerTerms.has(term));
+    if (missingTerms.length > 0) {
+      feedback.push(`Missing key terms: ${missingTerms.join(', ')}`);
+    }
+
+    // Check answer length
+    const expectedLength = expectedAnswer.split(' ').length;
+    const answerLength = transcribedAnswer.split(' ').length;
+    if (answerLength < expectedLength * 0.5) {
+      feedback.push('Your answer seems too short - try to elaborate more');
+    }
+
+    // Check for vague language
+    const vagueWords = ['thing', 'stuff', 'something', 'whatever'];
+    if (vagueWords.some(word => transcribedAnswer.toLowerCase().includes(word))) {
+      feedback.push('Try to be more specific and avoid vague terms');
+    }
+
+    return feedback.length > 0 ? feedback : ['Good answer! Keep up the good work!'];
   };
 
   const getRecommendations = (score: number): string[] => {
@@ -234,6 +292,7 @@ export const createAssessmentService = (): AssessmentService => {
     getRecommendations,
     generateRecommendationEngine,
     analyzeKnowledgeGaps,
+    generateFeedback,
   };
 };
 
