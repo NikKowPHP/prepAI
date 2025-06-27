@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { progressService } from '@/lib/progress';
+import ReportGenerator from './ReportGenerator';
 import { Line } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
@@ -178,6 +179,11 @@ const ProgressDashboard: React.FC = () => {
           <p>No progress trend data available.</p>
         )}
       </div>
+      <div className="mt-6 p-4 bg-gray-100 rounded-md">
+        <h3 className="font-semibold mb-2">Export Report</h3>
+        <ReportGenerator />
+      </div>
+
       <div className="mt-6 p-4 bg-gray-100 rounded-md">
         <h3 className="font-semibold mb-2">Struggle Heatmap</h3>
         {metrics.struggleData && metrics.struggleData.length > 0 ? (
