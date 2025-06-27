@@ -8,5 +8,5 @@
 | Voice Answering       | src/components/VoiceRecorder.tsx<br>src/lib/transcription.ts<br>src/lib/assessment.ts | [IMPLEMENTED] |
 | SRS Modes            | src/lib/srs.ts<br>src/components/SRSControls.tsx | [IMPLEMENTED] |
 | Progress Analytics    | src/components/ProgressDashboard.tsx<br>src/components/AnalyticsCharts.tsx<br>src/lib/progress.ts<br>src/app/api/progress/route.ts | [IMPLEMENTED] |
-| PDF Export           | src/components/ReportGenerator.tsx<br>src/lib/pdf.ts | [PLANNED] |
+| PDF Export           | src/components/ReportGenerator.tsx<br>src/lib/pdf.ts | [IMPLEMENTED] |
 | Readiness Estimation | src/lib/readiness.ts<br>src/components/ReadinessIndicator.tsx<br>src/app/api/readiness/route.ts | [PLANNED] |
