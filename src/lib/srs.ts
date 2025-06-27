@@ -1,4 +1,6 @@
 import type { Question } from './types/question';
+import { supabase } from './supabase';
+
 
 export interface SRSQuestion extends Question {
   lastReviewed: Date | null;
@@ -11,7 +13,11 @@ export interface SRSQuestion extends Question {
   isAIGenerated?: boolean;
 }
 
-export const calculateNextReview = (question: SRSQuestion): { daysUntilReview: number, newInterval: number, newEase: number } => {
+export const calculateNextReview = (question: SRSQuestion): {
+  daysUntilReview: number,
+  newInterval: number,
+  newEase: number
+} => {
   const now = new Date();
   const timeSinceLastReview = question.lastReviewed
     ? now.getTime() - question.lastReviewed.getTime()
@@ -128,7 +134,8 @@ export const getRepeatModeQuestions = (
     console.error('Error in getRepeatModeQuestions:', error);
     throw new Error('Failed to get repeat mode questions');
   }
-};
+  };
+
 
 /**
  * Get questions for Study mode (new or recently added)
@@ -155,7 +162,8 @@ export const getStudyModeQuestions = (questions: SRSQuestion[], reviewThreshold 
     return {
       newQuestions,
       recentQuestions
-    };
+        };
+      
   } catch (error) {
     console.error('Error in getStudyModeQuestions:', error);
     throw new Error('Failed to get study mode questions');
@@ -211,7 +219,7 @@ export const getDiscoverModeQuestions = (questions: SRSQuestion[], userQuestions
   }
 };
 
-export const updateQuestionAfterReview = (question: SRSQuestion, remembered: boolean, timeSpent = 0): SRSQuestion => {
+export const updateQuestionAfterReview = async (question: SRSQuestion, remembered: boolean, timeSpent = 0): Promise<SRSQuestion> => {
   const { newInterval, newEase } = calculateNextReview(question);
 
   // Adjust interval and ease based on whether the user remembered the answer
@@ -237,7 +245,7 @@ export const updateQuestionAfterReview = (question: SRSQuestion, remembered: boo
     adjustedEase = Math.min(3.0, newEase + 0.1);
   }
 
-  return {
+  const updatedQuestion = {
     ...question,
     lastReviewed: new Date(),
     reviewInterval: adjustedInterval,
@@ -247,6 +255,31 @@ export const updateQuestionAfterReview = (question: SRSQuestion, remembered: boo
     totalStruggleTime,
     reviewCount: question.reviewCount + 1,
   };
+
+  try {
+    const { error } = await supabase
+      .from('questions')
+      .update({
+        last_reviewed: updatedQuestion.lastReviewed?.toISOString(),
+        review_interval: updatedQuestion.reviewInterval,
+        review_ease: updatedQuestion.reviewEase,
+        struggle_count: updatedQuestion.struggleCount,
+        last_struggled_at: updatedQuestion.lastStruggledAt?.toISOString(),
+        total_struggle_time: updatedQuestion.totalStruggleTime,
+        review_count: updatedQuestion.reviewCount
+      })
+      .eq('id', updatedQuestion.id);
+
+    if (error) {
+      console.error('Failed to update question in database:', error);
+      throw error;
+    }
+
+    return updatedQuestion;
+  } catch (error) {
+    console.error('Error updating question:', error);
+    throw error;
+  }
 };
 
 /**
