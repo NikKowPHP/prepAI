@@ -11,6 +11,8 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
   const [transcription, setTranscription] = useState('');
   const [highlightedText, setHighlightedText] = useState('');
   const [volume, setVolume] = useState(0);
+  const [recordingTime, setRecordingTime] = useState(0);
+  const timerRef = useRef<number | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -82,8 +84,16 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
     animationRef.current = requestAnimationFrame(drawWaveform);
   };
 
+  const startTimer = () => {
+    const startTime = Date.now();
+    timerRef.current = window.setInterval(() => {
+      setRecordingTime(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+  };
+
   const startRecording = async () => {
     if (!user) return;
+    setRecordingTime(0);
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
@@ -119,6 +129,7 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
 
       mediaRecorder.start();
       setIsRecording(true);
+      startTimer();
     } catch (err) {
       setError('Error accessing microphone');
       console.error('Recording error:', err);
@@ -128,6 +139,9 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
@@ -136,6 +150,7 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
       }
       setIsRecording(false);
       setIsTranscribing(true);
+      setRecordingTime(0);
     }
   };
 
@@ -155,6 +170,9 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
 
   useEffect(() => {
     return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
@@ -182,16 +200,27 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
           height="100"
           className="w-full h-20 bg-gray-50 rounded-lg mb-2"
         />
-        <div className="flex items-center gap-2 absolute bottom-2 left-2">
-          <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-blue-500 transition-all duration-100"
-              style={{ width: `${Math.min(volume * 10, 100)}%` }}
-            />
+        <div className="flex items-center gap-4 absolute bottom-2 left-2">
+          {isRecording && (
+            <div className="flex items-center gap-1">
+              <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse" />
+              <span className="text-xs font-medium text-red-600">
+                {String(Math.floor(recordingTime / 60)).padStart(2, '0')}:
+                {String(recordingTime % 60).padStart(2, '0')}
+              </span>
+            </div>
+          )}
+          <div className="flex items-center gap-2">
+            <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-blue-500 transition-all duration-100"
+                style={{ width: `${Math.min(volume * 10, 100)}%` }}
+              />
+            </div>
+            <span className="text-xs text-gray-600">
+              {Math.round(volume * 10)}%
+            </span>
           </div>
-          <span className="text-xs text-gray-600">
-            {Math.round(volume * 10)}%
-          </span>
         </div>
       </div>
       <button
