@@ -4,7 +4,7 @@
 [x] Add password strength meter to signup form
 [x] Implement email verification flow
 [x] Add "Forgot Password" functionality
-[ ] Implement OAuth providers (Google, GitHub)
+[x] Implement OAuth providers (Google, GitHub)
 [ ] Write unit tests for auth components
 [ ] Add error handling for auth API routes
 [ ] Implement session management in [`auth.ts`](src/lib/auth.ts)
