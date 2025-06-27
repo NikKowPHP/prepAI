@@ -1,9 +1,21 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
-import { transcriptionService } from '@/lib/transcription';
 
-const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcription: string) => void }> = ({ onRecordingComplete }) => {
+interface VoiceRecorderProps {
+  expectedAnswer?: string;
+  onRecordingComplete: (result: {
+    filePath: string;
+    transcription: string;
+    score: number;
+    feedback: string[];
+  }) => void;
+}
+
+const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
+  expectedAnswer,
+  onRecordingComplete
+}) => {
   const { user } = useAuth();
   const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
@@ -123,7 +135,7 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
           console.error('Upload error:', uploadError);
         } else {
           setError('');
-          await transcribeAudio(data.path);
+          await transcribeAndAssess(data.path);
         }
       };
 
@@ -154,15 +166,30 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
     }
   };
 
-  const transcribeAudio = async (filePath: string) => {
+  const transcribeAndAssess = async (filePath: string) => {
     try {
-      const transcription = await transcriptionService.processTranscription(filePath);
+      const response = await fetch('/api/voice-processing', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          filePath,
+          expectedAnswer
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Assessment failed');
+      }
+
+      const { transcription, score, feedback } = await response.json();
       setTranscription(transcription);
       setHighlightedText('');
-      onRecordingComplete(filePath, transcription);
+      onRecordingComplete({ filePath, transcription, score, feedback });
     } catch (err) {
-      setError('Failed to transcribe audio');
-      console.error('Transcription error:', err);
+      setError('Failed to assess answer');
+      console.error('Assessment error:', err);
     } finally {
       setIsTranscribing(false);
     }

@@ -8,6 +8,11 @@ const AssessmentInterface: React.FC = () => {
   const [score, setScore] = useState<number | null>(null);
   const [recommendations, setRecommendations] = useState<string[]>([]);
   const [actionPlan, setActionPlan] = useState<string[]>([]);
+  const [voiceResults, setVoiceResults] = useState<{
+    transcription: string;
+    score: number;
+    feedback: string[];
+  } | null>(null);
 
   const handleAnswerChange = (questionId: string, answer: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: answer }));
@@ -31,6 +36,38 @@ const AssessmentInterface: React.FC = () => {
     <div className="p-4 border rounded shadow">
       <h2 className="text-xl font-bold mb-4">Readiness Assessment</h2>
       <p className="mb-4">Answer the following questions to assess your readiness:</p>
+
+      {user && expectedAnswer && (
+        <>
+          <div className="mt-6">
+            <h3 className="font-bold mb-2">Or answer by voice:</h3>
+            <VoiceRecorder
+              expectedAnswer={expectedAnswer}
+              onRecordingComplete={(result) => {
+                setVoiceResults({
+                  transcription: result.transcription,
+                  score: result.score,
+                  feedback: result.feedback
+                });
+                setScore(result.score);
+              }}
+            />
+            
+            {voiceResults && (
+              <div className="mt-4 p-4 bg-gray-50 rounded">
+                <h4 className="font-bold mb-2">Voice Answer Results:</h4>
+                <p>Transcription: {voiceResults.transcription}</p>
+                <p>Score: {voiceResults.score.toFixed(2)}%</p>
+                <ul className="list-disc list-inside">
+                  {voiceResults.feedback.map((item, index) => (
+                    <li key={index}>{item}</li>
+                  ))}
+                </ul>
+              </div>
+            )}
+          </div>
+        </>
+      )}
 
       {user && (
         <>
