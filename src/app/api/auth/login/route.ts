@@ -1,7 +1,26 @@
 import { NextResponse } from 'next/server';
 import { signIn } from '@/lib/auth';
+import { authRateLimiter } from '@/lib/rateLimiter';
 
 export async function POST(request: Request) {
+  // Get client IP from headers
+  const forwarded = request.headers.get('x-forwarded-for');
+  const ip = forwarded ? forwarded.split(/, /)[0] : '127.0.0.1';
+
+  // Apply rate limiting
+  const limit = authRateLimiter(ip);
+  if (!limit.allowed) {
+    return NextResponse.json(
+      { error: 'Too many requests', code: 'RATE_LIMIT_EXCEEDED' },
+      {
+        status: 429,
+        headers: {
+          'Retry-After': limit.retryAfter!.toString()
+        }
+      }
+    );
+  }
+
   try {
     // Check if request body is valid JSON
     let body;

@@ -8,4 +8,4 @@
 [x] Write unit tests for auth components
 [x] Add error handling for auth API routes
 [x] Implement session management in [`auth.ts`](src/lib/auth.ts)
-[ ] Add rate limiting to auth endpoints
+[x] Add rate limiting to auth endpoints
