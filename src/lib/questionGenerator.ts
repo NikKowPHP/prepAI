@@ -5,15 +5,24 @@ const CODING_KEYWORDS = ['algorithm', 'data structure', 'coding', 'problem solvi
 const VALID_CATEGORIES = ['technical', 'coding-challenge'];
 const VALID_DIFFICULTIES = ['easy', 'medium', 'hard'];
 
-function validateQuestion(question: Question) {
+export function validateQuestion(question: Question) {
   if (!question.question || question.question.length < 10) {
     throw new Error('Question content too short');
+  }
+  if (question.question.includes('Generated question about')) {
+    throw new Error('Question is too generic');
   }
   if (!VALID_CATEGORIES.includes(question.category)) {
     throw new Error('Invalid question category');
   }
   if (!VALID_DIFFICULTIES.includes(question.difficulty)) {
     throw new Error('Invalid difficulty level');
+  }
+  if (question.category === 'coding-challenge' && !question.codeExample) {
+    throw new Error('Coding challenges must include code examples');
+  }
+  if (!question.answer && question.category !== 'coding-challenge') {
+    throw new Error('Answer content missing');
   }
   return true;
 }
@@ -52,9 +61,11 @@ export async function generateQuestions(topics: string[]): Promise<Question[]> {
         createdAt: new Date(),
         updatedAt: new Date()
       };
+      validateQuestion(question);
+      return question;
     }
     
-    const questionText = `Generated question about ${topic}`;
+    const questionText = `Explain ${topic} in detail`;
     const question: Question = {
       id: crypto.randomUUID(),
       question: questionText,

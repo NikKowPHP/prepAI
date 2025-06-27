@@ -1,58 +1,47 @@
-# Master Implementation Plan
+# PrepAI Master Implementation Plan
 
-## Critical Audit Fixes (Highest Priority)
-- [ ] Complete all tasks in [plan-009-audit-fixes.md](work_breakdown/tasks/plan-009-audit-fixes.md)
+## 1. Question Generation Completion
+- **Status**: Partially Implemented
+- **Implementation Files**:
+  - `src/lib/questionGenerator.ts`
+  - `src/app/api/generate-question/route.ts`
+- **Tasks**: Complete remaining functionality for generating diverse question types and validation
 
-## Functional Requirements Implementation (Updated)
+## 2. Voice Answering Enhancement
+- **Status**: Partially Implemented
+- **Implementation Files**:
+  - `src/components/VoiceRecorder.tsx`
+  - `src/lib/transcription.ts`
+- **Tasks**: Implement transcription service integration and answer processing
 
-### User Authentication
-- [x] Implement sign up functionality
-- [x] Implement sign in functionality
-- [x] Implement sign out functionality
-- [x] Create user session management
-- [x] Verify authentication flows (sign up, sign in, sign out)
+## 3. SRS Modes Implementation
+- **Status**: Partially Implemented
+- **Implementation Files**:
+  - `src/lib/srs.ts`
+  - `src/components/SRSControls.tsx`
+- **Tasks**: Complete Repeat, Study, and Discover mode implementations
 
-### Interview Topic Selection
-- [x] Build role selection interface
-- [x] Implement new objective creation
-- [x] Develop topic-based filtering
-- [ ] Integrate with question generation service
-- [ ] Verify objective-question linking
+## 4. Progress Analytics Completion
+- **Status**: Partially Implemented
+- **Implementation Files**:
+  - `src/components/ProgressDashboard.tsx`
+  - `src/components/AnalyticsCharts.tsx`
+- **Tasks**: Implement all analytics visualizations and data processing
 
-### AI Question Generation
-- [ ] Implement core question generation service
-- [ ] Create question generation interface
-- [ ] Implement question storage
-- [ ] Verify question generation with sample topics
+## 5. Type Inconsistency Fixes (Critical)
+- **Status**: In Progress
+- **Implementation Files**:
+  - `src/lib/types/question.ts`
+  - `src/lib/questionGenerator.ts`
+  - `src/lib/srs.ts`
+  - `src/app/api/questions/route.ts`
+  - `tests/e2e/questionGeneration.test.ts`
+  - `src/lib/__tests__/srsModes.test.ts`
+- **Tasks**: Implement unified Question type across all components
 
-### Voice-Based Answering
-- [ ] Implement voice recording component
-- [ ] Create audio processing pipeline
-- [ ] Add text input fallback
-
-### Spaced Repetition System
-- [ ] Implement Repeat mode algorithm
-- [ ] Implement Study mode algorithm
-- [ ] Implement Discover mode algorithm
-- [ ] Create scheduling logic
-
-### Progress Analytics
-- [ ] Build progress dashboard
-- [ ] Implement strength/weakness analysis
-- [ ] Create knowledge gap identification
-
-### Readiness Estimation
-- [ ] Develop readiness algorithm
-- [ ] Implement competency scoring
-- [ ] Create progress-based predictions
-
-### PDF Export
-- [ ] Implement profile export
-- [ ] Design PDF formatting
-- [ ] Add comprehensive data inclusion
-
-## System Architecture Implementation
-- [ ] Presentation Layer: Next.js setup
-- [ ] Application Layer: API route implementation
-- [ ] Domain Layer: Service integration
-- [ ] Data Layer: Supabase + Prisma configuration
+## 6. PDF Export Implementation
+- **Status**: Planned
+- **Implementation Files**:
+  - `src/components/ReportGenerator.tsx`
+  - `src/lib/pdf.ts`
+- **Tasks**: Create PDF generation functionality and UI components

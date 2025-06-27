@@ -42,6 +42,7 @@ export interface KnowledgeGap {
 
 export interface AssessmentService {
   calculateScore: (answers: Record<string, string>) => number;
+  validateAnswer: (transcribedAnswer: string, expectedAnswer: string) => number;
   getRecommendations: (score: number) => string[];
   generateRecommendationEngine: (score: number) => string[];
   analyzeKnowledgeGaps: (
@@ -146,13 +147,43 @@ const analyzeKnowledgeGaps = async (
 };
 
 export const createAssessmentService = (): AssessmentService => {
-  const calculateScore = (answers: Record<string, string>): number => {
-    // Simple scoring model: 1 point for each correct answer
-    // In a real implementation, this would be more complex
-    const totalQuestions = Object.keys(answers).length;
-    const correctAnswers = Object.values(answers).filter(answer => answer === 'correct').length;
+  const validateAnswer = (transcribedAnswer: string, expectedAnswer: string): number => {
+    // Basic validation that can be improved with NLP later
+    const transcribed = transcribedAnswer.toLowerCase().trim();
+    const expected = expectedAnswer.toLowerCase().trim();
 
-    return (correctAnswers / totalQuestions) * 100;
+    if (transcribed === expected) return 1.0; // Exact match
+    if (transcribed.includes(expected) || expected.includes(transcribed)) return 0.8; // Partial match
+    
+    // Split into words and check for keyword matches
+    const transcribedWords = new Set(transcribed.split(/\W+/));
+    const expectedWords = expected.split(/\W+/);
+    const matchedKeywords = expectedWords.filter(word =>
+      transcribedWords.has(word) && word.length > 3 // Ignore short words
+    ).length;
+
+    const keywordScore = matchedKeywords / expectedWords.length;
+    return Math.min(keywordScore + 0.2, 0.7); // Never give full points for keyword matches
+  };
+
+  const calculateScore = (answers: Record<string, string>): number => {
+    // Enhanced scoring model that handles partial credit
+    const totalQuestions = Object.keys(answers).length;
+    let totalScore = 0;
+
+    for (const [, answer] of Object.entries(answers)) {
+      if (answer === 'correct') {
+        totalScore += 1;
+      } else if (typeof answer === 'string') {
+        // Assume format "expected|actual" for voice answers
+        const [expected, actual] = answer.split('|');
+        if (expected && actual) {
+          totalScore += validateAnswer(actual, expected);
+        }
+      }
+    }
+
+    return (totalScore / totalQuestions) * 100;
   };
 
   const getRecommendations = (score: number): string[] => {
@@ -199,6 +230,7 @@ export const createAssessmentService = (): AssessmentService => {
 
   return {
     calculateScore,
+    validateAnswer,
     getRecommendations,
     generateRecommendationEngine,
     analyzeKnowledgeGaps,

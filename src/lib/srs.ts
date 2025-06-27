@@ -1,6 +1,6 @@
-export interface Question {
-  id: string;
-  createdAt: Date;
+import type { Question } from './types/question';
+
+export interface SRSQuestion extends Question {
   lastReviewed: Date | null;
   reviewInterval: number;
   reviewEase: number;
@@ -8,15 +8,10 @@ export interface Question {
   lastStruggledAt: Date | null;
   totalStruggleTime: number;
   reviewCount: number;
-  question: string;
-  answer: string;
-  rating: 'easy' | 'normal' | 'hard';
-  user_id: string;
-  topics?: string[];
   isAIGenerated?: boolean;
 }
 
-export const calculateNextReview = (question: Question): { daysUntilReview: number, newInterval: number, newEase: number } => {
+export const calculateNextReview = (question: SRSQuestion): { daysUntilReview: number, newInterval: number, newEase: number } => {
   const now = new Date();
   const timeSinceLastReview = question.lastReviewed
     ? now.getTime() - question.lastReviewed.getTime()
@@ -67,7 +62,7 @@ export const calculateNextReview = (question: Question): { daysUntilReview: numb
   }
 };
 
-export const getQuestionsDueForReview = (questions: Question[]): Question[] => {
+export const getQuestionsDueForReview = (questions: SRSQuestion[]): SRSQuestion[] => {
   return questions.filter(question => {
     const { daysUntilReview } = calculateNextReview(question);
     return daysUntilReview === 0;
@@ -81,7 +76,7 @@ export const getQuestionsDueForReview = (questions: Question[]): Question[] => {
  * @param struggleThreshold - Minimum struggle count to consider (default: 3)
  * @returns Filtered list of questions needing reinforcement
  */
-const calculateQuestionWeight = (question: Question): number => {
+const calculateQuestionWeight = (question: SRSQuestion): number => {
   const easeFactor = Math.max(1.3, question.reviewEase);
   
   // Calculate time since last struggle (in days)
@@ -105,10 +100,10 @@ const calculateQuestionWeight = (question: Question): number => {
 };
 
 export const getRepeatModeQuestions = (
-  questions: Question[],
+  questions: SRSQuestion[],
   easeThreshold = 2.0,
   struggleThreshold = 3
-): Question[] => {
+): SRSQuestion[] => {
   try {
     if (!questions?.length) {
       return [];
@@ -142,11 +137,11 @@ export const getRepeatModeQuestions = (
  * @returns Filtered list of questions for new learning
  */
 export interface StudyModeQueues {
-  newQuestions: Question[];
-  recentQuestions: Question[];
+  newQuestions: SRSQuestion[];
+  recentQuestions: SRSQuestion[];
 }
 
-export const getStudyModeQuestions = (questions: Question[], reviewThreshold = 3): StudyModeQueues => {
+export const getStudyModeQuestions = (questions: SRSQuestion[], reviewThreshold = 3): StudyModeQueues => {
   try {
     if (!questions?.length) {
       return { newQuestions: [], recentQuestions: [] };
@@ -187,7 +182,7 @@ const calculateTopicSimilarity = (topicsA: string[], topicsB: string[]): number 
  * @param currentTopics - Topics from currently active questions
  * @returns Filtered list of questions for discovery, sorted by relevance
  */
-export const getDiscoverModeQuestions = (questions: Question[], userQuestions: string[], currentTopics: string[] = []): Question[] => {
+export const getDiscoverModeQuestions = (questions: SRSQuestion[], userQuestions: string[], currentTopics: string[] = []): SRSQuestion[] => {
   try {
     if (!questions?.length) {
       return [];
@@ -216,7 +211,7 @@ export const getDiscoverModeQuestions = (questions: Question[], userQuestions: s
   }
 };
 
-export const updateQuestionAfterReview = (question: Question, remembered: boolean, timeSpent = 0): Question => {
+export const updateQuestionAfterReview = (question: SRSQuestion, remembered: boolean, timeSpent = 0): SRSQuestion => {
   const { newInterval, newEase } = calculateNextReview(question);
 
   // Adjust interval and ease based on whether the user remembered the answer
@@ -264,10 +259,10 @@ export const updateQuestionAfterReview = (question: Question, remembered: boolea
  */
 export const getQuestionsByMode = (
   mode: 'repeat' | 'study' | 'discover',
-  questions: Question[],
+  questions: SRSQuestion[],
   userQuestions?: string[],
   currentTopics?: string[]
-): Question[] => {
+): SRSQuestion[] => {
   try {
     switch(mode) {
       case 'repeat':

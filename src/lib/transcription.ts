@@ -1,23 +1,65 @@
+import { SpeechClient } from '@google-cloud/speech';
 import { supabase } from './supabase';
+
+interface SpeechRecognitionResult {
+  alternatives?: Array<{
+    transcript?: string;
+    confidence?: number;
+  }>;
+}
 
 export interface TranscriptionService {
   processTranscription: (filePath: string) => Promise<string>;
 }
 
 export const createTranscriptionService = (): TranscriptionService => {
+  const speechClient = new SpeechClient({
+    credentials: {
+      client_email: process.env.GOOGLE_CLIENT_EMAIL,
+      private_key: process.env.GOOGLE_PRIVATE_KEY?.replace(/\\n/g, '\n'),
+    },
+  });
+
   const processTranscription = async (filePath: string): Promise<string> => {
     try {
-      // Simulate API call to Google Cloud Speech-to-Text
-      // In a real implementation, you would send the audio file to the API
-      // and get the transcription text in response
+      const { data, error } = await supabase.storage
+        .from('audio-recordings')
+        .download(filePath);
 
-      // For demonstration, we'll use a placeholder transcription
-      const simulatedTranscription = `This is a simulated transcription of the audio recording at ${filePath}. The actual implementation would use a speech-to-text API like Google Cloud Speech-to-Text.`;
+      if (error || !data) {
+        throw new Error('Failed to fetch audio file: ' + error?.message);
+      }
 
-      return simulatedTranscription;
+      const audioBytes = await data.arrayBuffer();
+      const audioContent = Buffer.from(audioBytes);
+
+      const request = {
+        audio: {
+          content: audioContent.toString('base64'),
+        },
+        config: {
+          encoding: 'WEBM_OPUS',
+          sampleRateHertz: 48000,
+          languageCode: 'en-US',
+          enableAutomaticPunctuation: true,
+          model: 'default',
+        },
+      };
+
+      const [response] = await speechClient.recognize(request);
+      const transcription = response.results
+        ?.map((result: SpeechRecognitionResult) => result.alternatives?.[0]?.transcript)
+        .filter(Boolean)
+        .join('\n');
+
+      if (!transcription) {
+        throw new Error('No transcription results found');
+      }
+
+      return transcription;
     } catch (error) {
       console.error('Error processing transcription:', error);
-      throw new Error('Failed to process transcription');
+      throw new Error('Failed to process transcription: ' + (error as Error).message);
     }
   };
 

@@ -192,9 +192,8 @@ describe('CRUD operations for questions', () => {
         error: null,
       });
       
-      jest.spyOn(testPrisma.question, 'create').mockImplementation(() => {
-        throw new Error('Database error');
-      });
+      // Create actual database error by disconnecting
+      await testPrisma.$disconnect();
 
       const req = new NextRequest('http://localhost/api/questions', {
         method: 'POST',
@@ -361,9 +360,8 @@ describe('CRUD operations for questions', () => {
         error: null,
       });
       
-      jest.spyOn(testPrisma.question, 'findMany').mockImplementation(() => {
-        throw new Error('Database error');
-      });
+      // Create actual database error by disconnecting
+      await testPrisma.$disconnect();
 
       const req = new NextRequest('http://localhost/api/questions', {
         method: 'GET',
@@ -525,9 +523,8 @@ describe('CRUD operations for questions', () => {
         },
       });
 
-      jest.spyOn(testPrisma.question, 'update').mockImplementation(() => {
-        throw new Error('Database error');
-      });
+      // Create actual database error by disconnecting
+      await testPrisma.$disconnect();
 
       const req = new NextRequest(`http://localhost/api/questions/${question.id}`, {
         method: 'PUT',
@@ -650,9 +647,8 @@ describe('CRUD operations for questions', () => {
         },
       });
 
-      jest.spyOn(testPrisma.question, 'delete').mockImplementation(() => {
-        throw new Error('Database error');
-      });
+      // Create actual database error by disconnecting
+      await testPrisma.$disconnect();
 
       const req = new NextRequest(`http://localhost/api/questions/${question.id}`, {
         method: 'DELETE',

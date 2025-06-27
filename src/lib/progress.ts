@@ -16,6 +16,24 @@ export interface ProgressService {
     masteryScore: number;
     nextReviewDates: { [questionId: string]: Date };
   }>;
+  aggregateAnalyticsData: (userId: string) => Promise<{
+    overallProgress: {
+      totalQuestions: number;
+      correctAnswers: number;
+      incorrectAnswers: number;
+      masteryScore: number;
+    };
+    recentReviews: Array<{
+      question_id: string;
+      remembered: boolean;
+      reviewed_at: string;
+    }>;
+    topicMastery: Array<{
+      topic_id: string;
+      mastery_level: number;
+    }>;
+    calculatedAt: Date;
+  }>;
 }
 
 export const createProgressService = (): ProgressService => {
@@ -97,6 +115,43 @@ export const createProgressService = (): ProgressService => {
     getUserProgress,
     updateProgressAfterReview,
     getUserMetrics,
+    aggregateAnalyticsData: async (userId: string) => {
+      const { data: progressData } = await supabase
+        .from('progress_metrics')
+        .select('*')
+        .eq('user_id', userId)
+        .single();
+  
+      const { data: reviewData } = await supabase
+        .from('question_reviews')
+        .select('question_id, remembered, reviewed_at')
+        .eq('user_id', userId)
+        .order('reviewed_at', { ascending: false });
+  
+      const { data: topicData } = await supabase
+        .from('user_topics')
+        .select('topic_id, mastery_level')
+        .eq('user_id', userId);
+  
+      if (!progressData || !reviewData || !topicData) {
+        throw new Error('Failed to fetch analytics data');
+      }
+  
+      return {
+        overallProgress: {
+          totalQuestions: progressData.total_questions,
+          correctAnswers: progressData.correct_answers,
+          incorrectAnswers: progressData.incorrect_answers,
+          masteryScore: calculateMasteryScore(
+            progressData.correct_answers,
+            progressData.incorrect_answers
+          ),
+        },
+        recentReviews: reviewData.slice(0, 10),
+        topicMastery: topicData,
+        calculatedAt: new Date(),
+      };
+    },
   };
 };
 

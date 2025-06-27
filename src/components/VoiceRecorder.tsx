@@ -10,19 +10,89 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
   const [error, setError] = useState('');
   const [transcription, setTranscription] = useState('');
   const [highlightedText, setHighlightedText] = useState('');
+  const [volume, setVolume] = useState(0);
+  
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const animationRef = useRef<number | null>(null);
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const analyserRef = useRef<AnalyserNode | null>(null);
+
+  const setupAudioContext = (stream: MediaStream) => {
+    const audioContext = new AudioContext();
+    const analyser = audioContext.createAnalyser();
+    const source = audioContext.createMediaStreamSource(stream);
+    
+    analyser.fftSize = 2048;
+    source.connect(analyser);
+    
+    audioContextRef.current = audioContext;
+    analyserRef.current = analyser;
+  };
+
+  const drawWaveform = () => {
+    if (!canvasRef.current || !analyserRef.current) return;
+    
+    const canvas = canvasRef.current;
+    const ctx = canvas.getContext('2d');
+    const analyser = analyserRef.current;
+    const bufferLength = analyser.frequencyBinCount;
+    const dataArray = new Uint8Array(bufferLength);
+    
+    analyser.getByteTimeDomainData(dataArray);
+    
+    if (ctx) {
+      ctx.fillStyle = 'rgb(249, 250, 251)';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = 'rgb(59, 130, 246)';
+      ctx.beginPath();
+      
+      const sliceWidth = canvas.width * 1.0 / bufferLength;
+      let x = 0;
+      
+      for (let i = 0; i < bufferLength; i++) {
+        const v = dataArray[i] / 128.0;
+        const y = v * canvas.height / 2;
+        
+        if (i === 0) {
+          ctx.moveTo(x, y);
+        } else {
+          ctx.lineTo(x, y);
+        }
+        
+        x += sliceWidth;
+      }
+      
+      ctx.lineTo(canvas.width, canvas.height / 2);
+      ctx.stroke();
+      
+      // Calculate volume
+      let sum = 0;
+      for (let i = 0; i < bufferLength; i++) {
+        sum += (dataArray[i] - 128) * (dataArray[i] - 128);
+      }
+      const rms = Math.sqrt(sum / bufferLength);
+      setVolume(rms);
+    }
+    
+    animationRef.current = requestAnimationFrame(drawWaveform);
+  };
 
   const startRecording = async () => {
     if (!user) return;
 
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      setupAudioContext(stream);
       const mediaRecorder = new MediaRecorder(stream);
-
+      
       mediaRecorderRef.current = mediaRecorder;
       audioChunksRef.current = [];
+      drawWaveform();
 
       mediaRecorder.ondataavailable = (event) => {
         if (event.data.size > 0) {
@@ -58,6 +128,12 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
   const stopRecording = () => {
     if (mediaRecorderRef.current) {
       mediaRecorderRef.current.stop();
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
       setIsRecording(false);
       setIsTranscribing(true);
     }
@@ -77,17 +153,16 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
     }
   };
 
-  const handlePlay = () => {
-    if (audioRef.current) {
-      audioRef.current.play();
-    }
-  };
-
-  const handlePause = () => {
-    if (audioRef.current) {
-      audioRef.current.pause();
-    }
-  };
+  useEffect(() => {
+    return () => {
+      if (animationRef.current) {
+        cancelAnimationFrame(animationRef.current);
+      }
+      if (audioContextRef.current) {
+        audioContextRef.current.close();
+      }
+    };
+  }, []);
 
   const syncHighlighting = (event: React.SyntheticEvent<HTMLAudioElement>) => {
     const audio = event.target as HTMLAudioElement;
@@ -99,7 +174,26 @@ const VoiceRecorder: React.FC<{ onRecordingComplete: (filePath: string, transcri
   };
 
   return (
-    <div className="mt-6">
+    <div className="mt-6 space-y-4">
+      <div className="relative">
+        <canvas
+          ref={canvasRef}
+          width="400"
+          height="100"
+          className="w-full h-20 bg-gray-50 rounded-lg mb-2"
+        />
+        <div className="flex items-center gap-2 absolute bottom-2 left-2">
+          <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-blue-500 transition-all duration-100"
+              style={{ width: `${Math.min(volume * 10, 100)}%` }}
+            />
+          </div>
+          <span className="text-xs text-gray-600">
+            {Math.round(volume * 10)}%
+          </span>
+        </div>
+      </div>
       <button
         onClick={isRecording ? stopRecording : startRecording}
         className={`w-full py-2 px-4 rounded-md text-white ${
