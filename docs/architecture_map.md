@@ -7,6 +7,6 @@
 | Question Generation   | src/lib/questionGenerator.ts<br>src/app/api/generate-question/route.ts<br>src/lib/types/question.ts | [IMPLEMENTED] |
 | Voice Answering       | src/components/VoiceRecorder.tsx<br>src/lib/transcription.ts<br>src/lib/assessment.ts | [IMPLEMENTED] |
 | SRS Modes            | src/lib/srs.ts<br>src/components/SRSControls.tsx | [IN PROGRESS] |
-| Progress Analytics    | src/components/ProgressDashboard.tsx<br>src/components/AnalyticsCharts.tsx<br>src/lib/progress.ts | [IN PROGRESS] |
-| PDF Export           | src/components/ReportGenerator.tsx<br>src/lib/pdf.ts | [IN PROGRESS] |
+| Progress Analytics    | src/components/ProgressDashboard.tsx<br>src/components/AnalyticsCharts.tsx<br>src/lib/progress.ts | [PLANNED] |
+| PDF Export           | src/components/ReportGenerator.tsx<br>src/lib/pdf.ts | [PLANNED] |
 | Readiness Estimation | src/lib/readiness.ts<br>src/components/ReadinessIndicator.tsx<br>src/app/api/readiness/route.ts | [PLANNED] |
