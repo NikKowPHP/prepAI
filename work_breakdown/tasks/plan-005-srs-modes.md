@@ -2,7 +2,7 @@
 
 [x] Implement SRS algorithm in [`srs.ts`](src/lib/srs.ts)
 [x] Create UI controls for SRS modes in [`SRSControls.tsx`](src/components/SRSControls.tsx)
-[ ] Implement Repeat Mode logic
+[x] Implement Repeat Mode logic
 [ ] Implement Study Mode logic
 [ ] Implement Discover Mode logic
 [ ] Add mode switching functionality
