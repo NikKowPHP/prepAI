@@ -1,9 +1,24 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { assessmentService } from '@/lib/assessment';
+import VoiceRecorder from '@/components/VoiceRecorder';
+
+interface QuestionData {
+  id: string;
+  question: string;
+  expectedAnswer: string;
+}
+
+interface RecordingResult {
+  transcription: string;
+  score: number;
+  feedback: string[];
+}
 
 const AssessmentInterface: React.FC = () => {
   const { user } = useAuth();
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const [currentQuestion, setCurrentQuestion] = useState<QuestionData | null>(null);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [score, setScore] = useState<number | null>(null);
   const [recommendations, setRecommendations] = useState<string[]>([]);
@@ -37,13 +52,15 @@ const AssessmentInterface: React.FC = () => {
       <h2 className="text-xl font-bold mb-4">Readiness Assessment</h2>
       <p className="mb-4">Answer the following questions to assess your readiness:</p>
 
-      {user && expectedAnswer && (
+      {user && currentQuestion && (
         <>
           <div className="mt-6">
-            <h3 className="font-bold mb-2">Or answer by voice:</h3>
+            <h3 className="font-bold mb-2">Current Question:</h3>
+            <p className="mb-4">{currentQuestion.question}</p>
+            <h3 className="font-bold mb-2">Answer by voice:</h3>
             <VoiceRecorder
-              expectedAnswer={expectedAnswer}
-              onRecordingComplete={(result) => {
+              expectedAnswer={currentQuestion.expectedAnswer}
+              onRecordingComplete={(result: RecordingResult) => {
                 setVoiceResults({
                   transcription: result.transcription,
                   score: result.score,
