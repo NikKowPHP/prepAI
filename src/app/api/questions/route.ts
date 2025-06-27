@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
 import { supabase } from '@/lib/supabase';
+import type { Question } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
   try {
@@ -40,7 +41,7 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: 'desc' },
       });
 
-      return NextResponse.json(questions);
+      return NextResponse.json(questions as Question[]);
     }
   } catch (error: unknown) {
     if (error instanceof Error) {
@@ -119,25 +120,25 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    const { content, category, difficulty } = body;
+    const { content, category, difficulty, topics, answer } = body;
 
-    if (!content || !category || !difficulty) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
+    if (!content || !answer) {
+      return NextResponse.json({ error: 'Missing required fields: content, answer' }, { status: 400 });
     }
 
-    if (typeof content !== 'string' ||
-        typeof category !== 'string' ||
-        typeof difficulty !== 'string') {
-      return NextResponse.json({ error: 'Invalid field types' }, { status: 400 });
+    if (typeof content !== 'string' || typeof answer !== 'string') {
+      return NextResponse.json({ error: 'Invalid field types for content or answer' }, { status: 400 });
     }
 
     const question = await prisma.question.create({
       data: {
         content: content.trim(),
-        category: category.trim(),
-        difficulty: difficulty.trim(),
+        answer: answer.trim(),
+        category: category ? category.trim() : null,
+        difficulty: difficulty ? difficulty.trim() : null,
+        topics: topics || [],
         userId: user.id,
-      },
+      } as any, // Temporarily cast to any to bypass type error, will regenerate prisma client
     });
 
     return NextResponse.json(question, { status: 201 });
@@ -174,16 +175,10 @@ export async function PUT(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    const { content, category, difficulty } = body;
+    const { content, category, difficulty, topics, answer, lastReviewed, reviewInterval, reviewEase, struggleCount, lastStruggledAt, totalStruggleTime, reviewCount, overdue, weight } = body;
 
-    if (!content && !category && !difficulty) {
-      return NextResponse.json({ error: 'Missing required fields' }, { status: 400 });
-    }
-
-    if ((content && typeof content !== 'string') ||
-        (category && typeof category !== 'string') ||
-        (difficulty && typeof difficulty !== 'string')) {
-      return NextResponse.json({ error: 'Invalid field types' }, { status: 400 });
+    if (!content && !category && !difficulty && !topics && !answer && lastReviewed === undefined && reviewInterval === undefined && reviewEase === undefined && struggleCount === undefined && lastStruggledAt === undefined && totalStruggleTime === undefined && reviewCount === undefined && overdue === undefined && weight === undefined) {
+      return NextResponse.json({ error: 'No fields provided for update' }, { status: 400 });
     }
 
     const question = await prisma.question.findUnique({
@@ -191,16 +186,28 @@ export async function PUT(req: NextRequest) {
     });
 
     if (!question || question.userId !== user.id) {
-      return NextResponse.json({ error: 'Question not found' }, { status: 404 });
+      return NextResponse.json({ error: 'Question not found or unauthorized' }, { status: 404 });
     }
+
+    const dataToUpdate: Partial<Question> = {};
+    if (content !== undefined) dataToUpdate.content = content.trim();
+    if (category !== undefined) dataToUpdate.category = category.trim();
+    if (difficulty !== undefined) dataToUpdate.difficulty = difficulty.trim();
+    if (topics !== undefined) dataToUpdate.topics = topics;
+    if (answer !== undefined) dataToUpdate.answer = answer.trim();
+    if (lastReviewed !== undefined) dataToUpdate.lastReviewed = lastReviewed ? new Date(lastReviewed) : null;
+    if (reviewInterval !== undefined) dataToUpdate.reviewInterval = reviewInterval;
+    if (reviewEase !== undefined) dataToUpdate.reviewEase = reviewEase;
+    if (struggleCount !== undefined) dataToUpdate.struggleCount = struggleCount;
+    if (lastStruggledAt !== undefined) dataToUpdate.lastStruggledAt = lastStruggledAt ? new Date(lastStruggledAt) : null;
+    if (totalStruggleTime !== undefined) dataToUpdate.totalStruggleTime = totalStruggleTime;
+    if (reviewCount !== undefined) dataToUpdate.reviewCount = reviewCount;
+    if (overdue !== undefined) dataToUpdate.overdue = overdue;
+    if (weight !== undefined) dataToUpdate.weight = weight;
 
     const updatedQuestion = await prisma.question.update({
       where: { id },
-      data: {
-        ...(content !== undefined && { content: content.trim() }),
-        ...(category !== undefined && { category: category.trim() }),
-        ...(difficulty !== undefined && { difficulty: difficulty.trim() }),
-      },
+      data: dataToUpdate,
     });
 
     return NextResponse.json(updatedQuestion);

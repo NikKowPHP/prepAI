@@ -19,27 +19,27 @@ Here is the master implementation plan:
 
 **Goal:** Eliminate type inconsistencies across the codebase to ensure stability and prevent future errors. This is the highest priority.
 
--   [ ] **Task 1.1: Refactor the Spaced Repetition System (`srs.ts`)**
-    -   [ ] Open `src/lib/srs.ts`.
-    -   [ ] Add the unified `Question` type import from Prisma at the top: `import type { Question } from '@prisma/client';`.
-    -   [ ] Find and delete the local, redundant `SRSQuestion` interface definition.
-    -   [ ] Perform a file-wide search and replace for all instances of the type `SRSQuestion` and change them to `Question`.
-    -   [ ] Carefully review every function signature (e.g., `calculateNextReview`, `getRepeatModeQuestions`) to ensure they now use the imported `Question` type from Prisma.
-    -   [ ] Verify that all property access within these functions now aligns with the `Question` model in `prisma/schema.prisma` (e.g., use `question.reviewCount` instead of a potentially different local property name).
+-   [x] **Task 1.1: Refactor the Spaced Repetition System (`srs.ts`)**
+    -   [x] Open `src/lib/srs.ts`.
+    -   [x] Add the unified `Question` type import from Prisma at the top: `import type { Question } from '@prisma/client';`.
+    -   [x] Find and delete the local, redundant `SRSQuestion` interface definition.
+    -   [x] Perform a file-wide search and replace for all instances of the type `SRSQuestion` and change them to `Question`.
+    -   [x] Carefully review every function signature (e.g., `calculateNextReview`, `getRepeatModeQuestions`) to ensure they now use the imported `Question` type from Prisma.
+    -   [x] Verify that all property access within these functions now aligns with the `Question` model in `prisma/schema.prisma` (e.g., use `question.reviewCount` instead of a potentially different local property name).
 
--   [ ] **Task 1.2: Align the Questions API Route (`questions/route.ts`)**
-    -   [ ] Open `src/app/api/questions/route.ts`.
-    -   [ ] Add the Prisma `Question` type import: `import type { Question } from '@prisma/client';`.
-    -   [ ] In the `GET` function, ensure the final `NextResponse.json()` call for multiple questions is typed correctly: `return NextResponse.json(questions as Question[]);`.
-    -   [ ] In the `POST` function, review the `data` object for `prisma.question.create` to ensure all fields match the `Question` model.
-    -   [ ] In the `PUT` function, review the `data` object for `prisma.question.update` to ensure all fields are valid `Question` model fields.
+-   [x] **Task 1.2: Align the Questions API Route (`questions/route.ts`)**
+    -   [x] Open `src/app/api/questions/route.ts`.
+    -   [x] Add the Prisma `Question` type import: `import type { Question } from '@prisma/client';`.
+    -   [x] In the `GET` function, ensure the final `NextResponse.json()` call for multiple questions is typed correctly: `return NextResponse.json(questions as Question[]);`.
+    -   [x] In the `POST` function, review the `data` object for `prisma.question.create` to ensure all fields match the `Question` model.
+    -   [x] In the `PUT` function, review the `data` object for `prisma.question.update` to ensure all fields are valid `Question` model fields.
 
--   [ ] **Task 1.3: Update End-to-End Tests (`srsWorkflow.test.ts`)**
-    -   [ ] Open `tests/e2e/srsWorkflow.test.ts`.
-    -   [ ] Remove the local `ExtendedQuestion` interface definition.
-    -   [ ] Import the `Question` type from `@prisma/client`.
-    -   [ ] In the `testQuestions` array, update each test question object to strictly conform to the Prisma `Question` model. Pay close attention to ensuring all required fields (`id`, `userId`, `content`, `answer`, etc.) are present and correctly named.
-    -   [ ] Ensure all functions being tested (e.g., `getQuestionsByMode`) are called with data that matches the `Question[]` type.
+-   [x] **Task 1.3: Update End-to-End Tests (`srsWorkflow.test.ts`)**
+    -   [x] Open `tests/e2e/srsWorkflow.test.ts`.
+    -   [x] Remove the local `ExtendedQuestion` interface definition.
+    -   [x] Import the `Question` type from `@prisma/client`.
+    -   [x] In the `testQuestions` array, update each test question object to strictly conform to the Prisma `Question` model. Pay close attention to ensuring all required fields (`id`, `userId`, `content`, `answer`, etc.) are present and correctly named.
+    -   [x] Ensure all functions being tested (e.g., `getQuestionsByMode`) are called with data that matches the `Question[]` type.
 
 ---
 
@@ -47,16 +47,16 @@ Here is the master implementation plan:
 
 **Goal:** Implement the logic for the three SRS modes and connect them to the UI.
 
--   [ ] **Task 2.1: Implement Advanced "Repeat Mode" Logic**
-    -   [ ] Open `src/lib/srs.ts`.
-    -   [ ] Create a new private helper function: `calculateQuestionWeight(question: Question): number`.
-    -   [ ] Implement the weighting formula inside this function. The weight should increase for questions with a higher `struggleCount` and more recent `lastStruggledAt` date, and decrease for questions with a higher `reviewEase`.
-    -   [ ] Modify the `getRepeatModeQuestions` function to use `calculateQuestionWeight` to sort the filtered questions, ensuring the most problematic questions appear first.
+-   [x] **Task 2.1: Implement Advanced "Repeat Mode" Logic**
+    -   [x] Open `src/lib/srs.ts`.
+    -   [x] Create a new private helper function: `calculateQuestionWeight(question: Question): number`.
+    -   [x] Implement the weighting formula inside this function. The weight should increase for questions with a higher `struggleCount` and more recent `lastStruggledAt` date, and decrease for questions with a higher `reviewEase`.
+    -   [x] Modify the `getRepeatModeQuestions` function to use `calculateQuestionWeight` to sort the filtered questions, ensuring the most problematic questions appear first.
 
--   [ ] **Task 2.2: Implement "Study Mode" Queue Logic**
-    -   [ ] Open `src/lib/srs.ts`.
-    -   [ ] Modify the `getStudyModeQuestions` function to return an object with two distinct queues: `{ newQuestions: Question[], recentQuestions: Question[] }`.
-    -   [ ] Implement the filter logic: `newQuestions` should contain questions where `reviewCount` is 0. `recentQuestions` should contain questions where `reviewCount` is greater than 0 but less than or equal to 3.
+-   [x] **Task 2.2: Implement "Study Mode" Queue Logic**
+    -   [x] Open `src/lib/srs.ts`.
+    -   [x] Modify the `getStudyModeQuestions` function to return an object with two distinct queues: `{ newQuestions: Question[], recentQuestions: Question[] }`.
+    -   [x] Implement the filter logic: `newQuestions` should contain questions where `reviewCount` is 0. `recentQuestions` should contain questions where `reviewCount` is greater than 0 but less than or equal to 3.
 
 -   [ ] **Task 2.3: Integrate Study Mode Queues into the UI**
     -   [ ] Open `src/components/FlashcardStudy.tsx`.

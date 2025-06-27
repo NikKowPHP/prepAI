@@ -1,76 +1,93 @@
-import { getQuestionsByMode, calculateNextReview, Question } from '../../src/lib/srs';
+import { getQuestionsByMode, calculateNextReview } from '../../src/lib/srs';
+import type { Question } from '@prisma/client';
 
 describe('SRS Workflow End-to-End Tests', () => {
   const now = new Date();
-  interface ExtendedQuestion extends Question {
-    topics?: string[];
-    struggleTopics?: string[];
-  }
 
-  const testQuestions: ExtendedQuestion[] = [
+  const testQuestions: Question[] = [
     // New question (never reviewed)
     {
       id: '1',
-      question: 'New question',
-      answer: 'Answer',
-      rating: 'normal',
-      user_id: 'test-user',
+      content: 'New question content',
+      answer: 'New question answer',
+      userId: 'test-user',
       createdAt: new Date(),
+      updatedAt: new Date(),
       lastReviewed: null,
       reviewInterval: 1,
       reviewEase: 2.5,
       struggleCount: 0,
       lastStruggledAt: null,
       totalStruggleTime: 0,
-      reviewCount: 0
+      reviewCount: 0,
+      overdue: false,
+      weight: 1.0,
+      topics: [],
+      category: null,
+      difficulty: null,
     },
     // Recently reviewed question
     {
       id: '2',
-      question: 'Recent question',
-      answer: 'Answer',
-      rating: 'normal',
-      user_id: 'test-user',
+      content: 'Recent question content',
+      answer: 'Recent question answer',
+      userId: 'test-user',
       createdAt: new Date(now.getTime() - 86400000 * 2),
+      updatedAt: new Date(now.getTime() - 86400000 * 1),
       lastReviewed: new Date(now.getTime() - 86400000 * 1),
       reviewInterval: 3,
       reviewEase: 2.5,
       struggleCount: 0,
       lastStruggledAt: null,
       totalStruggleTime: 0,
-      reviewCount: 1
+      reviewCount: 1,
+      overdue: false,
+      weight: 1.0,
+      topics: [],
+      category: null,
+      difficulty: null,
     },
     // Struggled question
     {
       id: '3',
-      question: 'Struggled question',
-      answer: 'Answer',
-      rating: 'hard',
-      user_id: 'test-user',
+      content: 'Struggled question content',
+      answer: 'Struggled question answer',
+      userId: 'test-user',
       createdAt: new Date(now.getTime() - 86400000 * 5),
+      updatedAt: new Date(now.getTime() - 86400000 * 4),
       lastReviewed: new Date(now.getTime() - 86400000 * 4),
       reviewInterval: 1,
       reviewEase: 1.5,
       struggleCount: 3,
       lastStruggledAt: new Date(now.getTime() - 86400000 * 1),
       totalStruggleTime: 300,
-      reviewCount: 4
+      reviewCount: 4,
+      overdue: false,
+      weight: 1.0,
+      topics: [],
+      category: null,
+      difficulty: null,
     },
     // Overdue question
     {
       id: '4',
-      question: 'Overdue question',
-      answer: 'Answer',
-      rating: 'normal',
-      user_id: 'test-user',
+      content: 'Overdue question content',
+      answer: 'Overdue question answer',
+      userId: 'test-user',
       createdAt: new Date(now.getTime() - 86400000 * 10),
+      updatedAt: new Date(now.getTime() - 86400000 * 5),
       lastReviewed: new Date(now.getTime() - 86400000 * 5),
       reviewInterval: 3,
       reviewEase: 2.5,
       struggleCount: 1,
       lastStruggledAt: new Date(now.getTime() - 86400000 * 5),
       totalStruggleTime: 120,
-      reviewCount: 2
+      reviewCount: 2,
+      overdue: false,
+      weight: 1.0,
+      topics: [],
+      category: null,
+      difficulty: null,
     }
   ];
 
@@ -113,15 +130,14 @@ describe('SRS Workflow End-to-End Tests', () => {
     // Start with a new question
     const newQuestion = testQuestions[0];
     
-    // Mark as hard (struggled)
+    // Mark as struggled
     const struggledQuestion: Question = {
       ...newQuestion,
       lastReviewed: new Date(),
-      rating: 'hard', // Explicitly set as 'hard' to match the Question type
       struggleCount: 1,
       lastStruggledAt: new Date(),
       totalStruggleTime: 60,
-      reviewCount: 1
+      reviewCount: 1,
     };
 
     // Verify it appears in Repeat mode
@@ -141,8 +157,7 @@ describe('SRS Workflow End-to-End Tests', () => {
     // Create questions with topic relationships
     const questionsWithTopics = testQuestions.map(q => ({
       ...q,
-      topics: ['topic1', 'topic2'] as string[],
-      struggleTopics: (q.rating === 'hard' ? ['topic1'] : []) as string[]
+      topics: ['topic1', 'topic2'],
     }));
 
     // Get discover mode questions with knowledge gap in topic1
