@@ -5,7 +5,7 @@
 [x] Implement Repeat Mode logic
 [x] Implement Study Mode logic
 [x] Implement Discover Mode logic
-[ ] Add mode switching functionality
+[x] Add mode switching functionality
 [ ] Integrate with question database
 [ ] Add progress tracking for each mode
 [ ] Write unit tests for SRS logic
