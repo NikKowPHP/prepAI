@@ -5,7 +5,7 @@
 [x] Add answer assessment logic in [`assessment.ts`](src/lib/assessment.ts)
 [x] Create API endpoint for voice processing
 [x] Implement audio playback functionality
-[ ] Add error handling for audio recording
+[x] Add error handling for audio recording
 [ ] Write unit tests for voice components
 [ ] Integrate with question system
 [ ] Add voice activity detection

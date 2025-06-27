@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { supabase } from '@/lib/supabase';
+import AuthErrorDisplay from './AuthErrorDisplay';
 
 interface VoiceRecorderProps {
   expectedAnswer?: string;
@@ -132,7 +133,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           .upload(filePath, audioBlob);
 
         if (uploadError) {
-          setError('Failed to upload recording');
+          setError('Recording upload failed. Please check your internet connection and try again.');
           console.error('Upload error:', uploadError);
         } else {
           setError('');
@@ -145,7 +146,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       setIsRecording(true);
       startTimer();
     } catch (err) {
-      setError('Error accessing microphone');
+      setError('Microphone access denied. Please allow microphone access in your browser settings to continue.');
       console.error('Recording error:', err);
     }
   };
@@ -190,7 +191,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       setHighlightedText('');
       onRecordingComplete({ filePath, transcription, score, feedback });
     } catch (err) {
-      setError('Failed to assess answer');
+      setError('Answer assessment failed. Please try recording your answer again.');
       console.error('Assessment error:', err);
     } finally {
       setIsTranscribing(false);
@@ -261,7 +262,20 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       >
         {isRecording ? 'Stop Recording' : 'Start Recording'}
       </button>
-      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+      {error && (
+        <div className="mt-4">
+          <AuthErrorDisplay error={error} />
+          <button
+            onClick={() => {
+              setError('');
+              startRecording();
+            }}
+            className="mt-2 text-blue-500 hover:underline text-sm"
+          >
+            Try again
+          </button>
+        </div>
+      )}
       {transcription && (
         <div className="mt-4 p-4 border rounded bg-gray-100">
           <h3 className="font-semibold mb-2">Transcription:</h3>
