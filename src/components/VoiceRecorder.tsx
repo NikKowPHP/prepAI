@@ -24,6 +24,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   const [highlightedText, setHighlightedText] = useState('');
   const [volume, setVolume] = useState(0);
   const [recordingTime, setRecordingTime] = useState(0);
+  const [currentRecordingPath, setCurrentRecordingPath] = useState<string | null>(null);
   const timerRef = useRef<number | null>(null);
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -135,6 +136,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           console.error('Upload error:', uploadError);
         } else {
           setError('');
+          setCurrentRecordingPath(data.path);
           await transcribeAndAssess(data.path);
         }
       };
@@ -266,7 +268,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           <div className="transcription-text" dangerouslySetInnerHTML={{ __html: highlightedText || transcription }} />
           <audio
             ref={audioRef}
-            src={`/api/get-recording?path=${user?.id}/${Date.now()}.wav`}
+            src={currentRecordingPath ? `/api/get-recording?path=${currentRecordingPath}` : ''}
             onTimeUpdate={syncHighlighting}
             controls
             className="mt-2"
