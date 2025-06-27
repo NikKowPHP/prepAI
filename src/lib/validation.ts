@@ -1,3 +1,11 @@
+export const validateEmail = (email: string): { valid: boolean; message?: string } => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if (!emailRegex.test(email)) {
+    return { valid: false, message: 'Please enter a valid email address' };
+  }
+  return { valid: true };
+};
+
 export const validatePassword = (password: string): { valid: boolean; message?: string } => {
   const minLength = 8;
   const hasUpperCase = /[A-Z]/.test(password);

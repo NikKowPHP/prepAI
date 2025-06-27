@@ -2,13 +2,14 @@ import React from 'react';
 import { useState } from 'react';
 import { supabase } from '../lib/supabase';
 import AuthErrorDisplay from './AuthErrorDisplay';
-import { validatePassword } from '../lib/validation';
+import { validateEmail, validatePassword } from '../lib/validation';
 
 export default function SignUpForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -16,9 +17,17 @@ export default function SignUpForm() {
     setLoading(true);
     setError('');
 
-    const validation = validatePassword(password);
-    if (!validation.valid) {
-      setPasswordError(validation.message);
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      setEmailError(emailValidation.message);
+      setLoading(false);
+      return;
+    }
+
+    const passwordValidation = validatePassword(password);
+    if (!passwordValidation.valid) {
+      setPasswordError(passwordValidation.message);
+      setLoading(false);
       return;
     }
 
@@ -48,10 +57,17 @@ export default function SignUpForm() {
           id="email"
           type="email"
           value={email}
-          onChange={(e) => setEmail(e.target.value)}
+          onChange={(e) => {
+            setEmail(e.target.value);
+            const validation = validateEmail(e.target.value);
+            setEmailError(validation.valid ? undefined : validation.message);
+          }}
           className="w-full px-3 py-2 border rounded"
           required
         />
+        {emailError && (
+          <div className="text-red-500 text-sm mt-1">{emailError}</div>
+        )}
         {passwordError && (
           <div className="text-red-500 text-sm mt-1">{passwordError}</div>
         )}

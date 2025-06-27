@@ -1,6 +1,6 @@
 # User Authentication Implementation Tasks
 
-[ ] Implement signup form validation in [`SignUpForm.tsx`](src/components/SignUpForm.tsx)
+[x] Implement signup form validation in [`SignUpForm.tsx`](src/components/SignUpForm.tsx)
 [ ] Add password strength meter to signup form
 [ ] Implement email verification flow
 [ ] Add "Forgot Password" functionality
