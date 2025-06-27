@@ -2,7 +2,7 @@
 
 [x] Implement signup form validation in [`SignUpForm.tsx`](src/components/SignUpForm.tsx)
 [x] Add password strength meter to signup form
-[ ] Implement email verification flow
+[x] Implement email verification flow
 [ ] Add "Forgot Password" functionality
 [ ] Implement OAuth providers (Google, GitHub)
 [ ] Write unit tests for auth components

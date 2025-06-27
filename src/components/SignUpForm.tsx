@@ -12,6 +12,7 @@ export default function SignUpForm() {
   const [emailError, setEmailError] = useState<string | undefined>();
   const [passwordError, setPasswordError] = useState<string | undefined>();
   const [passwordStrength, setPasswordStrength] = useState(0);
+  const [verificationSent, setVerificationSent] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -39,12 +40,17 @@ export default function SignUpForm() {
 
     if (error) {
       setError(error.message);
+      setLoading(false);
     } else {
-      // Reset form
-      setEmail('');
-      setPassword('');
+      // Check if email verification is required
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user?.confirmation_sent_at) {
+        setVerificationSent(true);
+        setEmail('');
+        setPassword('');
+      }
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -115,6 +121,12 @@ export default function SignUpForm() {
       >
         {loading ? 'Signing up...' : 'Sign Up'}
       </button>
+      {verificationSent && (
+        <div className="mt-4 p-4 bg-blue-50 text-blue-700 rounded">
+          <p>A verification email has been sent to your email address.</p>
+          <p className="mt-2">Please check your inbox and click the link to verify your account.</p>
+        </div>
+      )}
     </form>
   );
 }
