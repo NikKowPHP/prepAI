@@ -7,5 +7,5 @@
 [x] Implement OAuth providers (Google, GitHub)
 [x] Write unit tests for auth components
 [x] Add error handling for auth API routes
-[ ] Implement session management in [`auth.ts`](src/lib/auth.ts)
+[x] Implement session management in [`auth.ts`](src/lib/auth.ts)
 [ ] Add rate limiting to auth endpoints
