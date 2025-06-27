@@ -8,6 +8,6 @@
 [x] Add error handling for audio recording
 [x] Write unit tests for voice components
 [x] Integrate with question system
-[ ] Add voice activity detection
+[x] Add voice activity detection
 [ ] Integrate speech-to-text service
 [ ] Implement answer validation logic

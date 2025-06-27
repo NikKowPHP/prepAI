@@ -26,7 +26,12 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
   const [volume, setVolume] = useState(0);
   const [recordingTime, setRecordingTime] = useState(0);
   const [currentRecordingPath, setCurrentRecordingPath] = useState<string | null>(null);
+  const [voiceActive, setVoiceActive] = useState(false);
+  const [isAutoRecording, setIsAutoRecording] = useState(false);
   const timerRef = useRef<number | null>(null);
+  const silenceTimerRef = useRef<number | null>(null);
+  const VOICE_THRESHOLD = 0.5; // Minimum volume to consider as voice activity
+  const SILENCE_TIMEOUT = 2000; // Time to wait before stopping after silence
   
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
@@ -93,6 +98,26 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
       }
       const rms = Math.sqrt(sum / bufferLength);
       setVolume(rms);
+      
+      // Voice activity detection
+      if (rms > VOICE_THRESHOLD) {
+        setVoiceActive(true);
+        if (silenceTimerRef.current) {
+          clearTimeout(silenceTimerRef.current);
+        }
+        silenceTimerRef.current = window.setTimeout(() => {
+          setVoiceActive(false);
+        }, SILENCE_TIMEOUT);
+      }
+
+      // Auto-recording logic
+      if (isAutoRecording) {
+        if (voiceActive && !isRecording) {
+          startRecording();
+        } else if (!voiceActive && isRecording) {
+          stopRecording();
+        }
+      }
     }
     
     animationRef.current = requestAnimationFrame(drawWaveform);
@@ -210,7 +235,12 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         audioContextRef.current.close();
       }
     };
-  }, []);
+    return () => {
+      if (silenceTimerRef.current) {
+        clearTimeout(silenceTimerRef.current);
+      }
+    };
+  }, [isAutoRecording]);
 
   const syncHighlighting = (event: React.SyntheticEvent<HTMLAudioElement>) => {
     const audio = event.target as HTMLAudioElement;
@@ -253,15 +283,35 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
           </div>
         </div>
       </div>
-      <button
-        onClick={isRecording ? stopRecording : startRecording}
-        className={`w-full py-2 px-4 rounded-md text-white ${
-          isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
-        } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
-        disabled={isTranscribing}
-      >
-        {isRecording ? 'Stop Recording' : 'Start Recording'}
-      </button>
+      <div className="flex gap-4">
+        <button
+          onClick={isRecording ? stopRecording : startRecording}
+          className={`flex-1 py-2 px-4 rounded-md text-white ${
+            isRecording ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-600 hover:bg-blue-700'
+          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500`}
+          disabled={isTranscribing}
+        >
+          {isRecording ? 'Stop Recording' : 'Start Manual Recording'}
+        </button>
+        <button
+          onClick={() => setIsAutoRecording(!isAutoRecording)}
+          className={`flex-1 py-2 px-4 rounded-md text-white ${
+            isAutoRecording ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-600 hover:bg-gray-700'
+          } focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500`}
+          disabled={isTranscribing}
+        >
+          {isAutoRecording ? 'Auto Recording On' : 'Enable Auto Recording'}
+        </button>
+      </div>
+      {isAutoRecording && (
+        <div className="text-sm text-gray-600">
+          {voiceActive ? (
+            <span className="text-green-600">Voice detected - recording</span>
+          ) : (
+            <span>Waiting for voice input...</span>
+          )}
+        </div>
+      )}
       {error && (
         <div className="mt-4">
           <AuthErrorDisplay error={error} />
