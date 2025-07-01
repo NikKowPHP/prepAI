@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { progressService } from '@/lib/progress';
-import { Line } from 'react-chartjs-2';
+import { Line, Bar } from 'react-chartjs-2';
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,6 +13,7 @@ import {
   Title,
   Tooltip,
   Legend,
+  BarElement,
 } from 'chart.js';
 
 ChartJS.register(
@@ -22,7 +23,8 @@ ChartJS.register(
   LineElement,
   Title,
   Tooltip,
-  Legend
+  Legend,
+  BarElement
 );
 
 interface ChartData {
@@ -39,6 +41,7 @@ interface ChartData {
 const AnalyticsCharts: React.FC = () => {
   const { user } = useAuth();
   const [chartData, setChartData] = useState<ChartData | null>(null);
+  const [topicChartData, setTopicChartData] = useState<ChartData | null>(null);
   const [selectedDateRange, setSelectedDateRange] = useState('30_days');
   const [selectedQuestionType, setSelectedQuestionType] = useState('all');
   const [loading, setLoading] = useState(true);
@@ -50,6 +53,7 @@ const AnalyticsCharts: React.FC = () => {
     const fetchData = async () => {
       try {
         const metrics = await progressService.getUserMetrics(user.id);
+        const topicMetrics = await progressService.aggregateAnalyticsData(user.id);
 
         // Generate sample data for demonstration based on selected filters
         let days: number;
@@ -87,6 +91,17 @@ const AnalyticsCharts: React.FC = () => {
             },
           ],
         });
+
+        if (topicMetrics?.topicMastery?.length) {
+          setTopicChartData({
+            labels: topicMetrics.topicMastery.map(t => t.topic_id),
+            datasets: [{
+              label: 'Mastery by Topic',
+              data: topicMetrics.topicMastery.map(t => t.mastery_level),
+              backgroundColor: 'rgba(54, 162, 235, 0.6)',
+            }]
+          });
+        }
       } catch (err) {
         setError('Failed to load analytics data');
         console.error(err);
@@ -152,7 +167,12 @@ const AnalyticsCharts: React.FC = () => {
           <h3 className="font-semibold mb-2">Accuracy Over Time</h3>
           <Line data={chartData} />
         </div>
-        {/* Add more charts here */}
+        {topicChartData && (
+          <div className="p-4 bg-gray-100 rounded-md">
+            <h3 className="font-semibold mb-2">Strengths & Weaknesses by Topic</h3>
+            <Bar data={topicChartData} />
+          </div>
+        )}
       </div>
     </div>
   );

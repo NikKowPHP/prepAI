@@ -58,12 +58,12 @@ Here is the master implementation plan:
     -   [x] Modify the `getStudyModeQuestions` function to return an object with two distinct queues: `{ newQuestions: Question[], recentQuestions: Question[] }`.
     -   [x] Implement the filter logic: `newQuestions` should contain questions where `reviewCount` is 0. `recentQuestions` should contain questions where `reviewCount` is greater than 0 but less than or equal to 3.
 
--   [ ] **Task 2.3: Integrate Study Mode Queues into the UI**
-    -   [ ] Open `src/components/FlashcardStudy.tsx`.
-    -   [ ] Add a new state to manage which queue is active: `const [queueType, setQueueType] = useState<'new' | 'recent'>('new');`.
-    -   [ ] Add two UI buttons, "New Questions" and "Recent Questions," which update the `queueType` state when clicked.
-    -   [ ] In the `fetchFlashcards` function, call `getStudyModeQuestions` and store both returned queues.
-    -   [ ] Based on the `queueType` state, set the component's main `flashcards` state to either the `newQuestions` array or the `recentQuestions` array, which will cause the UI to display the correct set of cards.
+-   [x] **Task 2.3: Integrate Study Mode Queues into the UI**
+    -   [x] Open `src/components/FlashcardStudy.tsx`.
+    -   [x] Add a new state to manage which queue is active: `const [queueType, setQueueType] = useState<'new' | 'recent'>('new');`.
+    -   [x] Add two UI buttons, "New Questions" and "Recent Questions," which update the `queueType` state when clicked.
+    -   [x] In the `fetchFlashcards` function, call `getStudyModeQuestions` and store both returned queues.
+    -   [x] Based on the `queueType` state, set the component's main `flashcards` state to either the `newQuestions` array or the `recentQuestions` array, which will cause the UI to display the correct set of cards.
 
 ---
 
@@ -71,22 +71,22 @@ Here is the master implementation plan:
 
 **Goal:** Create the API endpoint and UI components to display the user's interview readiness score.
 
--   [ ] **Task 3.1: Create the Readiness API Endpoint**
-    -   [ ] Create a new directory and file: `src/app/api/readiness/route.ts`.
-    -   [ ] Implement an asynchronous `GET` function in this file.
-    -   [ ] Inside `GET`, use the Supabase helper to get the authenticated `user`. Return a 401 error if not found.
-    -   [ ] Import `calculateReadiness` from `src/lib/readiness.ts`.
-    -   [ ] Call `await calculateReadiness(user.id)` and store the result.
-    -   [ ] Return the result in a `NextResponse.json()` call.
+-   [x] **Task 3.1: Create the Readiness API Endpoint**
+    -   [x] Create a new directory and file: `src/app/api/readiness/route.ts`.
+    -   [x] Implement an asynchronous `GET` function in this file.
+    -   [x] Inside `GET`, use the Supabase helper to get the authenticated `user`. Return a 401 error if not found.
+    -   [x] Import `calculateReadiness` from `src/lib/readiness.ts`.
+    -   [x] Call `await calculateReadiness(user.id)` and store the result.
+    -   [x] Return the result in a `NextResponse.json()` call.
 
--   [ ] **Task 3.2: Create the Readiness Indicator UI Component**
-    -   [ ] Create a new file: `src/components/ReadinessIndicator.tsx`.
-    -   [ ] This must be a `"use client";` component.
-    -   [ ] It should accept a `score: number` as a prop.
-    -   [ ] The component should render a `div` that displays the score.
-    -   [ ] Add conditional Tailwind CSS classes to change the text color based on the score: `text-red-500` for scores below 50, `text-yellow-500` for scores between 50-80, and `text-green-500` for scores above 80.
+-   [x] **Task 3.2: Create the Readiness Indicator UI Component**
+    -   [x] Create a new file: `src/components/ReadinessIndicator.tsx`.
+    -   [x] This must be a `"use client";` component.
+    -   [x] It should accept a `score: number` as a prop.
+    -   [x] The component should render a `div` that displays the score.
+    -   [x] Add conditional Tailwind CSS classes to change the text color based on the score: `text-red-500` for scores below 50, `text-yellow-500` for scores between 50-80, and `text-green-500` for scores above 80.
 
--   [ ] **Task 3.3: Integrate Readiness Indicator into the Dashboard**
+-   [x] **Task 3.3: Integrate Readiness Indicator into the Dashboard**
     -   [ ] Open `src/app/dashboard/page.tsx`.
     -   [ ] Add a new state to hold the score: `const [readinessScore, setReadinessScore] = useState<number | null>(null);`.
     -   [ ] Use a `useEffect` hook to `fetch('/api/readiness')` when the component mounts.
@@ -100,13 +100,13 @@ Here is the master implementation plan:
 
 **Goal:** Enhance the analytics dashboard with more detailed visualizations.
 
--   [ ] **Task 4.1: Implement Strength/Weakness Chart**
+-   [x] **Task 4.1: Implement Strength/Weakness Chart**
     -   [ ] Open `src/components/AnalyticsCharts.tsx`.
     -   [ ] Add a new chart using the `react-chartjs-2` library. This should be a `Bar` chart.
     -   [ ] The data for this chart should be derived from the user's performance by topic. This may require updating the data fetching logic in `src/lib/progress.ts` to include a `groupBy('topic')` aggregation.
     -   [ ] The bar chart should display each topic on the x-axis and the mastery score for that topic on the y-axis.
 
--   [ ] **Task 4.2: Implement Struggle Heatmap**
+-   [x] **Task 4.2: Implement Struggle Heatmap**
     -   [ ] Open `src/components/ProgressDashboard.tsx`.
     -   [ ] Add a new section for a "Struggle Heatmap".
     -   [ ] The data will come from `metrics.struggleData` (this may require adding this field to the `progress.ts` service).
@@ -119,7 +119,7 @@ Here is the master implementation plan:
 
 **Goal:** Improve the user experience of the voice recorder with visual feedback.
 
--   [ ] **Task 5.1: Implement Audio Waveform Visualization**
+-   [x] **Task 5.1: Implement Audio Waveform Visualization**
     -   [ ] Open `src/components/VoiceRecorder.tsx`.
     -   [ ] In the `startRecording` function, after getting the `stream`, create an `AudioContext` and an `AnalyserNode`.
     -   [ ] Create a new function `drawWaveform`.
