@@ -48,7 +48,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Create the file with the `QuestionGenerationService` interface as defined in `work_breakdown/tasks/master_plan.md` Task 4.1. This will define the contract for any AI provider.
     -   **Reason**: Audit finding: The current question generator is a non-AI placeholder. This is the first step in building a proper, abstracted AI service.
 
-*   [ ] **CREATE**: Gemini API Implementation
+*   [x] **CREATE**: Gemini API Implementation
     -   **File**: `src/lib/ai/gemini-service.ts`
     -   **Action**: Create the file with the `GeminiQuestionGenerationService` class, which implements the `QuestionGenerationService` interface and contains the logic for calling the Gemini API. Use the code from `work_breakdown/tasks/master_plan.md` Task 4.1.
     -   **Reason**: Audit finding: The current question generator is a non-AI placeholder. This task provides the concrete implementation for the AI service.
