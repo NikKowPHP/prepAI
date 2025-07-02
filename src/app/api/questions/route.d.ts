@@ -13,11 +13,17 @@ export type UpdateQuestionData = {
   content?: string;
   category?: string;
   difficulty?: string;
-  lastReviewed?: Date;
+  topics?: string[];
+  answer?: string;
+  lastReviewed?: Date | null;
   reviewInterval?: number;
   reviewEase?: number;
   struggleCount?: number;
-  topics?: string[];
+  lastStruggledAt?: Date | null;
+  totalStruggleTime?: number;
+  reviewCount?: number;
+  overdue?: boolean;
+  weight?: number;
 };
 
 export function GET(req: NextRequest): Promise<NextResponse>;
