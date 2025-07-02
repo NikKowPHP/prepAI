@@ -14,6 +14,31 @@ This document serves as the central reference for all API endpoints in the appli
   }
   ```
 
+### /api/analyze-knowledge-gaps
+- **Method**: POST
+- **Request Body**:
+  ```json
+  {
+    "questionPerformance": {
+      "questionId": string,
+      "correct": boolean,
+      "timeSpent": number
+    }[],
+    "userId": string
+  }
+  ```
+- **Response**:
+  ```json
+  {
+    "gaps": string[],
+    "suggestedQuestions": {
+      "id": string,
+      "content": string,
+      "difficulty": string
+    }[]
+  }
+  ```
+
 <!-- API endpoints will be documented here following the template below:
 
 ### /api/endpoint

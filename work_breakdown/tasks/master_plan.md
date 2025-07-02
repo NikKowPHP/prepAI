@@ -122,7 +122,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Add a new section for the `/api/roles` endpoint. Document its HTTP method (`GET`), URL path, lack of parameters, and the structure of its JSON response (an array of strings).
     -   **Reason**: Audit finding: Undocumented Functionality (`/api/roles`).
 
-*   [ ] **DOCS**: Document the `/api/analyze-knowledge-gaps` endpoint
+*   [x] **DOCS**: Document the `/api/analyze-knowledge-gaps` endpoint
     -   **File**: `docs/api_reference.md`
     -   **Action**: Add a new section for the `/api/analyze-knowledge-gaps` endpoint. Document its HTTP method (`POST`), URL path, request body structure (`{ questionPerformance, userId }`), and response structure (`{ gaps, suggestedQuestions }`).
     -   **Reason**: Audit finding: Undocumented Functionality (`/api/analyze-knowledge-gaps`).
