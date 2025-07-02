@@ -38,7 +38,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Add `"@google/generative-ai": "^0.15.0"` (or the latest version) to the `dependencies` section.
     -   **Reason**: Required for the new Gemini-based AI question generation service, which fixes the placeholder implementation.
 
-*   [ ] **CREATE**: AI Service directory structure
+*   [x] **CREATE**: AI Service directory structure
     -   **File**: `src/lib/ai/`
     -   **Action**: Create the new directory `src/lib/ai/`.
     -   **Reason**: Prerequisite step for creating the AI abstraction layer to fix the placeholder question generator.
