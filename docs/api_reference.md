@@ -94,12 +94,22 @@ This document serves as the central reference for all API endpoints in the appli
 - **Response**:
   ```json
   {
-    "success": boolean,
-    "user": {
-      "id": string,
-      "email": string
+    "data": {
+      "user": {
+        "id": string,
+        "email": string,
+        "user_metadata": object
+      },
+      "session": {
+        "access_token": string,
+        "refresh_token": string,
+        "expires_in": number
+      }
     },
-    "error": "string" // only present if success is false
+    "error": {
+      "message": string,
+      "status": number
+    } // only present on error
   }
   ```
 
@@ -115,12 +125,22 @@ This document serves as the central reference for all API endpoints in the appli
 - **Response**:
   ```json
   {
-    "success": boolean,
-    "user": {
-      "id": string,
-      "email": string
+    "data": {
+      "user": {
+        "id": string,
+        "email": string,
+        "user_metadata": object
+      },
+      "session": {
+        "access_token": string,
+        "refresh_token": string,
+        "expires_in": number
+      }
     },
-    "error": "string" // only present if success is false
+    "error": {
+      "message": string,
+      "status": number
+    } // only present on error
   }
   ```
 

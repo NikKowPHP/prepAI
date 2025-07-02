@@ -44,7 +44,7 @@ These tasks involve modifying existing code to match the documented specificatio
 
 These tasks involve modifying documentation to reflect the actual, correct implementation in the code.
 
-- [ ] **DOCS**: Update API docs for `/api/auth/login` and `/api/auth/register`.
+- [x] **DOCS**: Update API docs for `/api/auth/login` and `/api/auth/register`.
     - **File**: `docs/api_reference.md`
     - **Action**: Modify the response structure documentation for `/api/auth/login` and `/api/auth/register` to reflect that they return the standard Supabase `AuthResponse` object, not a `{ success, user, error }` object.
     - **Reason**: Audit finding: API response mismatch. The code correctly returns the Supabase response, so the documentation should be updated.
