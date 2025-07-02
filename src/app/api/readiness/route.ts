@@ -10,8 +10,25 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const readinessScore = await calculateReadiness(user.id);
-    return NextResponse.json(readinessScore);
+    const { overall, breakdown } = await calculateReadiness(user.id);
+    
+    // Determine level based on score
+    let level = 'beginner';
+    if (overall >= 70) level = 'advanced';
+    else if (overall >= 40) level = 'intermediate';
+
+    // Calculate next review date (3 days from now by default)
+    const nextReviewDate = new Date();
+    nextReviewDate.setDate(nextReviewDate.getDate() + 3);
+
+    return NextResponse.json({
+      overall: {
+        score: overall,
+        level,
+        nextReviewDate: nextReviewDate.toISOString()
+      },
+      breakdown
+    });
 
   } catch (error) {
     console.error('Error calculating readiness:', error);

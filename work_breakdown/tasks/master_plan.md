@@ -33,7 +33,7 @@ These tasks involve modifying existing code to match the documented specificatio
     - **Action**: Replace the entire implementation of the `PATCH` function. The new logic should extract the question ID from the URL, parse partial data from the request body (e.g., `content`, `difficulty`, `topic`), and update the corresponding question in the database. The current objective-linking logic should be removed from this method.
     - **Reason**: Audit finding: Major API functionality mismatch. Documentation `docs/api_reference.md` specifies PATCH for partial updates, but the code implements objective linking.
 
-- [ ] **UPDATE**: Align `/api/readiness` response structure with documentation.
+- [x] **UPDATE**: Align `/api/readiness` response structure with documentation.
     - **File**: `src/app/api/readiness/route.ts`
     - **Action**: Modify the final `NextResponse.json()` call to transform the data from `calculateReadiness` into the documented structure: `{ overall: { score, level, nextReviewDate }, breakdown: [...] }`. This will require adding logic to determine `level` and `nextReviewDate`.
     - **Reason**: Audit finding: API response structure mismatch. The code returns a different structure than what is specified in `docs/api_reference.md`.
