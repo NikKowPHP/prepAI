@@ -103,7 +103,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Delete the line `ENABLE_ANALYTICS="false"`.
     -   **Reason**: Audit finding: Configuration mismatch. This variable is documented but not used anywhere in the codebase.
 
-*   [ ] **FIX**: Remove unused NextAuth environment variables
+*   [x] **FIX**: Remove unused NextAuth environment variables
     -   **File**: `.env.example`
     -   **Action**: Delete the lines for `NEXTAUTH_SECRET` and `NEXTAUTH_URL`.
     -   **Reason**: These variables are for the `next-auth` library, which is being removed as part of the P0 fixes.
