@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
       createdAt: new Date(),
       updatedAt: new Date()
     };
-    return NextResponse.json(firstQuestion);
+    return NextResponse.json({ questions: [firstQuestion] });
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('Error generating question:', error.message);

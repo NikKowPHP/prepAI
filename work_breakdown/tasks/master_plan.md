@@ -13,7 +13,7 @@ These tasks involve modifying existing code to match the documented specificatio
     - **Action**: Modify the return statement to wrap the `roles` array in an object, so the response is `{ "roles": ["role1", "role2"] }` instead of just `["role1", "role2"]`.
     - **Reason**: Audit finding: API response structure mismatch. Documentation `docs/api_reference.md` specifies an object with a `roles` key.
 
-- [ ] **UPDATE**: Align `/api/generate-question` response to return an array.
+- [x] **UPDATE**: Align `/api/generate-question` response to return an array.
     - **File**: `src/app/api/generate-question/route.ts`
     - **Action**: Modify the return statement to wrap the generated question object within an array and a parent object, conforming to the documented `{ "questions": [...] }` structure.
     - **Reason**: Audit finding: API response structure mismatch. Documentation `docs/api_reference.md` specifies a `questions` array.
