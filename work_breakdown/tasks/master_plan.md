@@ -88,7 +88,7 @@ Executing this plan will bring the codebase into full compliance with its design
 
 ### **P2 - Correcting Mismatches**
 
-*   [ ] **UPDATE**: Add PATCH method to Questions API definition
+*   [x] **UPDATE**: Add PATCH method to Questions API definition
     -   **File**: `src/app/api/questions/route.d.ts`
     -   **Action**: Add `export async function PATCH(req: NextRequest): Promise<NextResponse>;` to the list of exported functions.
     -   **Reason**: Audit finding: API mismatch. The `PATCH` method is implemented in `route.ts` but is missing from its TypeScript definition file.
