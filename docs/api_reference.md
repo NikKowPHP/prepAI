@@ -39,6 +39,36 @@ This document serves as the central reference for all API endpoints in the appli
   }
   ```
 
+### /api/progress
+- **GET Method**:
+  - **Parameters**:
+    - `userId` (required): string
+  - **Response**:
+    ```json
+    {
+      "totalQuestions": number,
+      "correctAnswers": number,
+      "streakDays": number,
+      "lastActive": string
+    }
+    ```
+
+- **POST Method**:
+  - **Request Body**:
+    ```json
+    {
+      "userId": string,
+      "questionId": string,
+      "correct": boolean
+    }
+    ```
+  - **Response**:
+    ```json
+    {
+      "updated": boolean
+    }
+    ```
+
 <!-- API endpoints will be documented here following the template below:
 
 ### /api/endpoint

@@ -127,7 +127,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Add a new section for the `/api/analyze-knowledge-gaps` endpoint. Document its HTTP method (`POST`), URL path, request body structure (`{ questionPerformance, userId }`), and response structure (`{ gaps, suggestedQuestions }`).
     -   **Reason**: Audit finding: Undocumented Functionality (`/api/analyze-knowledge-gaps`).
 
-*   [ ] **DOCS**: Document the `/api/progress` endpoint
+*   [x] **DOCS**: Document the `/api/progress` endpoint
     -   **File**: `docs/api_reference.md`
     -   **Action**: Add a new section for the `/api/progress` endpoint. Document its `GET` and `POST` methods, including request parameters and response structures for each.
     -   **Reason**: Audit finding: Undocumented Functionality (`/api/progress`).
