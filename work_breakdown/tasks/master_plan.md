@@ -152,7 +152,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Add a section describing the `transcription.ts` module. Explain its dependency on the Google Cloud Speech-to-Text service and its role in processing voice answers.
     -   **Reason**: Audit finding: Undocumented Functionality (`transcription.ts`).
 
-*   [ ] **DOCS**: Add missing environment variables to `.env.example`
+*   [x] **DOCS**: Add missing environment variables to `.env.example`
     -   **File**: `.env.example`
     -   **Action**: Add entries for `AI_PROVIDER`, `GEMINI_API_KEY`, `GOOGLE_CLIENT_EMAIL`, `GOOGLE_PRIVATE_KEY`, and `NEXT_PUBLIC_API_URL`.
     -   **Reason**: Audit finding: Configuration Mismatch. Multiple variables are used in the code but are not documented for setup.
