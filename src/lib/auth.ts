@@ -1,51 +1,77 @@
-import { supabase } from './supabase';
-import { Session } from '@supabase/supabase-js';
+import { NextAuthOptions } from 'next-auth';
+import CredentialsProvider from 'next-auth/providers/credentials';
+import { prisma } from './db';
+import { DefaultSession } from 'next-auth';
 
-// Current session cache
-let currentSession: Session | null = null;
+declare module 'next-auth' {
+  interface Session extends DefaultSession {
+    user?: {
+      id?: string;
+    } & DefaultSession['user'];
+  }
+}
 
-export const signUp = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  currentSession = data.session;
-  return { data, error };
+interface Credentials {
+  email: string;
+  password: string;
+}
+
+interface User {
+  id: string;
+  name: string | null;
+  email: string;
+  password: string;
+}
+
+export const authOptions: NextAuthOptions = {
+  providers: [
+    CredentialsProvider({
+      name: 'Credentials',
+      credentials: {
+        email: { label: 'Email', type: 'email' },
+        password: { label: 'Password', type: 'password' },
+      },
+      async authorize(credentials: Credentials | undefined) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
+        const user = await prisma.user.findUnique({
+          where: { email: credentials.email },
+        }) as User | null;
+
+        if (!user) {
+          return null;
+        }
+
+        // In a real application, you should compare hashed passwords
+        if (user.password !== credentials.password) {
+          return null;
+        }
+
+        return {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+        };
+      },
+    }),
+  ],
+  session: {
+    strategy: 'jwt',
+  },
+  callbacks: {
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    async session({ session, token }) {
+      if (session.user && token.id) {
+        session.user.id = token.id as string;
+      }
+      return session;
+    },
+  },
 };
-
-export const signIn = async (email: string, password: string) => {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  currentSession = data?.session ?? null;
-  return { data, error };
-};
-
-export const signOut = async () => {
-  const { error } = await supabase.auth.signOut();
-  currentSession = null;
-  return { error };
-};
-
-export const getSession = async () => {
-  const { data, error } = await supabase.auth.getSession();
-  currentSession = data.session;
-  return { session: data.session, error };
-};
-
-export const refreshSession = async () => {
-  const { data, error } = await supabase.auth.refreshSession();
-  currentSession = data.session;
-  return { session: data.session, error };
-};
-
-export const isValidSession = async () => {
-  if (!currentSession?.expires_at) return false;
-  const expiresAt = new Date(currentSession.expires_at * 1000);
-  return expiresAt > new Date();
-};
-
-export const getCurrentUser = () => {
-  return currentSession?.user ?? null;
-};
-
-// Setup auth state change listener
-supabase.auth.onAuthStateChange((event, session) => {
-  currentSession = session;
-  console.log(`Auth state changed: ${event}`, session?.user);
-});
