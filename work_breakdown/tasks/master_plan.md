@@ -98,7 +98,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Expand the `UpdateQuestionData` type to include all possible fields accepted by the `PUT` handler in `route.ts`, such as `lastReviewed`, `reviewInterval`, `reviewEase`, `struggleCount`, etc. All should be optional.
     -   **Reason**: Audit finding: API mismatch. The `PUT` implementation accepts more parameters than are defined in the type.
 
-*   [ ] **FIX**: Remove unused `ENABLE_ANALYTICS` environment variable
+*   [x] **FIX**: Remove unused `ENABLE_ANALYTICS` environment variable
     -   **File**: `.env.example`
     -   **Action**: Delete the line `ENABLE_ANALYTICS="false"`.
     -   **Reason**: Audit finding: Configuration mismatch. This variable is documented but not used anywhere in the codebase.
