@@ -73,7 +73,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Delete this file entirely.
     -   **Reason**: This file is related to a previous, unused AI implementation and is now obsolete.
 
-*   [ ] **FIX**: Delete obsolete placeholder test file
+*   [x] **FIX**: Delete obsolete placeholder test file
     -   **File**: `src/lib/__tests__/questionGenerator.test.ts`
     -   **Action**: Delete this file entirely.
     -   **Reason**: This test file corresponds to the deleted `questionGenerator.ts` placeholder and is no longer valid.
