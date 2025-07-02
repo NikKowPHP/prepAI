@@ -43,7 +43,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Create the new directory `src/lib/ai/`.
     -   **Reason**: Prerequisite step for creating the AI abstraction layer to fix the placeholder question generator.
 
-*   [ ] **CREATE**: AI Question Generation Service Interface
+*   [x] **CREATE**: AI Question Generation Service Interface
     -   **File**: `src/lib/ai/generation-service.ts`
     -   **Action**: Create the file with the `QuestionGenerationService` interface as defined in `work_breakdown/tasks/master_plan.md` Task 4.1. This will define the contract for any AI provider.
     -   **Reason**: Audit finding: The current question generator is a non-AI placeholder. This is the first step in building a proper, abstracted AI service.
