@@ -41,7 +41,7 @@ export async function GET(req: NextRequest) {
         orderBy: { createdAt: 'desc' },
       });
 
-      return NextResponse.json(questions as Question[]);
+      return NextResponse.json({ questions: questions as Question[] });
     }
   } catch (error: unknown) {
     if (error instanceof Error) {

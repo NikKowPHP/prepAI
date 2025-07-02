@@ -18,7 +18,7 @@ These tasks involve modifying existing code to match the documented specificatio
     - **Action**: Modify the return statement to wrap the generated question object within an array and a parent object, conforming to the documented `{ "questions": [...] }` structure.
     - **Reason**: Audit finding: API response structure mismatch. Documentation `docs/api_reference.md` specifies a `questions` array.
 
-- [ ] **UPDATE**: Align `/api/questions` GET response to be wrapped in an object.
+- [x] **UPDATE**: Align `/api/questions` GET response to be wrapped in an object.
     - **File**: `src/app/api/questions/route.ts`
     - **Action**: In the `GET` function, when returning all questions, modify the `NextResponse.json()` call to wrap the `questions` array in an object: `return NextResponse.json({ questions });`.
     - **Reason**: Audit finding: API response structure mismatch. Documentation `docs/api_reference.md` specifies an object with a `questions` key.
