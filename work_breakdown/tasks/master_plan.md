@@ -59,7 +59,7 @@ These tasks involve modifying documentation to reflect the actual, correct imple
     - **Action**: Add the `answer` field (string, required) to the documented request body for the `/api/questions` POST endpoint.
     - **Reason**: Audit finding: API request mismatch. The code requires an `answer` field, which is missing from the documentation.
 
-- [ ] **DOCS**: Update API docs for `/api/questions` PUT request body.
+- [x] **DOCS**: Update API docs for `/api/questions` PUT request body.
     - **File**: `docs/api_reference.md`
     - **Action**: Expand the documented request body for the `/api/questions` PUT endpoint to include all the partial update fields supported by the code, such as `lastReviewed`, `reviewInterval`, `reviewEase`, etc.
     - **Reason**: Audit finding: Incomplete documentation. The code supports many more fields for updates than are listed in the API reference.

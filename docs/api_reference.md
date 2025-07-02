@@ -263,9 +263,19 @@ This document serves as the central reference for all API endpoints in the appli
   - **Request Body**:
     ```json
     {
-      "content": string,
-      "difficulty": "easy" | "medium" | "hard",
-      "topic": string
+      "content"?: string,
+      "difficulty"?: "easy" | "medium" | "hard",
+      "topic"?: string,
+      "answer"?: string,
+      "lastReviewed"?: string,
+      "reviewInterval"?: number,
+      "reviewEase"?: number,
+      "struggleCount"?: number,
+      "lastStruggledAt"?: string,
+      "totalStruggleTime"?: number,
+      "reviewCount"?: number,
+      "overdue"?: boolean,
+      "weight"?: number
     }
     ```
   - **Response**:
