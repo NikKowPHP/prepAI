@@ -63,7 +63,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Replace the entire content of the file. The new implementation should import and use `getQuestionGenerationService` to generate questions and save them to the database. The old implementation using `src/lib/questionGenerator.ts` must be removed.
     -   **Reason**: Audit finding: The current question generator is a non-AI placeholder. This task connects the API to the new, real AI implementation.
 
-*   [ ] **FIX**: Delete obsolete placeholder question generator
+*   [x] **FIX**: Delete obsolete placeholder question generator
     -   **File**: `src/lib/questionGenerator.ts`
     -   **Action**: Delete this file entirely.
     -   **Reason**: This file contains the old, non-AI placeholder logic and is now redundant.
