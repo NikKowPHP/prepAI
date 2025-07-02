@@ -147,7 +147,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Add a section describing the `rateLimiter.ts` module. Explain its purpose (providing rate limiting for security) and how it is used on the authentication endpoints.
     -   **Reason**: Audit finding: Undocumented Functionality (`rateLimiter.ts`).
 
-*   [ ] **DOCS**: Document the `transcription.ts` module and its dependencies
+*   [x] **DOCS**: Document the `transcription.ts` module and its dependencies
     -   **File**: `docs/architecture_details.md`
     -   **Action**: Add a section describing the `transcription.ts` module. Explain its dependency on the Google Cloud Speech-to-Text service and its role in processing voice answers.
     -   **Reason**: Audit finding: Undocumented Functionality (`transcription.ts`).
