@@ -93,7 +93,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Add `export async function PATCH(req: NextRequest): Promise<NextResponse>;` to the list of exported functions.
     -   **Reason**: Audit finding: API mismatch. The `PATCH` method is implemented in `route.ts` but is missing from its TypeScript definition file.
 
-*   [ ] **UPDATE**: Correct the UpdateQuestionData type definition
+*   [x] **UPDATE**: Correct the UpdateQuestionData type definition
     -   **File**: `src/app/api/questions/route.d.ts`
     -   **Action**: Expand the `UpdateQuestionData` type to include all possible fields accepted by the `PUT` handler in `route.ts`, such as `lastReviewed`, `reviewInterval`, `reviewEase`, `struggleCount`, etc. All should be optional.
     -   **Reason**: Audit finding: API mismatch. The `PUT` implementation accepts more parameters than are defined in the type.

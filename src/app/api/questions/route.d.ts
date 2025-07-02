@@ -13,10 +13,15 @@ export type UpdateQuestionData = {
   content?: string;
   category?: string;
   difficulty?: string;
+  lastReviewed?: Date;
+  reviewInterval?: number;
+  reviewEase?: number;
+  struggleCount?: number;
+  topics?: string[];
 };
 
-export async function GET(req: NextRequest): Promise<NextResponse>;
-export async function POST(req: NextRequest): Promise<NextResponse>;
-export async function PUT(req: NextRequest): Promise<NextResponse>;
-export async function DELETE(req: NextRequest): Promise<NextResponse>;
-export async function PATCH(req: NextRequest): Promise<NextResponse>;
+export function GET(req: NextRequest): Promise<NextResponse>;
+export function POST(req: NextRequest): Promise<NextResponse>;
+export function PUT(req: NextRequest): Promise<NextResponse>;
+export function DELETE(req: NextRequest): Promise<NextResponse>;
+export function PATCH(req: NextRequest): Promise<NextResponse>;
