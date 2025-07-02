@@ -54,7 +54,7 @@ These tasks involve modifying documentation to reflect the actual, correct imple
     - **Action**: Remove the `topics` array from the documented response structure for creating an objective.
     - **Reason**: Audit finding: API response mismatch. The `Objective` model in the database does not store topics, so the API does not return it.
 
-- [ ] **DOCS**: Update API docs for `/api/questions` POST request body.
+- [x] **DOCS**: Update API docs for `/api/questions` POST request body.
     - **File**: `docs/api_reference.md`
     - **Action**: Add the `answer` field (string, required) to the documented request body for the `/api/questions` POST endpoint.
     - **Reason**: Audit finding: API request mismatch. The code requires an `answer` field, which is missing from the documentation.

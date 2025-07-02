@@ -241,6 +241,7 @@ This document serves as the central reference for all API endpoints in the appli
     ```json
     {
       "content": string,
+      "answer": string,
       "difficulty": "easy" | "medium" | "hard",
       "topic": string
     }
