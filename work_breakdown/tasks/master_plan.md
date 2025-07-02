@@ -33,7 +33,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Remove the line `"next-auth": "^4.24.5",` from the `dependencies` section.
     -   **Reason**: Audit finding: Coexistence of conflicting authentication systems. The package is no longer required.
 
-*   [ ] **FIX**: Install Google Generative AI SDK
+*   [x] **FIX**: Install Google Generative AI SDK
     -   **File**: `package.json`
     -   **Action**: Add `"@google/generative-ai": "^0.15.0"` (or the latest version) to the `dependencies` section.
     -   **Reason**: Required for the new Gemini-based AI question generation service, which fixes the placeholder implementation.
