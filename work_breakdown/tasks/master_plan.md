@@ -142,7 +142,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Add a section describing the `assessment.ts` module. Explain its purpose (validating answers, calculating scores, generating feedback) and its key exported functions.
     -   **Reason**: Audit finding: Undocumented Functionality (`assessment.ts`).
 
-*   [ ] **DOCS**: Document the `rateLimiter.ts` module
+*   [x] **DOCS**: Document the `rateLimiter.ts` module
     -   **File**: `docs/architecture_details.md`
     -   **Action**: Add a section describing the `rateLimiter.ts` module. Explain its purpose (providing rate limiting for security) and how it is used on the authentication endpoints.
     -   **Reason**: Audit finding: Undocumented Functionality (`rateLimiter.ts`).

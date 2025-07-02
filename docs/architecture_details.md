@@ -14,6 +14,16 @@ This document provides details on key logic modules and architectural decisions.
   - Question data model
   - User response data structure
 
+### rateLimiter.ts
+- **Purpose**: Provides rate limiting for security on authentication endpoints
+- **Key Features**:
+  - Token bucket algorithm implementation
+  - Configurable limits per endpoint
+  - Automatic request rejection when limits exceeded
+- **Usage**:
+  - Applied to all auth-related API routes
+  - Configured via environment variables
+
 <!-- Module documentation will be added here following the template below:
 
 ### module-name.ts
