@@ -25,7 +25,7 @@ By executing this plan atomically, the project will be left in a state of high m
 
 ### **P2 - Correcting Mismatches**
 
-- [ ] **FIX**: Correct the response structure for the knowledge gaps API.
+- [x] **FIX**: Correct the response structure for the knowledge gaps API.
     - **File**: `src/app/api/analyze-knowledge-gaps/route.ts`
     - **Action**: Modify the response of the `POST` function. The `suggestedQuestions` field should return an array of question IDs (`string[]`), not an array of objects. *Correction based on re-evaluation: The code's return of `string[]` is less useful than the documented object structure. Modify the code to return an array of objects `{ id: string, content: string, difficulty: string }` as specified in the docs.* This will involve fetching the question details for the suggested IDs.
     - **Reason**: Audit finding: Incorrect response structure for `/api/analyze-knowledge-gaps`. The code implementation returns an array of strings, while the documentation specifies an array of objects.

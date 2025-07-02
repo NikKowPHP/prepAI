@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/db';
 
 interface QuestionPerformance {
   correct: boolean;
@@ -49,9 +50,21 @@ export async function POST(req: NextRequest) {
       }
     });
 
+    // Fetch question details for suggested questions
+    const questions = await prisma.question.findMany({
+      where: {
+        id: { in: [...new Set(suggestedQuestions)] }
+      },
+      select: {
+        id: true,
+        content: true,
+        difficulty: true
+      }
+    });
+
     return NextResponse.json({
       gaps: [...new Set(gaps)], // Remove duplicates
-      suggestedQuestions: [...new Set(suggestedQuestions)] // Remove duplicates
+      suggestedQuestions: questions
     });
 
   } catch (error) {
