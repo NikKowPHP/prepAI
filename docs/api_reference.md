@@ -4,12 +4,22 @@ This document serves as the central reference for all API endpoints in the appli
 
 ## Endpoints
 
+### /api/roles
+- **Method**: GET
+- **Parameters**: None
+- **Response**:
+  ```json
+  {
+    "roles": string[]
+  }
+  ```
+
 <!-- API endpoints will be documented here following the template below:
 
 ### /api/endpoint
 - **Method**: [GET/POST/PUT/DELETE]
-- **Parameters**: 
-  - Query: 
+- **Parameters**:
+  - Query:
   - Body:
-- **Response**: 
+- **Response":
 -->

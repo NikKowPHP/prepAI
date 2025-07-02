@@ -117,7 +117,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Create a new markdown file with the title `# API Reference`. This file will serve as the central documentation for all API endpoints.
     -   **Reason**: To provide a single source of truth for API contracts, addressing multiple "Undocumented Functionality" findings.
 
-*   [ ] **DOCS**: Document the `/api/roles` endpoint
+*   [x] **DOCS**: Document the `/api/roles` endpoint
     -   **File**: `docs/api_reference.md`
     -   **Action**: Add a new section for the `/api/roles` endpoint. Document its HTTP method (`GET`), URL path, lack of parameters, and the structure of its JSON response (an array of strings).
     -   **Reason**: Audit finding: Undocumented Functionality (`/api/roles`).
