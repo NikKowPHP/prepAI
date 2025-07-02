@@ -58,7 +58,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Create the file with the `getQuestionGenerationService` factory function. This function will read `process.env.AI_PROVIDER` to determine which AI service to instantiate.
     -   **Reason**: To complete the abstraction layer, allowing for easy switching between AI providers in the future.
 
-*   [ ] **REFACTOR**: Update API endpoint to use the new AI Service
+*   [x] **REFACTOR**: Update API endpoint to use the new AI Service
     -   **File**: `src/app/api/generate-question/route.ts`
     -   **Action**: Replace the entire content of the file. The new implementation should import and use `getQuestionGenerationService` to generate questions and save them to the database. The old implementation using `src/lib/questionGenerator.ts` must be removed.
     -   **Reason**: Audit finding: The current question generator is a non-AI placeholder. This task connects the API to the new, real AI implementation.

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { supabase } from '@/lib/supabase';
-import { generateQuestions, validateQuestion } from '@/lib/questionGenerator';
+import { getQuestionGenerationService } from '@/lib/ai';
 import type { Question } from '@/lib/types/question';
 
 export async function POST(req: NextRequest) {
@@ -15,28 +15,31 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    const { topics = [] } = body;
+    const { topics = [], difficulty = 'medium', count = 1 } = body;
     if (!Array.isArray(topics) || topics.length === 0) {
       return NextResponse.json({ error: 'Topics array is required' }, { status: 400 });
     }
 
-    const questions = await generateQuestions(topics);
+    const service = getQuestionGenerationService();
+    const questions = await service.generateQuestions(topics, difficulty, count);
     if (!questions || questions.length === 0) {
       return NextResponse.json({ error: 'Failed to generate questions' }, { status: 500 });
     }
 
-    // Validate all generated questions
-    try {
-      questions.forEach(q => validateQuestion(q));
-    } catch (validationError) {
-      if (validationError instanceof Error) {
-        return NextResponse.json({ error: `Validation failed: ${validationError.message}` }, { status: 400 });
-      }
-      return NextResponse.json({ error: 'Question validation failed' }, { status: 400 });
-    }
-
     // Return first question with full Question type structure
-    const firstQuestion: Question = questions[0];
+    const firstQuestion: Question = {
+      id: crypto.randomUUID(),
+      question: questions[0].question,
+      content: questions[0].question,
+      answer: questions[0].answer,
+      user_id: user.id,
+      category: 'general',
+      difficulty: questions[0].difficulty || 'medium',
+      rating: 0,
+      topics: questions[0].topics || [],
+      createdAt: new Date(),
+      updatedAt: new Date()
+    };
     return NextResponse.json(firstQuestion);
   } catch (error: unknown) {
     if (error instanceof Error) {
