@@ -17,7 +17,7 @@ export async function GET() {
       'DevOps Engineer'
     ];
 
-    return NextResponse.json(roles, {
+    return NextResponse.json({ roles }, {
       headers: {
         'Content-Type': 'application/json',
         'Cache-Control': 'public, max-age=3600'
