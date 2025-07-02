@@ -28,7 +28,7 @@ These tasks involve modifying existing code to match the documented specificatio
     - **Action**: In the `DELETE` function, change the successful response from `NextResponse.json({ message: '...' })` to `NextResponse.json({ success: true })`.
     - **Reason**: Audit finding: API response structure mismatch. Documentation `docs/api_reference.md` specifies a response of `{ success: boolean }`.
 
-- [ ] **REFACTOR**: Refactor `/api/questions` PATCH to perform partial updates.
+- [x] **REFACTOR**: Refactor `/api/questions` PATCH to perform partial updates.
     - **File**: `src/app/api/questions/route.ts`
     - **Action**: Replace the entire implementation of the `PATCH` function. The new logic should extract the question ID from the URL, parse partial data from the request body (e.g., `content`, `difficulty`, `topic`), and update the corresponding question in the database. The current objective-linking logic should be removed from this method.
     - **Reason**: Audit finding: Major API functionality mismatch. Documentation `docs/api_reference.md` specifies PATCH for partial updates, but the code implements objective linking.

@@ -224,7 +224,6 @@ export async function PUT(req: NextRequest) {
   }
 }
 
-// ROO-AUDIT-TAG :: plan-002-topic-selection.md :: Implement API endpoint for objective-question linking
 export async function PATCH(req: NextRequest) {
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -232,38 +231,55 @@ export async function PATCH(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const url = new URL(req.url);
+    const pathParts = url.pathname.replace(/\/$/, "").split('/');
+    const id = pathParts.pop();
+
+    if (!id || id === 'questions') {
+      return NextResponse.json({ error: 'Question ID is required' }, { status: 400 });
+    }
+
     const body = await req.json();
     if (!body || typeof body !== 'object') {
       return NextResponse.json({ error: 'Invalid request body' }, { status: 400 });
     }
 
-    const { questionId, objectiveId } = body;
-    if (!questionId || !objectiveId) {
-      return NextResponse.json({ error: 'Missing questionId or objectiveId' }, { status: 400 });
+    const { content, category, difficulty, topics, answer, lastReviewed, reviewInterval, reviewEase, struggleCount, lastStruggledAt, totalStruggleTime, reviewCount, overdue, weight } = body;
+
+    if (!content && !category && !difficulty && !topics && !answer && lastReviewed === undefined && reviewInterval === undefined && reviewEase === undefined && struggleCount === undefined && lastStruggledAt === undefined && totalStruggleTime === undefined && reviewCount === undefined && overdue === undefined && weight === undefined) {
+      return NextResponse.json({ error: 'No fields provided for update' }, { status: 400 });
     }
 
-    // Verify user owns both the question and objective
-    const [question, objective] = await Promise.all([
-      prisma.question.findUnique({ where: { id: questionId } }),
-      prisma.objective.findUnique({ where: { id: objectiveId } })
-    ]);
+    const question = await prisma.question.findUnique({
+      where: { id },
+    });
 
     if (!question || question.userId !== user.id) {
       return NextResponse.json({ error: 'Question not found or unauthorized' }, { status: 404 });
     }
-    if (!objective || objective.userId !== user.id) {
-      return NextResponse.json({ error: 'Objective not found or unauthorized' }, { status: 404 });
-    }
 
-    // Create the link
-    const link = await prisma.objectiveQuestion.create({
-      data: {
-        objectiveId,
-        questionId
-      }
+    const dataToUpdate: Partial<Question> = {};
+    if (content !== undefined) dataToUpdate.content = content.trim();
+    if (category !== undefined) dataToUpdate.category = category.trim();
+    if (difficulty !== undefined) dataToUpdate.difficulty = difficulty.trim();
+    if (topics !== undefined) dataToUpdate.topics = topics;
+    if (answer !== undefined) dataToUpdate.answer = answer.trim();
+    if (lastReviewed !== undefined) dataToUpdate.lastReviewed = lastReviewed ? new Date(lastReviewed) : null;
+    if (reviewInterval !== undefined) dataToUpdate.reviewInterval = reviewInterval;
+    if (reviewEase !== undefined) dataToUpdate.reviewEase = reviewEase;
+    if (struggleCount !== undefined) dataToUpdate.struggleCount = struggleCount;
+    if (lastStruggledAt !== undefined) dataToUpdate.lastStruggledAt = lastStruggledAt ? new Date(lastStruggledAt) : null;
+    if (totalStruggleTime !== undefined) dataToUpdate.totalStruggleTime = totalStruggleTime;
+    if (reviewCount !== undefined) dataToUpdate.reviewCount = reviewCount;
+    if (overdue !== undefined) dataToUpdate.overdue = overdue;
+    if (weight !== undefined) dataToUpdate.weight = weight;
+
+    const updatedQuestion = await prisma.question.update({
+      where: { id },
+      data: dataToUpdate,
     });
 
-    return NextResponse.json(link);
+    return NextResponse.json(updatedQuestion);
   } catch (error: unknown) {
     if (error instanceof SyntaxError) {
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
@@ -276,7 +292,6 @@ export async function PATCH(req: NextRequest) {
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
 }
-// ROO-AUDIT-TAG :: plan-002-topic-selection.md :: END
 
 export async function DELETE(req: NextRequest) {
   try {
