@@ -132,7 +132,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Add a new section for the `/api/progress` endpoint. Document its `GET` and `POST` methods, including request parameters and response structures for each.
     -   **Reason**: Audit finding: Undocumented Functionality (`/api/progress`).
 
-*   [ ] **CREATE**: Central Architecture Details Document
+*   [x] **CREATE**: Central Architecture Details Document
     -   **File**: `docs/architecture_details.md`
     -   **Action**: Create a new markdown file with the title `# Architecture Details`. This file will provide details on key logic modules.
     -   **Reason**: To provide a place for documenting important non-API modules.
