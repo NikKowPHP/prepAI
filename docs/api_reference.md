@@ -203,7 +203,6 @@ This document serves as the central reference for all API endpoints in the appli
     "id": string,
     "name": string,
     "description": string,
-    "topics": string[],
     "createdAt": string
   }
   ```

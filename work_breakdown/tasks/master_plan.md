@@ -49,7 +49,7 @@ These tasks involve modifying documentation to reflect the actual, correct imple
     - **Action**: Modify the response structure documentation for `/api/auth/login` and `/api/auth/register` to reflect that they return the standard Supabase `AuthResponse` object, not a `{ success, user, error }` object.
     - **Reason**: Audit finding: API response mismatch. The code correctly returns the Supabase response, so the documentation should be updated.
 
-- [ ] **DOCS**: Update API docs for `/api/objectives` POST response.
+- [x] **DOCS**: Update API docs for `/api/objectives` POST response.
     - **File**: `docs/api_reference.md`
     - **Action**: Remove the `topics` array from the documented response structure for creating an objective.
     - **Reason**: Audit finding: API response mismatch. The `Objective` model in the database does not store topics, so the API does not return it.
