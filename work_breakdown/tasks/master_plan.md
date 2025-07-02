@@ -23,7 +23,7 @@ These tasks involve modifying existing code to match the documented specificatio
     - **Action**: In the `GET` function, when returning all questions, modify the `NextResponse.json()` call to wrap the `questions` array in an object: `return NextResponse.json({ questions });`.
     - **Reason**: Audit finding: API response structure mismatch. Documentation `docs/api_reference.md` specifies an object with a `questions` key.
 
-- [ ] **UPDATE**: Align `/api/questions` DELETE response structure.
+- [x] **UPDATE**: Align `/api/questions` DELETE response structure.
     - **File**: `src/app/api/questions/route.ts`
     - **Action**: In the `DELETE` function, change the successful response from `NextResponse.json({ message: '...' })` to `NextResponse.json({ success: true })`.
     - **Reason**: Audit finding: API response structure mismatch. Documentation `docs/api_reference.md` specifies a response of `{ success: boolean }`.

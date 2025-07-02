@@ -305,7 +305,7 @@ export async function DELETE(req: NextRequest) {
       where: { id },
     });
 
-    return NextResponse.json({ message: 'Question deleted successfully' });
+    return NextResponse.json({ success: true });
   } catch (error: unknown) {
     if (error instanceof Error) {
       console.error('Database Error:', error.message);
