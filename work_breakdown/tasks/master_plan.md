@@ -53,7 +53,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Create the file with the `GeminiQuestionGenerationService` class, which implements the `QuestionGenerationService` interface and contains the logic for calling the Gemini API. Use the code from `work_breakdown/tasks/master_plan.md` Task 4.1.
     -   **Reason**: Audit finding: The current question generator is a non-AI placeholder. This task provides the concrete implementation for the AI service.
 
-*   [ ] **CREATE**: AI Service Factory
+*   [x] **CREATE**: AI Service Factory
     -   **File**: `src/lib/ai/index.ts`
     -   **Action**: Create the file with the `getQuestionGenerationService` factory function. This function will read `process.env.AI_PROVIDER` to determine which AI service to instantiate.
     -   **Reason**: To complete the abstraction layer, allowing for easy switching between AI providers in the future.
