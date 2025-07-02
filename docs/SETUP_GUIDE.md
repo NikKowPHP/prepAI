@@ -54,6 +54,12 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
 
 # Database Configuration
 DATABASE_URL=postgres://user:password@localhost:5432/prepai
+
+# AI Configuration
+AI_PROVIDER="gemini" # Supported values: "gemini"
+GEMINI_API_KEY="" # Get from Google AI Studio
+GOOGLE_CLIENT_EMAIL="" # Service account email
+GOOGLE_PRIVATE_KEY="" # Service account private key
 ```
 
 ### Test Configuration

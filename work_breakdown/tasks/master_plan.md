@@ -157,7 +157,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Add entries for `AI_PROVIDER`, `GEMINI_API_KEY`, `GOOGLE_CLIENT_EMAIL`, `GOOGLE_PRIVATE_KEY`, and `NEXT_PUBLIC_API_URL`.
     -   **Reason**: Audit finding: Configuration Mismatch. Multiple variables are used in the code but are not documented for setup.
 
-*   [ ] **DOCS**: Update the main setup guide with new variables
+*   [x] **DOCS**: Update the main setup guide with new variables
     -   **File**: `docs/SETUP_GUIDE.md`
     -   **Action**: Add descriptions for `AI_PROVIDER`, `GEMINI_API_KEY`, `GOOGLE_CLIENT_EMAIL`, and `GOOGLE_PRIVATE_KEY` under the "Configuration" section.
     -   **Reason**: Audit finding: Configuration Mismatch. The setup guide must reflect all required secrets for the application to function.
