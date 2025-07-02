@@ -28,7 +28,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Delete this file entirely, as it contains the configuration for the now-removed `next-auth` library.
     -   **Reason**: Audit finding: Coexistence of conflicting authentication systems. This file is no longer needed after standardizing on Supabase Auth.
 
-*   [ ] **FIX**: Uninstall the `next-auth` dependency
+*   [x] **FIX**: Uninstall the `next-auth` dependency
     -   **File**: `package.json`
     -   **Action**: Remove the line `"next-auth": "^4.24.5",` from the `dependencies` section.
     -   **Reason**: Audit finding: Coexistence of conflicting authentication systems. The package is no longer required.

@@ -10,6 +10,7 @@
     "test": "jest"
   },
   "dependencies": {
+    "@headlessui/react": "^2.0.0",
     "@prisma/client": "^6.9.0",
     "@supabase/auth-helpers-nextjs": "^0.10.0",
     "@supabase/supabase-js": "^2.50.0",
@@ -20,12 +21,10 @@
     "jspdf": "^2.5.1",
     "jspdf-autotable": "^3.5.6",
     "next": "^15.3.3",
-    "next-auth": "^4.24.5",
     "openai": "^5.5.1",
     "react": "^19.0.0",
     "react-chartjs-2": "^5.3.0",
-    "react-dom": "^19.0.0",
-    "@headlessui/react": "^2.0.0"
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
@@ -48,10 +47,10 @@
     "node-mocks-http": "^1.17.2",
     "postcss": "^8.5.6",
     "prettier": "^3.5.3",
+    "prisma": "^6.9.0",
     "tailwindcss": "^4.1.10",
     "ts-jest": "^29.1.2",
     "typescript": "^5",
-    "typescript-eslint": "^8.34.1",
-    "prisma": "^6.9.0"
+    "typescript-eslint": "^8.34.1"
   }
 }
