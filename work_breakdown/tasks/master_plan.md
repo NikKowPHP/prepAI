@@ -18,7 +18,7 @@ Executing this plan will bring the codebase into full compliance with its design
 
 ### **P0 - Critical Code Fixes**
 
-*   [ ] **REFACTOR**: Standardize Readiness API to use Supabase Auth
+*   [x] **REFACTOR**: Standardize Readiness API to use Supabase Auth
     -   **File**: `src/app/api/readiness/route.ts`
     -   **Action**: Replace the `getServerSession` call from `next-auth` with `supabase.auth.getUser()` to fetch the authenticated user, consistent with other API routes.
     -   **Reason**: Audit finding: Coexistence of conflicting authentication systems (`next-auth` and Supabase Auth). This standardizes on Supabase Auth.

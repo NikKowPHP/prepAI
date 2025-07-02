@@ -1,16 +1,16 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { getServerSession } from 'next-auth';
-import { authOptions } from '@/lib/auth';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET() {
-  const session = await getServerSession(authOptions);
+  const supabase = createClient();
+  const { data: { user } } = await supabase.auth.getUser();
 
-  if (!session || !session.user) {
+  if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const userId = session.user.id as string;
+  const userId = user.id;
 
   try {
     // Get all questions for the user
