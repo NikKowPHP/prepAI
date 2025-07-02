@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 
@@ -7,16 +7,17 @@ interface ReadinessIndicatorProps {
 }
 
 const ReadinessIndicator: React.FC<ReadinessIndicatorProps> = ({ score }) => {
-  let textColor = 'text-red-500';
-  if (score >= 50 && score < 80) {
-    textColor = 'text-yellow-500';
-  } else if (score >= 80) {
-    textColor = 'text-green-500';
-  }
+  const getColor = () => {
+    if (score > 80) return 'text-green-500';
+    if (score >= 50) return 'text-yellow-500';
+    return 'text-red-500';
+  };
 
   return (
-    <div className={`font-bold ${textColor}`}>
-      Readiness Score: {score}
+    <div className="p-4 bg-gray-100 rounded-md text-center">
+      <h3 className="font-semibold mb-2">Interview Readiness</h3>
+      <p className={`text-5xl font-bold ${getColor()}`}>{Math.round(score)}%</p>
+      <p className="text-sm text-gray-600 mt-1">AI-based estimation</p>
     </div>
   );
 };
