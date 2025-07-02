@@ -55,6 +55,10 @@ NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
 # Database Configuration
 DATABASE_URL=postgres://user:password@localhost:5432/prepai
 
+# API Configuration
+NEXT_PUBLIC_API_URL="http://localhost:3000" # Base API URL
+PORT=3000 # Server port
+
 # AI Configuration
 AI_PROVIDER="gemini" # Supported values: "gemini"
 GEMINI_API_KEY="" # Get from Google AI Studio
@@ -67,6 +71,8 @@ Configure `.env.test` for testing:
 ```bash
 NODE_ENV=test
 DATABASE_URL=postgres://user:password@localhost:5432/prepai_test
+NEXTAUTH_SECRET="your-test-secret" # Used for test authentication
+NEXTAUTH_URL="http://localhost:3000" # Test app URL
 ```
 
 ## Testing
