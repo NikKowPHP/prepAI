@@ -23,7 +23,7 @@ Executing this plan will bring the codebase into full compliance with its design
     -   **Action**: Replace the `getServerSession` call from `next-auth` with `supabase.auth.getUser()` to fetch the authenticated user, consistent with other API routes.
     -   **Reason**: Audit finding: Coexistence of conflicting authentication systems (`next-auth` and Supabase Auth). This standardizes on Supabase Auth.
 
-*   [ ] **FIX**: Remove `next-auth` configuration file
+*   [x] **FIX**: Remove `next-auth` configuration file
     -   **File**: `src/lib/auth.ts`
     -   **Action**: Delete this file entirely, as it contains the configuration for the now-removed `next-auth` library.
     -   **Reason**: Audit finding: Coexistence of conflicting authentication systems. This file is no longer needed after standardizing on Supabase Auth.
