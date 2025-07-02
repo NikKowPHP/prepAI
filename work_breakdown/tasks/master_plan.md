@@ -64,7 +64,7 @@ These tasks involve modifying documentation to reflect the actual, correct imple
     - **Action**: Expand the documented request body for the `/api/questions` PUT endpoint to include all the partial update fields supported by the code, such as `lastReviewed`, `reviewInterval`, `reviewEase`, etc.
     - **Reason**: Audit finding: Incomplete documentation. The code supports many more fields for updates than are listed in the API reference.
 
-- [ ] **DOCS**: Document the `src/lib/auth.ts` module.
+- [x] **DOCS**: Document the `src/lib/auth.ts` module.
     - **File**: `docs/architecture_details.md`
     - **Action**: Add a new section under "Core Modules" for `auth.ts`, explaining its purpose as the business logic wrapper for Supabase authentication functions (`signIn`, `signUp`, `signOut`).
     - **Reason**: Audit finding: Undocumented functionality. This core module is not documented.

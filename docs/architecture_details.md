@@ -4,6 +4,19 @@ This document provides details on key logic modules and architectural decisions.
 
 ## Core Modules
 
+### auth-context.ts
+- **Purpose**: React Context provider for managing frontend authentication state
+- **Key Features**:
+  - Provides authentication methods (signIn, signUp, signOut)
+  - Maintains user session state
+  - Integrates with Supabase authentication
+- **Dependencies**:
+  - Supabase client
+  - React context API
+- **Usage**:
+  - Wraps the application root component
+  - Accessed via useAuth() hook throughout components
+
 ### assessment.ts
 - **Purpose**: Handles answer validation, score calculation, and feedback generation for user responses
 - **Key Functions**:
