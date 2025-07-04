@@ -46,3 +46,4 @@ repomix-output.xml
 # AI-generated directories
 logs/
 # work_breakdown/  # Commented out to allow tracking plan files
+.env
