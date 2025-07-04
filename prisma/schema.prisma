@@ -26,7 +26,7 @@ model Question {
   category          String?
   difficulty        String?
   createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  updatedAt         DateTime          @updatedAt
   lastReviewed      DateTime?
   reviewInterval    Int                 @default(1)
   reviewEase        Float               @default(2.5)
@@ -59,7 +59,7 @@ model Objective {
   description       String?
   userId            String
   createdAt         DateTime            @default(now())
-  updatedAt         DateTime            @updatedAt
+  updatedAt         DateTime          @updatedAt
   user              User                @relation(fields: [userId], references: [id])
   questions         Question[]          @relation("ObjectiveQuestions")
   ObjectiveQuestion ObjectiveQuestion[]
