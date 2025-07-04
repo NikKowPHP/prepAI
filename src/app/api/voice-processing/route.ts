@@ -27,7 +27,7 @@ export async function POST(req: NextRequest) {
     }
 
     // Process transcription
-    const transcription = await transcriptionService.processTranscription(filePath);
+    const transcription = await transcriptionService.processTranscription(supabase,filePath);
     
     // Assess the answer
     const score = assessmentService.validateAnswer(transcription, expectedAnswer);
