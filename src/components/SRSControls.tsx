@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { schedulerService } from '@/lib/scheduler';
 import { progressService } from '@/lib/progress';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 
 type StudyMode = 'repeat' | 'study' | 'discover';
 
@@ -29,6 +29,7 @@ const SRSControls: React.FC<SRSControlsProps> = ({ questionId, onReviewComplete 
 
     const fetchQuestionData = async () => {
       try {
+        const supabase = createClient();
         const { data, error } = await supabase
           .from('questions')
           .select('last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time')

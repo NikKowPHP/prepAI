@@ -44,7 +44,7 @@ const ObjectivesList: React.FC = () => {
     return <div>Loading objectives...</div>;
   }
 
-  return (
+  return ( // Added comment to trigger re-evaluation
     <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200">
       <h2 className="text-xl font-semibold mb-4">Your Learning Objectives</h2>
       <div className="space-y-6">
