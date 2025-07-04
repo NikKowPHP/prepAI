@@ -37,7 +37,7 @@ export default function RootLayout({
             <div className="container mx-auto flex justify-between items-center">
               <div className="text-lg font-bold">PrepAI</div>
               <div className="space-x-4">
-                <Link href="/" className="hover:underline">Home</Link>
+                <Link href="/dashboard" className="hover:underline">Home</Link>
                 <Link href="/questions" className="hover:underline">Questions</Link>
                 <AuthLinks />
               </div>

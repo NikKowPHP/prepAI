@@ -34,8 +34,8 @@ const QuestionsPage: React.FC = () => {
         if (!response.ok) {
           throw new Error('Failed to fetch questions');
         }
-        const data = await response.json();
-        setQuestions(data);
+        const { questions } = await response.json();
+        setQuestions(questions);
         setLoading(false);
       } catch (err) {
         setError('Failed to load questions');
@@ -69,10 +69,13 @@ const QuestionsPage: React.FC = () => {
     }
   };
 
-  const handleRecordingComplete = async (filePath: string) => {
+  const handleRecordingComplete = async (result: { filePath: string; transcription: string; score: number; feedback: string[]; }) => {
     // Here we would associate the recording with a question
     // For now, just log it
-    console.log('Recording saved at:', filePath);
+    console.log('Recording saved at:', result.filePath);
+    console.log('Transcription:', result.transcription);
+    console.log('Score:', result.score);
+    console.log('Feedback:', result.feedback);
   };
 
   const handleReviewComplete = (questionId: string, remembered: boolean) => {

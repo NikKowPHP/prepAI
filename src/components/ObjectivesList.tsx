@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { getObjectives, deleteObjective } from '@/lib/objectives';
+
 interface Question {
   id: string;
   text: string;
@@ -27,18 +27,51 @@ const ObjectivesList = () => {
     const fetchObjectives = async () => {
       if (user?.id) {
         try {
-          const data = await getObjectives(user.id);
+          const response = await fetch('/api/objectives');
+          if (!response.ok) {
+            throw new Error('Failed to fetch objectives');
+          }
+          const data = await response.json();
           setObjectives(data);
         } catch (error) {
           console.error('Failed to fetch objectives:', error);
         } finally {
           setIsLoading(false);
         }
+      } else {
+        setIsLoading(false);
       }
     };
 
     fetchObjectives();
   }, [user?.id]);
+
+  const handleDelete = async (objectiveId: string) => {
+    if (!user) {
+      alert('User not authenticated');
+      return;
+    }
+    
+    if (window.confirm('Are you sure you want to delete this objective?')) {
+      try {
+        setDeletingId(objectiveId);
+        const response = await fetch('/api/objectives', {
+          method: 'DELETE',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id: objectiveId }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete objective');
+        }
+        setObjectives(objectives.filter(obj => obj.id !== objectiveId));
+      } catch (error) {
+        console.error('Failed to delete objective:', error);
+        alert('Failed to delete objective');
+      } finally {
+        setDeletingId(null);
+      }
+    }
+  };
 
   if (isLoading) {
     return <div>Loading objectives...</div>;
@@ -119,25 +152,7 @@ const ObjectivesList = () => {
                       Created: {new Date(objective.createdAt).toLocaleDateString()}
                     </p>
                     <button
-                      onClick={async () => {
-                        if (!user) {
-                          alert('User not authenticated');
-                          return;
-                        }
-                        
-                        if (window.confirm('Are you sure you want to delete this objective?')) {
-                          try {
-                            setDeletingId(objective.id);
-                            await deleteObjective(objective.id, user.id);
-                            setObjectives(objectives.filter(obj => obj.id !== objective.id));
-                          } catch (error) {
-                            console.error('Failed to delete objective:', error);
-                            alert('Failed to delete objective');
-                          } finally {
-                            setDeletingId(null);
-                          }
-                        }
-                      }}
+                      onClick={() => handleDelete(objective.id)}
                       disabled={deletingId === objective.id}
                       className="text-red-500 hover:text-red-700 disabled:text-red-300 disabled:cursor-not-allowed"
                     >
