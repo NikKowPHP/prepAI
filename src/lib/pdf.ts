@@ -1,25 +1,25 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { supabase } from './supabase';
+import { supabase } from './auth-context';
 import { progressService } from './progress';
 import { formatDistanceToNow } from 'date-fns';
+import { prisma } from './db';
 
 // Function to generate a PDF report for a user's progress
 export async function generateUserReport(userId: string, template: 'standard' | 'detailed' | 'compact' = 'standard') {
   // Verify user is authenticated
-  const { data } = await supabase.auth.getSession();
-  if (!data?.session || data.session.user.id !== userId) {
+  const { data: authData } = await supabase.auth.getSession();
+  if (!authData?.session || authData.session.user.id !== userId) {
     throw new Error('Unauthorized');
   }
 
   // Fetch user data and progress
-  const { data: userData, error: userError } = await supabase
-    .from('users')
-    .select('id, email, name, created_at')
-    .eq('id', userId)
-    .single();
+  const userData = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { id: true, email: true, name: true, createdAt: true },
+  });
 
-  if (userError || !userData) {
+  if (!userData) {
     throw new Error('User not found');
   }
 
@@ -27,14 +27,10 @@ export async function generateUserReport(userId: string, template: 'standard' | 
   const progress = await progressService.getUserMetrics(userId);
 
   // Get all questions and their review status
-  const { data: questionsData, error: questionsError } = await supabase
-    .from('questions')
-    .select('id, content, last_reviewed, review_interval, review_ease')
-    .eq('user_id', userId);
-
-  if (questionsError) {
-    throw new Error('Error fetching questions');
-  }
+  const questionsData = await prisma.question.findMany({
+    where: { userId: userId },
+    select: { id: true, content: true, lastReviewed: true, reviewInterval: true, reviewEase: true },
+  });
 
   // Create a new PDF document
   const doc = new jsPDF();
@@ -55,7 +51,7 @@ export async function generateUserReport(userId: string, template: 'standard' | 
   doc.setFontSize(template === 'compact' ? 12 : 14);
   doc.text(`Name: ${userData.name || 'N/A'}`, 14, template === 'compact' ? 24 : 30);
   doc.text(`Email: ${userData.email}`, 14, template === 'compact' ? 30 : 36);
-  doc.text(`Account Created: ${formatDistanceToNow(new Date(userData.created_at), { addSuffix: true })}`, 14, template === 'compact' ? 36 : 42);
+  doc.text(`Account Created: ${formatDistanceToNow(new Date(userData.createdAt), { addSuffix: true })}`, 14, template === 'compact' ? 36 : 42);
 
   // Add progress summary
   doc.setFontSize(template === 'compact' ? 14 : 16);
@@ -84,8 +80,8 @@ export async function generateUserReport(userId: string, template: 'standard' | 
 
   const questionData = questionsData.map(q => [
     q.content,
-    q.last_reviewed ? 'Answered' : 'Pending',
-    q.review_ease >= 2.5 ? '✓' : '✗',
+    q.lastReviewed ? 'Answered' : 'Pending',
+    q.reviewEase >= 2.5 ? '✓' : '✗',
   ]);
 
   autoTable(doc, {

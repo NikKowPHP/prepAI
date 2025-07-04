@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
 import { schedulerService } from '@/lib/scheduler';
 import { progressService } from '@/lib/progress';
-import { createClient } from '@/lib/supabase/client';
+import { prisma } from '@/lib/db';
 
 type StudyMode = 'repeat' | 'study' | 'discover';
 
@@ -29,20 +29,25 @@ const SRSControls: React.FC<SRSControlsProps> = ({ questionId, onReviewComplete 
 
     const fetchQuestionData = async () => {
       try {
-        const supabase = createClient();
-        const { data, error } = await supabase
-          .from('questions')
-          .select('last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time')
-          .eq('id', questionId)
-          .single();
+        const data = await prisma.question.findUnique({
+          where: { id: questionId },
+          select: {
+            lastReviewed: true,
+            reviewInterval: true,
+            reviewEase: true,
+            struggleCount: true,
+            lastStruggledAt: true,
+            totalStruggleTime: true,
+          }
+        });
 
-        if (error) throw error;
+        if (!data) throw new Error("Question not found");
 
-        const nextReviewDates = await schedulerService.getNextReviewDates('questions', [questionId]);
+        const nextReviewDates = await schedulerService.getNextReviewDates([questionId]);
         setNextReviewDate(nextReviewDates[questionId]);
-        setStruggleCount(data.struggle_count || 0);
-        setLastStruggledAt(data.last_struggled_at ? new Date(data.last_struggled_at) : null);
-        setTotalStruggleTime(data.total_struggle_time || 0);
+        setStruggleCount(data.struggleCount || 0);
+        setLastStruggledAt(data.lastStruggledAt ? new Date(data.lastStruggledAt) : null);
+        setTotalStruggleTime(data.totalStruggleTime || 0);
       } catch (err) {
         setError('Failed to load question data');
         console.error(err);
@@ -59,12 +64,12 @@ const SRSControls: React.FC<SRSControlsProps> = ({ questionId, onReviewComplete 
 
     setLoading(true);
     try {
-      await schedulerService.markQuestionAsReviewed('questions', questionId, remembered);
+      await schedulerService.markQuestionAsReviewed(questionId, remembered);
       await progressService.updateProgressAfterReview(user.id, questionId, remembered);
       onReviewComplete(remembered);
 
       // Update next review date
-      const nextReviewDates = await schedulerService.getNextReviewDates('questions', [questionId]);
+      const nextReviewDates = await schedulerService.getNextReviewDates([questionId]);
       const date = nextReviewDates[questionId];
       setNextReviewDate(date);
     } catch (err) {

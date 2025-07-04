@@ -1,13 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { useAuth } from '../lib/auth-context';
-import { getStudyModeQuestions } from '../lib/srs';
-import type { Question } from '@prisma/client';
-
-const FlashcardStudy: React.FC = () => {
-  const { user } = useAuth();
-import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { prisma } from '@/lib/db';
 import { useAuth } from '../lib/auth-context';
 import { getStudyModeQuestions } from '../lib/srs';
 import type { Question } from '@prisma/client';
@@ -30,15 +22,9 @@ const FlashcardStudy: React.FC = () => {
   const fetchFlashcards = async (userId: string) => {
     setIsLoading(true);
     try {
-      const { data, error } = await supabase
-        .from('questions')
-        .select('*')
-        .eq('userId', userId);
-
-      if (error) {
-        console.error('Error fetching questions:', error);
-        return;
-      }
+      const data = await prisma.question.findMany({
+        where: { userId },
+      });
 
       const fetchedQuestions: Question[] = (data || []).map((q: Question) => ({
         ...q,
@@ -71,24 +57,18 @@ const FlashcardStudy: React.FC = () => {
     setRating(newRating);
     
     try {
-      const { data, error } = await supabase
-        .from('questions')
-        .update({
-          lastReviewed: new Date().toISOString(),
+      await prisma.question.update({
+        where: { id: currentFlashcard.id },
+        data: {
+          lastReviewed: new Date(),
           reviewCount: currentFlashcard.reviewCount + 1,
           reviewEase: newRating === 'easy' ? Math.min(3.0, currentFlashcard.reviewEase + 0.1) : currentFlashcard.reviewEase,
           reviewInterval: newRating === 'easy' ? currentFlashcard.reviewInterval * 1.2 : currentFlashcard.reviewInterval * 0.8,
           struggleCount: newRating === 'hard' ? currentFlashcard.struggleCount + 1 : currentFlashcard.struggleCount,
-          lastStruggledAt: newRating === 'hard' ? new Date().toISOString() : currentFlashcard.lastStruggledAt?.toISOString(),
-        })
-        .eq('id', currentFlashcard.id)
-        .eq('userId', user.id);
-
-      if (error) {
-        console.error('Error updating question rating:', error);
-        return;
-      }
-
+          lastStruggledAt: newRating === 'hard' ? new Date() : currentFlashcard.lastStruggledAt,
+        }
+      });
+      
       fetchFlashcards(user.id);
 
     } catch (error) {
@@ -205,5 +185,3 @@ const FlashcardStudy: React.FC = () => {
     </div>
   );
 };
-
-export default FlashcardStudy;

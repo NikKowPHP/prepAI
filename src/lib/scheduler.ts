@@ -1,37 +1,27 @@
-import { Question, calculateNextReview, updateQuestionAfterReview } from './srs';
-import { supabase } from './supabase';
+import type { Question } from '@prisma/client';
+import { calculateNextReview, updateQuestionAfterReview } from './srs';
+import { prisma } from './db';
 
 export interface SchedulerService {
-  getQuestionsDueForReview: (table: 'questions' | 'flashcards') => Promise<Question[]>;
-  markQuestionAsReviewed: (table: 'questions' | 'flashcards', questionId: string, remembered: boolean) => Promise<void>;
-  getNextReviewDates: (table: 'questions' | 'flashcards', questionIds: string[]) => Promise<{ [questionId: string]: Date }>;
+  getQuestionsDueForReview: () => Promise<Question[]>;
+  markQuestionAsReviewed: (questionId: string, remembered: boolean) => Promise<void>;
+  getNextReviewDates: (questionIds: string[]) => Promise<{ [questionId: string]: Date }>;
   getQuestionsByMode: (mode: 'repeat' | 'study' | 'discover', userId: string, userQuestions: string[]) => Promise<Question[]>;
 }
 
 export const createSchedulerService = (): SchedulerService => {
-  const getQuestionsDueForReview = async (table: 'questions' | 'flashcards' = 'questions'): Promise<Question[]> => {
-    const { data, error } = await supabase
-      .from(table)
-      .select('id, created_at, last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time, review_count')
-      .order('last_reviewed', { ascending: false });
-
-    if (error) {
-      console.error(`Error fetching ${table}:`, error);
-      return [];
-    }
+  const getQuestionsDueForReview = async (): Promise<Question[]> => {
+    const data = await prisma.question.findMany({
+      orderBy: { lastReviewed: 'asc' },
+    });
 
     if (!data) return [];
 
-    const questions = data.map(item => ({
-      id: item.id,
-      createdAt: new Date(item.created_at),
-      lastReviewed: item.last_reviewed ? new Date(item.last_reviewed) : null,
-      reviewInterval: item.review_interval,
-      reviewEase: item.review_ease,
-      struggleCount: item.struggle_count || 0,
-      lastStruggledAt: item.last_struggled_at ? new Date(item.last_struggled_at) : null,
-      totalStruggleTime: item.total_struggle_time || 0,
-      reviewCount: item.review_count || 0,
+    const questions: Question[] = data.map(item => ({
+      ...item,
+      createdAt: new Date(item.createdAt),
+      lastReviewed: item.lastReviewed ? new Date(item.lastReviewed) : null,
+      lastStruggledAt: item.lastStruggledAt ? new Date(item.lastStruggledAt) : null,
     }));
 
     // Filter and sort questions by overdue priority
@@ -57,71 +47,53 @@ export const createSchedulerService = (): SchedulerService => {
       });
   };
 
-  const markQuestionAsReviewed = async (table: 'questions' | 'flashcards', questionId: string, remembered: boolean): Promise<void> => {
-    const { data: itemData, error: fetchError } = await supabase
-      .from(table)
-      .select('id, created_at, last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time, review_count')
-      .eq('id', questionId)
-      .single();
+  const markQuestionAsReviewed = async (questionId: string, remembered: boolean): Promise<void> => {
+    const itemData = await prisma.question.findUnique({
+        where: { id: questionId },
+    });
 
-    if (fetchError || !itemData) {
-      console.error(`Error fetching ${table} item:`, fetchError);
+    if (!itemData) {
+      console.error(`Error fetching question item: ${questionId}`);
       return;
     }
 
-    const updatedItem = updateQuestionAfterReview({
-      id: questionId,
-      createdAt: new Date(itemData.created_at),
-      lastReviewed: itemData.last_reviewed ? new Date(itemData.last_reviewed) : null,
-      reviewInterval: itemData.review_interval,
-      reviewEase: itemData.review_ease,
-      struggleCount: itemData.struggle_count || 0,
-      lastStruggledAt: itemData.last_struggled_at ? new Date(itemData.last_struggled_at) : null,
-      totalStruggleTime: itemData.total_struggle_time || 0,
-      reviewCount: itemData.review_count || 0,
-    }, remembered, 0);
+    const question: Question = {
+        ...itemData,
+        createdAt: new Date(itemData.createdAt),
+        lastReviewed: itemData.lastReviewed ? new Date(itemData.lastReviewed) : null,
+        lastStruggledAt: itemData.lastStruggledAt ? new Date(itemData.lastStruggledAt) : null,
+    };
 
-    const { error: updateError } = await supabase
-      .from(table)
-      .update({
-        last_reviewed: updatedItem.lastReviewed,
-        review_interval: updatedItem.reviewInterval,
-        review_ease: updatedItem.reviewEase,
-      })
-      .eq('id', questionId);
+    const updatedItem = await updateQuestionAfterReview(question, remembered, 0);
 
-    if (updateError) {
-      console.error(`Error updating ${table} item:`, updateError);
-    }
+    await prisma.question.update({
+        where: { id: questionId },
+        data: {
+            lastReviewed: updatedItem.lastReviewed,
+            reviewInterval: updatedItem.reviewInterval,
+            reviewEase: updatedItem.reviewEase,
+        }
+    });
   };
 
-  const getNextReviewDates = async (table: 'questions' | 'flashcards', questionIds: string[]): Promise<{ [questionId: string]: Date }> => {
-    const { data, error } = await supabase
-      .from(table)
-      .select('id, last_reviewed, review_interval, review_ease, created_at, struggle_count, last_struggled_at, total_struggle_time, review_count')
-      .in('id', questionIds);
+  const getNextReviewDates = async (questionIds: string[]): Promise<{ [questionId: string]: Date }> => {
+    const data = await prisma.question.findMany({
+        where: { id: { in: questionIds } }
+    });
 
-    if (error) {
-      console.error(`Error fetching ${table}:`, error);
-      return {};
-    }
 
     if (!data) return {};
 
     const nextReviewDates: { [questionId: string]: Date } = {};
 
     data.forEach(item => {
-      const { daysUntilReview } = calculateNextReview({
-        id: item.id,
-        createdAt: new Date(item.created_at),
-        lastReviewed: item.last_reviewed ? new Date(item.last_reviewed) : null,
-        reviewInterval: item.review_interval,
-        reviewEase: item.review_ease,
-        struggleCount: item.struggle_count || 0,
-        lastStruggledAt: item.last_struggled_at ? new Date(item.last_struggled_at) : null,
-        totalStruggleTime: item.total_struggle_time || 0,
-        reviewCount: item.review_count || 0,
-      });
+      const question: Question = {
+        ...item,
+        createdAt: new Date(item.createdAt),
+        lastReviewed: item.lastReviewed ? new Date(item.lastReviewed) : null,
+        lastStruggledAt: item.lastStruggledAt ? new Date(item.lastStruggledAt) : null,
+      };
+      const { daysUntilReview } = calculateNextReview(question);
 
       const nextReview = new Date();
       nextReview.setDate(nextReview.getDate() + daysUntilReview);
@@ -132,28 +104,17 @@ export const createSchedulerService = (): SchedulerService => {
   };
 
   const getQuestionsByMode = async (mode: 'repeat' | 'study' | 'discover', userId: string, userQuestions: string[]): Promise<Question[]> => {
-    const { data, error } = await supabase
-      .from('questions')
-      .select('id, created_at, last_reviewed, review_interval, review_ease, struggle_count, last_struggled_at, total_struggle_time, review_count')
-      .eq('userId', userId);
-
-    if (error) {
-      console.error('Error fetching questions:', error);
-      return [];
-    }
+    const data = await prisma.question.findMany({
+      where: { userId },
+    });
 
     if (!data) return [];
 
-    const questions = data.map(item => ({
-      id: item.id,
-      createdAt: new Date(item.created_at),
-      lastReviewed: item.last_reviewed ? new Date(item.last_reviewed) : null,
-      reviewInterval: item.review_interval,
-      reviewEase: item.review_ease,
-      struggleCount: item.struggle_count || 0,
-      lastStruggledAt: item.last_struggled_at ? new Date(item.last_struggled_at) : null,
-      totalStruggleTime: item.total_struggle_time || 0,
-      reviewCount: item.review_count || 0,
+    const questions: Question[] = data.map(item => ({
+      ...item,
+      createdAt: new Date(item.createdAt),
+      lastReviewed: item.lastReviewed ? new Date(item.lastReviewed) : null,
+      lastStruggledAt: item.lastStruggledAt ? new Date(item.lastStruggledAt) : null,
     }));
 
     let filteredQuestions;

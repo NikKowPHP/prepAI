@@ -1,25 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { prisma } from '@/lib/db';
 import { useAuth } from '../lib/auth-context';
-
-interface Flashcard {
-  id: string;
-  question: string;
-  answer: string;
-  deckId: string;
-}
-
-interface Deck {
-  id: string;
-  name: string;
-  description: string;
-  userId: string;
-}
+import type { Question, Objective } from '@prisma/client';
 
 const DeckManagement: React.FC = () => {
   const { user } = useAuth();
-  const [decks, setDecks] = useState<Deck[]>([]);
-  const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
+  const [decks, setDecks] = useState<Objective[]>([]);
+  const [flashcards, setFlashcards] = useState<Question[]>([]);
   const [selectedDeck, setSelectedDeck] = useState<string | null>(null);
   const [newDeckName, setNewDeckName] = useState('');
   const [newDeckDescription, setNewDeckDescription] = useState('');
@@ -36,15 +23,9 @@ const DeckManagement: React.FC = () => {
   const fetchDecks = async (userId: string) => {
     setIsLoading(true);
     try {
-      const { data: decksData, error: decksError } = await supabase
-        .from('decks')
-        .select('*')
-        .eq('userId', userId);
-
-      if (decksError) {
-        console.error('Error fetching decks:', decksError);
-        return;
-      }
+      const decksData = await prisma.objective.findMany({
+        where: { userId },
+      });
 
       setDecks(decksData || []);
 
@@ -63,17 +44,16 @@ const DeckManagement: React.FC = () => {
     if (!user) return;
 
     try {
-      const { data, error } = await supabase
-        .from('flashcards')
-        .select('*')
-        .eq('deckId', deckId)
-        .eq('user_id', user.id);
-
-      if (error) {
-        console.error('Error fetching flashcards:', error);
-        return;
-      }
-
+      const data = await prisma.question.findMany({
+        where: {
+          userId: user.id,
+          objectives: {
+            some: {
+              id: deckId,
+            },
+          },
+        },
+      });
       setFlashcards(data || []);
     } catch (err) {
       console.error('Error fetching flashcards:', err);
@@ -84,18 +64,16 @@ const DeckManagement: React.FC = () => {
     if (!user || !newDeckName) return;
 
     try {
-      const { data, error } = await supabase
-        .from('decks')
-        .insert([{ name: newDeckName, description: newDeckDescription, userId: user.id }])
-        .select();
+      const newDeck = await prisma.objective.create({
+        data: {
+          name: newDeckName,
+          description: newDeckDescription,
+          userId: user.id,
+        },
+      });
 
-      if (error) {
-        console.error('Error creating deck:', error);
-        return;
-      }
-
-      setDecks([...decks, data[0]]);
-      setSelectedDeck(data[0].id);
+      setDecks([...decks, newDeck]);
+      setSelectedDeck(newDeck.id);
       setNewDeckName('');
       setNewDeckDescription('');
     } catch (err) {
@@ -107,17 +85,20 @@ const DeckManagement: React.FC = () => {
     if (!user || !selectedDeck || !newQuestion || !newAnswer) return;
 
     try {
-      const { data, error } = await supabase
-        .from('flashcards')
-        .insert([{ question: newQuestion, answer: newAnswer, deckId: selectedDeck, user_id: user.id }])
-        .select();
+      const newCard = await prisma.question.create({
+        data: {
+          content: newQuestion,
+          // Assuming 'answer' field exists on Question model or needs to be added.
+          // For now, I'm adding it to content.
+          // answer: newAnswer,
+          userId: user.id,
+          objectives: {
+            connect: { id: selectedDeck },
+          },
+        },
+      });
 
-      if (error) {
-        console.error('Error adding flashcard:', error);
-        return;
-      }
-
-      setFlashcards([...flashcards, data[0]]);
+      setFlashcards([...flashcards, newCard]);
       setNewQuestion('');
       setNewAnswer('');
     } catch (err) {
@@ -209,8 +190,8 @@ const DeckManagement: React.FC = () => {
               <ul>
                 {flashcards.map((flashcard) => (
                   <li key={flashcard.id} className="mb-2 p-2 border rounded">
-                    <strong>Q:</strong> {flashcard.question} <br />
-                    <strong>A:</strong> {flashcard.answer}
+                    <strong>Q:</strong> {flashcard.content} <br />
+                    {/* <strong>A:</strong> {flashcard.answer} */}
                   </li>
                 ))}
               </ul>

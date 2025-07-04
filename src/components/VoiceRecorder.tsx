@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useAuth } from '@/lib/auth-context';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/client';
 import AuthErrorDisplay from './AuthErrorDisplay';
 
 interface VoiceRecorderProps {
@@ -153,6 +153,7 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = ({
         const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/wav' });
         const filePath = `${user.id}/${Date.now()}.wav`;
 
+        const supabase = createClient();
         const { data, error: uploadError } = await supabase.storage
           .from('recordings')
           .upload(filePath, audioBlob);

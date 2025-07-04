@@ -3,7 +3,7 @@
 import React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from './supabase';
+import { createClient } from './supabase/client';
 import { User } from '@supabase/supabase-js';
 
 interface AuthContextType {
@@ -33,6 +33,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
   const router = useRouter();
 
   useEffect(() => {
+    const supabase = createClient();
     const { data: authListener } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setUser(session?.user ?? null);
@@ -71,16 +72,19 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }): React
     loading,
     error,
     signIn: (email, password) =>
-      handleAuthOperation(() =>
-        supabase.auth.signInWithPassword({ email, password })
-      ),
+      handleAuthOperation(async () => {
+        const supabase = createClient();
+        return supabase.auth.signInWithPassword({ email, password });
+      }),
     signUp: (email, password) =>
-      handleAuthOperation(() =>
-        supabase.auth.signUp({ email, password })
-      ),
+      handleAuthOperation(async () => {
+        const supabase = createClient();
+        return supabase.auth.signUp({ email, password });
+      }),
     signOut: async () => {
       setLoading(true);
       try {
+        const supabase = createClient();
         await supabase.auth.signOut();
         router.push('/login');
       } catch (err: unknown) {

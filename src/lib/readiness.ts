@@ -1,5 +1,5 @@
-import { supabase } from './supabase';
 import { progressService } from './progress';
+import { supabase } from './auth-context';
 
 interface Question {
   id: string;
@@ -35,7 +35,7 @@ export async function calculateReadiness(userId: string): Promise<ReadinessScore
     .select('id, last_reviewed, review_ease, topic')
     .eq('user_id', userId);
 
-  const questions = questionsData || [];
+  const questions: Question[] = questionsData || [];
 
   // Calculate component scores
   const masteryScore = calculateMastery(progress, questions);
@@ -102,7 +102,7 @@ function calculateRecency(questions: Question[]): number {
   const now = Date.now();
   const lastReviewTimes = questions
     .filter(q => q.last_reviewed)
-    .map(q => now - new Date(q.last_reviewed).getTime());
+    .map(q => now - new Date(q.last_reviewed!).getTime());
     
   if (lastReviewTimes.length === 0) return 0;
   

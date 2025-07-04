@@ -1,5 +1,7 @@
-import { supabase } from './supabase';
+import { PrismaClient } from '@prisma/client';
 import { schedulerService } from './scheduler';
+
+const prisma = new PrismaClient();
 
 export interface ProgressService {
   getUserProgress: (userId: string) => Promise<{
@@ -38,14 +40,12 @@ export interface ProgressService {
 
 export const createProgressService = (): ProgressService => {
   const getUserProgress = async (userId: string) => {
-    const { data, error } = await supabase
-      .from('progress_metrics')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+    const data = await prisma.progressMetrics.findFirst({
+      where: { userId: userId },
+    });
 
-    if (error || !data) {
-      console.error('Error fetching progress metrics:', error);
+    if (!data) {
+      console.error('Error fetching progress metrics: No data found');
       return {
         totalQuestions: 0,
         correctAnswers: 0,
@@ -67,43 +67,45 @@ export const createProgressService = (): ProgressService => {
 
   const updateProgressAfterReview = async (userId: string, questionId: string, remembered: boolean) => {
     // Update the question review status
-    await schedulerService.markQuestionAsReviewed('questions', questionId, remembered);
+    await schedulerService.markQuestionAsReviewed(questionId, remembered);
 
     // Get current progress metrics
-    const { data: metricsData, error: metricsError } = await supabase
-      .from('progress_metrics')
-      .select('*')
-      .eq('user_id', userId)
-      .single();
+    const metricsData = await prisma.progressMetrics.findFirst({
+      where: { userId: userId },
+    });
 
-    if (metricsError || !metricsData) {
-      console.error('Error fetching progress metrics:', metricsError);
+    if (!metricsData) {
+      console.error('Error fetching progress metrics: No data found');
       return;
     }
 
     // Update metrics based on review result
     const updatedMetrics = {
-      ...metricsData,
-      totalQuestions: metricsData.total_questions + 1,
-      correctAnswers: metricsData.correct_answers + (remembered ? 1 : 0),
-      incorrectAnswers: metricsData.incorrect_answers + (!remembered ? 1 : 0),
+      totalQuestions: metricsData.totalQuestions + 1,
+      correctAnswers: metricsData.correctAnswers + (remembered ? 1 : 0),
+      incorrectAnswers: metricsData.incorrectAnswers + (!remembered ? 1 : 0),
       lastReviewedAt: new Date(),
     };
 
     // Update in database
-    const { error: updateError } = await supabase
-      .from('progress_metrics')
-      .update(updatedMetrics)
-      .eq('id', metricsData.id);
+    const updateResult = await prisma.progressMetrics.update({
+      where: { id: metricsData.id },
+      data: updatedMetrics,
+    });
 
-    if (updateError) {
-      console.error('Error updating progress metrics:', updateError);
+    if (!updateResult) {
+      console.error('Error updating progress metrics: No record found for update');
     }
   };
 
   const getUserMetrics = async (userId: string) => {
     const progress = await getUserProgress(userId);
-    const nextReviewDates = await schedulerService.getNextReviewDates('questions', [userId]);
+    const questions = await prisma.question.findMany({
+      where: { userId },
+      select: { id: true }
+    });
+    const questionIds = questions.map(q => q.id);
+    const nextReviewDates = await schedulerService.getNextReviewDates(questionIds);
 
     return {
       ...progress,
@@ -116,22 +118,29 @@ export const createProgressService = (): ProgressService => {
     updateProgressAfterReview,
     getUserMetrics,
     aggregateAnalyticsData: async (userId: string) => {
-      const { data: progressData } = await supabase
-        .from('progress_metrics')
-        .select('*')
-        .eq('user_id', userId)
-        .single();
+      const progressData = await prisma.progressMetrics.findFirst({
+        where: { userId: userId },
+      });
   
-      const { data: reviewData } = await supabase
-        .from('question_reviews')
-        .select('question_id, remembered, reviewed_at')
-        .eq('user_id', userId)
-        .order('reviewed_at', { ascending: false });
+      const reviewData = await prisma.review.findMany({
+        where: { userId: userId },
+        select: {
+          questionId: true,
+          remembered: true,
+          reviewedAt: true,
+        },
+        orderBy: {
+          reviewedAt: 'desc',
+        },
+      });
   
-      const { data: topicData } = await supabase
-        .from('user_topics')
-        .select('topic_id, mastery_level')
-        .eq('user_id', userId);
+      const topicData = await prisma.userTopic.findMany({
+        where: { userId: userId },
+        select: {
+          topicId: true,
+          masteryLevel: true,
+        },
+      });
   
       if (!progressData || !reviewData || !topicData) {
         throw new Error('Failed to fetch analytics data');
@@ -139,16 +148,23 @@ export const createProgressService = (): ProgressService => {
   
       return {
         overallProgress: {
-          totalQuestions: progressData.total_questions,
-          correctAnswers: progressData.correct_answers,
-          incorrectAnswers: progressData.incorrect_answers,
+          totalQuestions: progressData.totalQuestions,
+          correctAnswers: progressData.correctAnswers,
+          incorrectAnswers: progressData.incorrectAnswers,
           masteryScore: calculateMasteryScore(
-            progressData.correct_answers,
-            progressData.incorrect_answers
+            progressData.correctAnswers,
+            progressData.incorrectAnswers
           ),
         },
-        recentReviews: reviewData.slice(0, 10),
-        topicMastery: topicData,
+        recentReviews: reviewData.slice(0, 10).map(review => ({
+          question_id: review.questionId,
+          remembered: review.remembered,
+          reviewed_at: review.reviewedAt.toISOString(),
+        })),
+        topicMastery: topicData.map(topic => ({
+          topic_id: topic.topicId,
+          mastery_level: topic.masteryLevel,
+        })),
         calculatedAt: new Date(),
       };
     },

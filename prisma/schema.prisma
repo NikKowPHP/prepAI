@@ -17,12 +17,14 @@ model User {
   reviews         Review[]
   progressMetrics ProgressMetrics[]
   objectives      Objective[]
+  userTopics      UserTopic[]
 }
 
 model Question {
   id                String              @id @default(cuid())
   userId            String
   content           String
+  answer            String? // Added answer field
   category          String?
   difficulty        String?
   createdAt         DateTime            @default(now())
@@ -84,4 +86,14 @@ model ProgressMetrics {
   incorrectAnswers Int      @default(0)
   lastReviewedAt   DateTime @default(now())
   user             User     @relation(fields: [userId], references: [id])
+}
+
+model UserTopic {
+  id           String  @id @default(cuid())
+  userId       String
+  topicId      String
+  masteryLevel Int     @default(0)
+  user         User    @relation(fields: [userId], references: [id])
+
+  @@unique([userId, topicId])
 }
