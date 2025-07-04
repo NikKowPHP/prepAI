@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
-import { supabase } from './auth-context';
+import { supabase } from './supabase/client';
 import { progressService } from './progress';
 import { formatDistanceToNow } from 'date-fns';
 import { prisma } from './db';

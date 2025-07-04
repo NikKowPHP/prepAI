@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import Link from "next/link";
-import { useAuth } from '@/lib/auth-context';
+import { AuthLinks } from '@/components/AuthLinks';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -50,26 +50,4 @@ export default function RootLayout({
   );
 }
 
-function AuthLinks() {
-  const { user } = useAuth();
 
-  if (user) {
-    return (
-      <>
-        <span>Welcome, {user.email}</span>
-        <form action="/api/auth/signout" method="POST">
-          <button type="submit" className="hover:underline bg-transparent border-none text-white cursor-pointer">
-            Logout
-          </button>
-        </form>
-      </>
-    );
-  }
-
-  return (
-    <>
-      <Link href="/login" className="hover:underline">Login</Link>
-      <Link href="/signup" className="hover:underline">Sign Up</Link>
-    </>
-  );
-}

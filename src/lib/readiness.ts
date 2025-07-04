@@ -1,5 +1,5 @@
 import { progressService } from './progress';
-import { supabase } from './auth-context';
+import { supabase } from './supabase/client';
 
 interface Question {
   id: string;
