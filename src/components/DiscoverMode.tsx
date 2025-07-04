@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { supabase } from '@/lib/supabase';
-import { Question } from '@/lib/srs';
+import { supabase } from '@/lib/supabase/client';
+import type { Question } from '@prisma/client';
 import { useAuth } from '@/lib/auth-context';
 import { KnowledgeGap } from '@/lib/assessment';
 

@@ -1,4 +1,4 @@
-import { supabase } from './supabase';
+import { prisma } from './db';
 import type { Question } from '@prisma/client';
 
 export const calculateNextReview = (question: Question): {
@@ -231,8 +231,7 @@ export const updateQuestionAfterReview = async (question: Question, remembered: 
     adjustedEase = Math.min(3.0, newEase + 0.1);
   }
 
-  const updatedQuestion = {
-    ...question,
+  const updatedQuestionData = {
     lastReviewed: new Date(),
     reviewInterval: adjustedInterval,
     reviewEase: adjustedEase,
@@ -243,23 +242,12 @@ export const updateQuestionAfterReview = async (question: Question, remembered: 
   };
 
   try {
-    const { error } = await supabase
-      .from('questions')
-      .update({
-        last_reviewed: updatedQuestion.lastReviewed?.toISOString(),
-        review_interval: updatedQuestion.reviewInterval,
-        review_ease: updatedQuestion.reviewEase,
-        struggle_count: updatedQuestion.struggleCount,
-        last_struggled_at: updatedQuestion.lastStruggledAt?.toISOString(),
-        total_struggle_time: updatedQuestion.totalStruggleTime,
-        review_count: updatedQuestion.reviewCount
-      })
-      .eq('id', updatedQuestion.id);
-
-    if (error) {
-      console.error('Failed to update question in database:', error);
-      throw error;
-    }
+    const updatedQuestion = await prisma.question.update({
+      where: {
+        id: question.id,
+      },
+      data: updatedQuestionData,
+    });
 
     return updatedQuestion;
   } catch (error) {

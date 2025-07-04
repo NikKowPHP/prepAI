@@ -74,16 +74,27 @@ export async function middleware(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Define protected and auth routes
-  const protectedRoutes = ["/dashboard", "/profile", "/clients"]; // Add more as needed
-  const authRoutes = ["/auth/login", "/auth/register"];
+  const protectedRoutes = [
+    "/dashboard",
+    "/questions",
+    "/generate",
+    "/profile", // Assuming /profile will be a protected route
+  ];
 
+  // Define routes that should not be accessible if the user is already logged in
+  const authRoutes = [
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+  ];
   const { pathname } = request.nextUrl;
 
   // If user is not logged in and trying to access a protected route, redirect to login
   if (!user && protectedRoutes.some((route) => pathname.startsWith(route))) {
     return NextResponse.redirect(
       new URL(
-        "/auth/login?error=Please log in to access this page.",
+        "/login?error=Please log in to access this page.",
         request.url,
       ),
     );

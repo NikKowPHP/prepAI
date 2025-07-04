@@ -1,5 +1,5 @@
 import React from 'react';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import Link from 'next/link';
 
 export default async function VerifyEmailPage({
@@ -22,6 +22,7 @@ export default async function VerifyEmailPage({
   }
 
   try {
+    const supabase = await createClient();
     const { error } = await supabase.auth.verifyOtp({
       type: 'email',
       token_hash: token,

@@ -1,8 +1,9 @@
 import { NextResponse } from 'next/server';
 import { generateUserReport } from '../../../lib/pdf';
-import { supabase } from '../../../lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 
 export async function GET(request: Request) {
+  const supabase = await createClient();
   const { data } = await supabase.auth.getSession();
 
   if (!data?.session) {
@@ -24,6 +25,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const supabase = await createClient();
   const { data } = await supabase.auth.getSession();
   const { template } = await request.json();
 
@@ -32,7 +34,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const pdfBuffer = await generateUserReport(data.session.user.id, template);
+    const pdfBuffer = await generateUserReport( data.session.user.id, template);
     return new NextResponse(pdfBuffer, {
       headers: {
         'Content-Type': 'application/pdf',

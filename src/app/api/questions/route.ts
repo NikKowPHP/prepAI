@@ -1,9 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/db';
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import type { Question } from '@prisma/client';
 
 export async function GET(req: NextRequest) {
+  const supabase = await createClient();
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -58,6 +59,7 @@ export async function GET(req: NextRequest) {
  * Returns questions filtered by SRS mode
  */
 export async function GET_MODE(req: NextRequest) {
+  const supabase = await createClient();
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -108,9 +110,9 @@ export async function GET_MODE(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
+  const supabase = await createClient();
   try {
     const body = await req.json();
-
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
@@ -156,6 +158,7 @@ export async function POST(req: NextRequest) {
 }
 
 export async function PUT(req: NextRequest) {
+  const supabase = await createClient();
   try {
     const body = await req.json();
     const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -225,6 +228,7 @@ export async function PUT(req: NextRequest) {
 }
 
 export async function PATCH(req: NextRequest) {
+  const supabase = await createClient();
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {
@@ -294,6 +298,7 @@ export async function PATCH(req: NextRequest) {
 }
 
 export async function DELETE(req: NextRequest) {
+  const supabase = await createClient();
   try {
     const { data: { user }, error: authError } = await supabase.auth.getUser();
     if (authError || !user) {

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/client';
 import AuthErrorDisplay from '@/components/AuthErrorDisplay';
 import { validatePassword } from '@/lib/validation';
 import Link from 'next/link';

@@ -1,6 +1,6 @@
 import React from 'react';
 import { useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '../lib/supabase/client';
 import AuthErrorDisplay from './AuthErrorDisplay';
 import { validateEmail, validatePassword, calculatePasswordStrength } from '../lib/validation';
 

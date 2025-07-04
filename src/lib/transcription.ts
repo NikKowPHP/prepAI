@@ -1,6 +1,6 @@
 import { SpeechClient } from '@google-cloud/speech';
 import type { protos } from '@google-cloud/speech';
-import { supabase } from './supabase';
+import type { SupabaseClient } from '@supabase/supabase-js';
 import { rateLimiter } from './rateLimiter';
 
 interface StreamingRecognizeStream extends NodeJS.ReadableStream {
@@ -17,7 +17,7 @@ export class TranscriptionError extends Error {
 }
 
 export interface TranscriptionService {
-  processTranscription: (filePath: string) => Promise<string>;
+  processTranscription: (supabase: SupabaseClient, filePath: string) => Promise<string>;
   streamTranscription: () => Promise<{
     stream: StreamingRecognizeStream;
     destroy: () => void;
@@ -68,7 +68,7 @@ export const createTranscriptionService = (): TranscriptionService => {
     }
   };
 
-  const processTranscription = async (filePath: string): Promise<string> => {
+  const processTranscription = async (supabase: SupabaseClient, filePath: string): Promise<string> => {
     const limitCheck = getTranscriptionLimiter('transcription-service');
     if (!limitCheck.allowed) {
       throw new TranscriptionError(

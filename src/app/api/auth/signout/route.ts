@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase';
+import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { authRateLimiter } from '@/lib/rateLimiter';
 
@@ -18,10 +18,11 @@ export async function POST(request: Request) {
           'Retry-After': limit.retryAfter!.toString()
         }
       }
-    );
+  );
   }
 
   try {
+    const supabase =await createClient();
     const { error } = await supabase.auth.signOut();
 
     if (error) {

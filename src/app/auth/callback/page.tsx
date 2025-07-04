@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase/client';
 import AuthErrorDisplay from '@/components/AuthErrorDisplay';
 
 export default function AuthCallbackPage() {
