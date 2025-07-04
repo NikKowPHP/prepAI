@@ -203,7 +203,7 @@ const DiscoverMode: React.FC = () => {
                 key={question.id}
                 className="p-2 bg-gray-50 rounded border border-gray-200"
               >
-                <h3 className="font-medium">{question.question}</h3>
+                <h3 className="font-medium">{question.content}</h3>
                 {(question.topics || []).length > 0 && (
                   <div className="mt-1 text-sm text-gray-600">
                     Topics: {(question.topics || []).join(', ')}
