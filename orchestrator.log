@@ -1,4 +1,0 @@
-{"timestamp": "$(date -u +%Y-%m-%dT%H:%M:%SZ)", "agent": "Orchestrator", "event": "handoff", "details": "Project manifest not found. Handoff to Architect for initialization."}
-{"timestamp": "6/17/2025, 11:55:43 AM", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "NEEDS_REFACTOR.md detected. Handing off to Developer for refactoring."}
-{"timestamp": "6/17/2025, 12:12:44 PM", "agent": "Orchestrator", "event": "handoff", "target_agent": "Emergency", "details": "NEEDS_ASSISTANCE.md detected. Handing off to Emergency for resolution."}
-{"timestamp": "6/17/2025, 12:18:21 PM", "agent": "Orchestrator", "event": "handoff", "target_agent": "Developer", "details": "Active plan FIX_PLAN.md detected. Handing off to Developer for implementation."}
